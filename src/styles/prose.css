@@ -1,15 +1,112 @@
-/* Long-form typography for posts and case studies. Applied with the .prose-site class. */
-@layer components {
-  .prose-site {
-    --tw-prose-body: var(--color-fg);
-    --tw-prose-headings: var(--color-fg);
-    --tw-prose-links: var(--color-accent);
-    --tw-prose-bold: var(--color-fg);
-    --tw-prose-quotes: var(--color-muted);
-    --tw-prose-code: var(--color-fg);
-    --tw-prose-hr: var(--color-border);
-    --tw-prose-bullets: var(--color-muted);
-    --tw-prose-counters: var(--color-muted);
-    max-width: 65ch;
+/*
+ * Long-form typography for posts and case studies. Applied with the .prose-site class.
+ * Accents follow the cover's palette through --tone (falls back to the site accent).
+ */
+/* Unlayered on purpose: it must win over the typography plugin, which lives in a layer. */
+.prose-site {
+  --prose-tone: var(--tone, var(--color-accent));
+  --tw-prose-body: var(--color-fg);
+  --tw-prose-headings: var(--color-fg);
+  --tw-prose-links: var(--color-fg);
+  --tw-prose-bold: var(--color-fg);
+  --tw-prose-quotes: var(--color-fg);
+  --tw-prose-quote-borders: var(--prose-tone);
+  --tw-prose-code: var(--color-fg);
+  --tw-prose-hr: var(--color-fg);
+  --tw-prose-bullets: var(--prose-tone);
+  --tw-prose-counters: var(--prose-tone);
+  --tw-prose-th-borders: var(--color-fg);
+  --tw-prose-td-borders: var(--color-border);
+  --tw-prose-captions: var(--color-muted);
+  max-width: 42rem;
+  font-size: 1.125rem;
+  line-height: 1.65;
+}
+
+/* The opening paragraph gets a drop cap set in the display face, in the cover's colour. */
+.post .prose-site > p:first-of-type::first-letter {
+  float: left;
+  margin: 0.06em 0.1em 0 0;
+  font-family: var(--font-display);
+  font-size: 4em;
+  font-weight: 900;
+  font-variation-settings: "wdth" 100;
+  line-height: 0.78;
+  color: var(--prose-tone);
+}
+
+.prose-site :where(h2, h3, h4):not(:where(.not-prose *)) {
+  font-family: var(--font-display);
+  font-variation-settings: "wdth" 112;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  text-wrap: balance;
+}
+.prose-site :where(h2):not(:where(.not-prose *)) {
+  margin-top: 1.6em;
+  padding-top: 0.45em;
+  border-top: 3px solid var(--color-fg);
+  font-size: 1.9em;
+  font-weight: 850;
+}
+.prose-site :where(h3):not(:where(.not-prose *)) {
+  font-size: 1.35em;
+  font-weight: 800;
+}
+
+.prose-site :where(a):not(:where(.not-prose *)) {
+  font-weight: 600;
+  text-decoration-color: var(--prose-tone);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.18em;
+  transition: color 0.2s;
+}
+.prose-site :where(a):not(:where(.not-prose *)):hover {
+  color: var(--prose-tone);
+}
+
+.prose-site :where(blockquote):not(:where(.not-prose *)) {
+  padding-left: 1em;
+  border-left-width: 6px;
+  font-family: var(--font-serif);
+  font-size: 1.35em;
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.25;
+}
+.prose-site :where(blockquote p):not(:where(.not-prose *))::before,
+.prose-site :where(blockquote p):not(:where(.not-prose *))::after {
+  content: none;
+}
+
+.prose-site :where(:not(pre) > code):not(:where(.not-prose *)) {
+  padding: 0.1em 0.35em;
+  background: var(--color-code);
+  font-size: 0.85em;
+  font-weight: 500;
+}
+.prose-site :where(:not(pre) > code):not(:where(.not-prose *))::before,
+.prose-site :where(:not(pre) > code):not(:where(.not-prose *))::after {
+  content: none;
+}
+
+.prose-site :where(ul > li, ol > li):not(:where(.not-prose *))::marker {
+  font-weight: 700;
+}
+
+/* Code blocks bleed to the screen edge on phones. */
+.prose-site .expressive-code {
+  margin-block: 1.75em;
+}
+@media (max-width: 39.99rem) {
+  .prose-site .expressive-code {
+    margin-inline: -1rem;
   }
+}
+
+/* Display maths scrolls instead of overflowing the page. */
+.prose-site .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-block: 0.5em;
 }

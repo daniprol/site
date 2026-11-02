@@ -1,0 +1,26 @@
+---
+/** The generated shapes of a cover, drawn in the palette's colour roles. */
+import type { Art } from "@/lib/cover";
+
+interface Props {
+  art: Art;
+  class?: string;
+}
+const { art, class: className } = Astro.props;
+---
+
+<svg
+  class:list={["cover-art", className]}
+  viewBox={`0 0 ${art.width} ${art.height}`}
+  preserveAspectRatio="xMidYMid slice"
+  aria-hidden="true"
+  focusable="false"
+>
+  {art.shapes.map((shape) =>
+    shape.stroke ? (
+      <path d={shape.d} fill="none" stroke={`var(--${shape.tone})`} stroke-width={shape.stroke} />
+    ) : (
+      <path d={shape.d} fill={`var(--${shape.tone})`} />
+    ),
+  )}
+</svg>

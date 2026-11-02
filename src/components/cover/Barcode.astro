@@ -1,0 +1,47 @@
+---
+/** A decorative barcode generated from the slug, printed on every cover. */
+interface Props {
+  bars: number[];
+  digits: string;
+}
+const { bars, digits } = Astro.props;
+const width = bars.reduce((sum, w) => sum + w + 1, 0);
+let x = 0;
+const rects = bars.map((w, i) => {
+  const rect = { x, w, dark: i % 2 === 0 };
+  x += w + 1;
+  return rect;
+});
+---
+
+<span class="barcode" aria-hidden="true">
+  <svg viewBox={`0 0 ${width} 24`} preserveAspectRatio="none">
+    {rects
+      .filter((r) => r.dark)
+      .map((r) => (
+        <rect x={r.x} width={r.w} height="24" />
+      ))}
+  </svg>
+  <span>{digits}</span>
+</span>
+
+<style>
+  .barcode {
+    display: inline-flex;
+    flex-direction: column;
+    gap: 0.2em;
+    padding: 0.45em 0.55em 0.3em;
+    background: var(--color-white);
+    color: var(--color-ink);
+    font-family: var(--font-mono);
+    font-size: max(7px, 2.2cqi);
+    line-height: 1;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+  svg {
+    width: 100%;
+    height: 2.6em;
+    fill: currentColor;
+  }
+</style>

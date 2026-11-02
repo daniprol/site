@@ -1,21 +1,72 @@
 ---
-/** A titled block on an index page, with an optional "view all" link. */
+/** A titled block on an index page: a numbered department header and an optional "view all" link. */
 interface Props {
   title: string;
+  /** Department number, e.g. "01". */
+  number?: string;
   href?: string;
   linkLabel?: string;
 }
-const { title, href, linkLabel } = Astro.props;
+const { title, number, href, linkLabel } = Astro.props;
 ---
 
-<section class="mt-16">
-  <div class="mb-4 flex items-baseline justify-between">
-    <h2 class="text-sm font-medium text-muted">{title}</h2>
+<section class="wrap mt-16 md:mt-24">
+  <div class="dept">
+    <h2 class="dept-title display">
+      {number && <span class="dept-no">{number}</span>}
+      {title}
+    </h2>
     {href && (
-      <a href={href} class="text-sm text-muted hover:text-fg">
-        {linkLabel} →
+      <a href={href} class="dept-link">
+        {linkLabel} <span aria-hidden="true">→</span>
       </a>
     )}
   </div>
   <slot />
 </section>
+
+<style>
+  .dept {
+    display: flex;
+    align-items: end;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--color-fg);
+  }
+  .dept-no {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-family: var(--font-sans);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: var(--color-accent);
+  }
+  .dept-title {
+    --wdth: 125;
+    flex: 1;
+    font-size: clamp(2rem, 8vw, 4.5rem);
+    text-transform: uppercase;
+  }
+  .dept-link {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    gap: 0.35rem;
+    flex: none;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .dept-link:hover {
+    color: var(--color-accent);
+  }
+  .dept-link span {
+    transition: translate 0.3s var(--ease-out-expo);
+  }
+  .dept-link:hover span {
+    translate: 4px 0;
+  }
+</style>

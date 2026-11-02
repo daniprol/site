@@ -1,28 +1,38 @@
 ---
-import { localePath, type Locale } from "@/i18n";
-import type { Post } from "@/lib/content";
-
-import DateTime from "./DateTime.astro";
+/** Posts as a wall of covers. Issue numbers count posts in publication order. */
+import Cover from "@/components/cover/Cover.astro";
+import { localePath, useTranslations, type Locale } from "@/i18n";
+import { getPosts, readingTime, type Post } from "@/lib/content";
+import { formatDate } from "@/lib/format";
 
 interface Props {
   items: { post: Post; slug: string }[];
   locale: Locale;
 }
 const { items, locale } = Astro.props;
+const t = useTranslations(locale);
+const all = await getPosts(locale);
+const issue = (slug: string, date: Date) => {
+  const n = all.length - all.findIndex((p) => p.slug === slug);
+  return `${t("cover.issue", { n: String(n).padStart(2, "0") })} · ${formatDate(date, locale, "short").replace(/^\d+\s/, "")}`;
+};
 ---
 
-<ul class="divide-y divide-border">
+<ul class="wall">
   {items.map(({ post, slug }) => (
     <li>
-      <a
+      <Cover
+        slug={slug}
+        title={post.data.title}
+        kicker={t("nav.writing")}
+        issue={issue(slug, post.data.date)}
+        lines={[
+          t("post.readingTime", { n: readingTime(post.body) }),
+          ...post.data.tags.slice(0, 2).map((x) => `#${x}`),
+        ]}
         href={localePath(locale, `/writing/${slug}`)}
-        class="group flex flex-col gap-1 py-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6"
-      >
-        <span class="group-hover:text-accent" transition:name={`post-title-${slug}`}>
-          {post.data.title}
-        </span>
-        <DateTime date={post.data.date} locale={locale} format="short" class="shrink-0 text-sm text-muted" />
-      </a>
+        transitionName={`cover-${slug}`}
+      />
     </li>
   ))}
 </ul>

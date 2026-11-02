@@ -1,0 +1,275 @@
+---
+/**
+ * The home page as the current issue's cover: the "PROL" masthead, cover lines,
+ * and the latest post as the cover story, on that post's generated artwork.
+ */
+import { localePath, useTranslations, type Locale } from "@/i18n";
+import type { Post, Project, Snack } from "@/lib/content";
+import { makeCover } from "@/lib/cover";
+import { formatDate } from "@/lib/format";
+import { site } from "@/site.config";
+
+import Barcode from "./Barcode.astro";
+import CoverArt from "./CoverArt.astro";
+
+interface Props {
+  locale: Locale;
+  story: { post: Post; slug: string };
+  issueNumber: number;
+  snacks: Snack[];
+  projects: Project[];
+}
+const { locale, story, issueNumber, snacks, projects } = Astro.props;
+const t = useTranslations(locale);
+const cover = makeCover(story.slug, story.post.data.title);
+const [first, ...rest] = site.name.split(" ");
+const month = formatDate(story.post.data.date, locale, "short").replace(/^\d+\s/, "");
+const latestSnack = snacks[0];
+---
+
+<section class="issue" data-palette={cover.palette} style={{ "--wdth": cover.wdth }}>
+  <CoverArt art={cover.portrait} class="issue-art-portrait" />
+  <CoverArt art={cover.spread} class="issue-art-spread" />
+
+  <div class="issue-top">
+    <p>{site.role}</p>
+    <p class="text-right">
+      {t("cover.issue", { n: String(issueNumber).padStart(2, "0") })} · {month}
+    </p>
+  </div>
+
+  <h1 class="issue-mast">
+    <span class="issue-first">{first}</span>
+    <span class="issue-last">{rest.join(" ")}</span>
+  </h1>
+
+  <div class="issue-grid">
+    <a href={localePath(locale, `/writing/${story.slug}`)} class="issue-story">
+      <span class="issue-kicker">{t("cover.story")}</span>
+      <span class="issue-title" style={{ "--wght": cover.wght }}>
+        {story.post.data.title}
+      </span>
+      <span class="issue-dek">{story.post.data.description}</span>
+    </a>
+
+    <ul class="issue-lines">
+      <li>
+        <span class="issue-k">{t("home.now")}</span>
+        {site.now}
+      </li>
+      {latestSnack && (
+        <li>
+          <a href={localePath(locale, "/snacks")}>
+            <span class="issue-k">{t("nav.snacks")}</span>
+            {latestSnack.data.title} — {t(`verdict.${latestSnack.data.verdict}`)} →
+          </a>
+        </li>
+      )}
+      <li>
+        <a href={localePath(locale, "/projects")}>
+          <span class="issue-k">{t("nav.projects")}</span>
+          {projects.map((p) => p.data.title).join(" · ")} →
+        </a>
+      </li>
+    </ul>
+
+    <div class="issue-code">
+      <Barcode bars={cover.barcode} digits={cover.digits} />
+    </div>
+  </div>
+</section>
+
+<style>
+  .issue {
+    container-type: inline-size;
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100svh - 4rem);
+    overflow: hidden;
+    padding: 1rem;
+    background: var(--field);
+    color: var(--ink);
+  }
+  .issue :global(.cover-art) {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+  }
+  .issue :global(.issue-art-spread) {
+    display: none;
+  }
+
+  .issue-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* Masthead: "PROL" fills the width; the first name is tucked in, in italic serif. */
+  .issue-mast {
+    position: relative;
+    margin-top: 0.5rem;
+    padding-bottom: 1.5cqi;
+    border-bottom: 3px solid currentColor;
+  }
+  .issue-last {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 24.4cqi;
+    font-weight: 900;
+    font-variation-settings: "wdth" 150;
+    line-height: 0.74;
+    margin-bottom: -0.06em;
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+    margin-left: -0.05em;
+  }
+  .issue-first {
+    position: absolute;
+    top: 0.5cqi;
+    right: 0;
+    z-index: 1;
+    font-family: var(--font-serif);
+    font-size: 6cqi;
+    font-style: italic;
+    line-height: 1;
+    padding: 0 0.1em 0.05em 0.2em;
+    background: var(--field);
+  }
+
+  .issue-grid {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 1.25rem;
+    padding-top: 1.25rem;
+  }
+
+  .issue-story {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-top: auto;
+  }
+  .issue-kicker {
+    width: fit-content;
+    padding: 0.2em 0.5em;
+    background: var(--ink);
+    color: var(--field);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .issue-title {
+    font-family: var(--font-display);
+    font-size: clamp(2.4rem, 11cqi, 3.6rem);
+    font-weight: var(--wght, 800);
+    font-variation-settings: "wdth" var(--wdth);
+    line-height: 0.9;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+  }
+  .issue-story:hover .issue-title {
+    text-decoration: underline;
+    text-decoration-thickness: 0.06em;
+    text-underline-offset: 0.1em;
+  }
+  .issue-dek {
+    max-width: 30ch;
+    font-family: var(--font-serif);
+    font-size: 1.3rem;
+    font-style: italic;
+    line-height: 1.15;
+  }
+
+  .issue-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  .issue-lines li {
+    width: fit-content;
+    max-width: 100%;
+    padding: 0.35rem 0.55rem;
+    background: var(--field);
+  }
+  .issue-lines a:hover {
+    text-decoration: underline;
+  }
+  .issue-k {
+    display: block;
+    font-family: var(--font-serif);
+    font-size: 1.05rem;
+    font-weight: 400;
+    font-style: italic;
+  }
+  .issue-code {
+    display: flex;
+    justify-content: end;
+  }
+  .issue-code :global(.barcode) {
+    width: 6rem;
+    font-size: 8px;
+  }
+
+  @media (min-width: 56rem) {
+    .issue {
+      padding: 1.5rem 2.5rem 2rem;
+      min-height: min(calc(100svh - 4rem), 60rem);
+    }
+    .issue :global(.issue-art-portrait) {
+      display: none;
+    }
+    .issue :global(.issue-art-spread) {
+      display: block;
+    }
+    .issue-top {
+      font-size: 0.8rem;
+    }
+    .issue-last {
+      font-size: 24.6cqi;
+    }
+    .issue-first {
+      font-size: 4.2cqi;
+    }
+    .issue-grid {
+      display: grid;
+      grid-template-columns: 18rem 1fr auto;
+      grid-template-areas: "lines story code";
+      align-items: end;
+      gap: 2.5rem;
+    }
+    .issue-lines {
+      grid-area: lines;
+    }
+    .issue-story {
+      grid-area: story;
+      max-width: 44rem;
+    }
+    .issue-code {
+      grid-area: code;
+    }
+    .issue-title {
+      font-size: clamp(3rem, 6cqi, 6.5rem);
+    }
+    .issue-dek {
+      font-size: 1.6rem;
+    }
+    .issue-code :global(.barcode) {
+      width: 8rem;
+      font-size: 9px;
+    }
+  }
+</style>

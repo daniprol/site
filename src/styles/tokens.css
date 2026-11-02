@@ -1,15 +1,113 @@
 /*
- * Design tokens. Each theme owns this file.
- * Colours use light-dark() so each token is defined once for both modes.
+ * Design tokens for "Cover". Colours use light-dark() so each token is defined once for both modes.
+ * Chrome is paper and ink with a vermilion signal; colour lives in the eight cover palettes below.
  */
 @theme {
-  --font-sans: ui-sans-serif, system-ui, sans-serif;
-  --font-serif: ui-serif, Georgia, serif;
+  --font-display: var(--font-anybody), "Arial Black", sans-serif;
+  --font-sans: var(--font-instrument-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-instrument-serif), ui-serif, Georgia, serif;
   --font-mono: ui-monospace, "SFMono-Regular", Menlo, monospace;
 
-  --color-bg: light-dark(oklch(0.99 0 0), oklch(0.17 0 0));
-  --color-fg: light-dark(oklch(0.2 0 0), oklch(0.93 0 0));
-  --color-muted: light-dark(oklch(0.5 0 0), oklch(0.65 0 0));
-  --color-border: light-dark(oklch(0.9 0 0), oklch(0.3 0 0));
-  --color-accent: light-dark(oklch(0.5 0.15 250), oklch(0.75 0.12 250));
+  /* Chrome */
+  --color-bg: light-dark(oklch(0.99 0 0), oklch(0.15 0.01 270));
+  --color-fg: light-dark(oklch(0.17 0.01 270), oklch(0.96 0.005 90));
+  --color-muted: light-dark(oklch(0.5 0.01 270), oklch(0.7 0.01 270));
+  --color-border: light-dark(oklch(0.89 0.003 270), oklch(0.3 0.01 270));
+  --color-accent: light-dark(oklch(0.55 0.22 33), oklch(0.74 0.17 33));
+  --color-code: light-dark(oklch(0.965 0.004 270), oklch(0.2 0.012 270));
+  --color-ink-soft: light-dark(oklch(0.93 0.004 270), oklch(0.25 0.012 270));
+
+  /* Named inks the palettes are mixed from. */
+  --color-vermilion: oklch(0.64 0.22 33);
+  --color-ember: oklch(0.55 0.18 35);
+  --color-cobalt: oklch(0.45 0.2 264);
+  --color-cobalt-light: oklch(0.55 0.2 264);
+  --color-navy: oklch(0.3 0.15 266);
+  --color-saffron: oklch(0.86 0.16 88);
+  --color-lemon: oklch(0.92 0.16 100);
+  --color-bubblegum: oklch(0.82 0.11 355);
+  --color-blush: oklch(0.93 0.05 355);
+  --color-maroon: oklch(0.24 0.09 20);
+  --color-emerald: oklch(0.62 0.14 160);
+  --color-pine: oklch(0.16 0.03 160);
+  --color-night: oklch(0.2 0.02 270);
+  --color-lilac: oklch(0.8 0.09 300);
+  --color-violet: oklch(0.24 0.12 285);
+  --color-orange: oklch(0.7 0.17 50);
+  --color-forest: oklch(0.36 0.08 155);
+  --color-moss: oklch(0.28 0.06 155);
+  --color-lime-paper: oklch(0.93 0.07 110);
+  --color-ink: oklch(0.17 0.02 30);
+  --color-white: oklch(0.98 0.01 90);
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/*
+ * Cover palettes. Each sets the cover's field, its ink (text), two shape colours (pop, deep)
+ * and a tone: a text-safe accent the article uses on the page background, per mode.
+ * Contrast: ink on field >= 4.5:1, ink on pop/deep >= 3:1 (headlines only), tone on bg >= 4.5:1.
+ */
+[data-palette] {
+  --field: var(--color-night);
+  --ink: var(--color-white);
+  --pop: var(--color-vermilion);
+  --deep: var(--color-cobalt);
+  --tone: var(--color-accent);
+}
+[data-palette="vermilion"] {
+  --field: var(--color-vermilion);
+  --ink: var(--color-ink);
+  --pop: var(--color-bubblegum);
+  --deep: var(--color-lemon);
+  --tone: light-dark(oklch(0.55 0.22 33), oklch(0.74 0.17 33));
+}
+[data-palette="cobalt"] {
+  --field: var(--color-cobalt);
+  --ink: var(--color-white);
+  --pop: var(--color-vermilion);
+  --deep: var(--color-navy);
+  --tone: light-dark(oklch(0.48 0.2 264), oklch(0.75 0.12 264));
+}
+[data-palette="saffron"] {
+  --field: var(--color-saffron);
+  --ink: var(--color-ink);
+  --pop: var(--color-vermilion);
+  --deep: var(--color-cobalt-light);
+  --tone: light-dark(oklch(0.5 0.12 75), oklch(0.85 0.15 88));
+}
+[data-palette="bubblegum"] {
+  --field: var(--color-bubblegum);
+  --ink: var(--color-maroon);
+  --pop: var(--color-vermilion);
+  --deep: var(--color-blush);
+  --tone: light-dark(oklch(0.52 0.18 355), oklch(0.8 0.11 355));
+}
+[data-palette="emerald"] {
+  --field: var(--color-emerald);
+  --ink: var(--color-pine);
+  --pop: var(--color-lemon);
+  --deep: var(--color-bubblegum);
+  --tone: light-dark(oklch(0.48 0.12 160), oklch(0.78 0.13 160));
+}
+[data-palette="night"] {
+  --field: var(--color-night);
+  --ink: var(--color-white);
+  --pop: var(--color-vermilion);
+  --deep: var(--color-cobalt);
+  --tone: var(--color-accent);
+}
+[data-palette="lilac"] {
+  --field: var(--color-lilac);
+  --ink: var(--color-violet);
+  --pop: var(--color-orange);
+  --deep: var(--color-lemon);
+  --tone: light-dark(oklch(0.48 0.16 300), oklch(0.8 0.09 300));
+}
+[data-palette="forest"] {
+  --field: var(--color-forest);
+  --ink: var(--color-lime-paper);
+  --pop: var(--color-ember);
+  --deep: var(--color-moss);
+  --tone: light-dark(oklch(0.45 0.09 155), oklch(0.8 0.1 140));
 }

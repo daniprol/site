@@ -1,42 +1,163 @@
 ---
+/**
+ * Snacks: the front of book. Each one is a small colour card with a verdict stamp.
+ * "strip" scrolls sideways on phones (home page); "board" is the full grid.
+ */
 import { render } from "astro:content";
 
 import { useTranslations, type Locale } from "@/i18n";
 import type { Snack } from "@/lib/content";
+import { makeCover } from "@/lib/cover";
 
 import DateTime from "./DateTime.astro";
+import VerdictStamp from "./VerdictStamp.astro";
 
 interface Props {
   items: Snack[];
   locale: Locale;
+  variant?: "strip" | "board";
 }
-const { items, locale } = Astro.props;
+const { items, locale, variant = "board" } = Astro.props;
 const t = useTranslations(locale);
 const entries = await Promise.all(items.map(async (snack) => ({ snack, Content: (await render(snack)).Content })));
+/** Each snack takes its palette from the cover generator, so the strip reads as a run of colour. */
+const palette = (snack: Snack) => makeCover(snack.id, snack.data.title).palette;
 ---
 
-<ol class="divide-y divide-border">
+<ol class:list={["snacks", `snacks-${variant}`]}>
   {entries.map(({ snack, Content }) => (
-    <li id={snack.id} class="grid gap-1 py-4 sm:grid-cols-[7rem_1fr] sm:gap-6">
-      <DateTime date={snack.data.date} locale={locale} format="iso" class="font-mono text-xs text-muted sm:pt-1" />
-      <div>
-        <p class="flex flex-wrap items-baseline gap-x-3">
-          {snack.data.url ? (
-            <a href={snack.data.url} class="font-medium hover:text-accent">
-              {snack.data.title}
-            </a>
-          ) : (
-            <span class="font-medium">{snack.data.title}</span>
-          )}
-          <span class="font-mono text-xs text-muted">{snack.data.kind}</span>
-          <span class="font-mono text-xs" data-verdict={snack.data.verdict}>
-            {t(`verdict.${snack.data.verdict}`)}
-          </span>
-        </p>
-        <div class="mt-1 text-muted">
-          <Content />
-        </div>
+    <li id={snack.id} class="snack" data-palette={palette(snack)}>
+      <div class="snack-head">
+        <DateTime date={snack.data.date} locale={locale} format="short" class="snack-date" />
+        <span class="snack-kind">{snack.data.kind}</span>
       </div>
+      <h3 class="snack-title display">
+        {snack.data.url ? (
+          <a href={snack.data.url} class="snack-link">
+            {snack.data.title}
+          </a>
+        ) : (
+          snack.data.title
+        )}
+      </h3>
+      <div class="snack-body">
+        <Content />
+      </div>
+      <VerdictStamp verdict={snack.data.verdict} label={t(`verdict.${snack.data.verdict}`)} />
     </li>
   ))}
 </ol>
+
+<style>
+  .snacks {
+    display: grid;
+    gap: 0.75rem;
+  }
+  .snack {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1rem 1rem 1.25rem;
+    overflow: hidden;
+    background: var(--field);
+    color: var(--ink);
+  }
+  :global([data-theme="dark"]) .snack[data-palette="night"] {
+    box-shadow: inset 0 0 0 1px var(--color-border);
+  }
+  .snack-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 2px solid currentColor;
+    padding-bottom: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .snack-title {
+    --wdth: 72;
+    max-width: calc(100% - 5rem);
+    font-size: 2.1rem;
+    font-weight: 800;
+    line-height: 0.9;
+    text-transform: uppercase;
+    text-wrap: balance;
+  }
+  .snack-link {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.12em;
+    text-decoration-color: transparent;
+    transition: text-decoration-color 0.2s;
+  }
+  .snack-link:hover {
+    text-decoration-color: currentColor;
+  }
+  .snack-body {
+    margin-top: auto;
+    font-size: 0.95rem;
+    line-height: 1.45;
+  }
+  .snack-body :global(p + p) {
+    margin-top: 0.5em;
+  }
+  .snack-body :global(a) {
+    text-decoration: underline;
+  }
+
+  /* Strip: a sideways-scrolling row of cards on phones, a row on desktop. */
+  .snacks-strip {
+    grid-auto-flow: column;
+    grid-auto-columns: min(80vw, 19rem);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: 1rem;
+    margin-inline: -1rem;
+    padding-inline: 1rem;
+    padding-bottom: 0.5rem;
+    scrollbar-width: thin;
+  }
+  .snacks-strip .snack {
+    min-height: 15rem;
+    scroll-snap-align: start;
+  }
+  .snacks-board .snack-title {
+    min-height: 4.2rem;
+  }
+  @media (min-width: 64rem) {
+    .snacks-strip {
+      grid-auto-flow: row;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      overflow: visible;
+      margin-inline: 0;
+      padding-inline: 0;
+    }
+    .snacks-strip .snack-title {
+      font-size: 1.8rem;
+    }
+  }
+
+  /* Board: the full archive. */
+  @media (min-width: 40rem) {
+    .snacks-board {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 64rem) {
+    .snacks-board {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+    }
+    .snacks-board .snack {
+      min-height: 19rem;
+      padding: 1.25rem;
+    }
+    .snacks-board .snack-title {
+      font-size: 2.6rem;
+    }
+  }
+</style>

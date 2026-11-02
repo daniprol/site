@@ -1,7 +1,7 @@
 ---
 /**
  * A margin note. On wide screens it floats into the right margin; on narrow screens
- * it collapses to a numbered note the reader can toggle. Pure CSS, no JS.
+ * it collapses to a numbered chip the reader can tap open. Pure CSS, no JS.
  * Usage in MDX: text<Sidenote>the note</Sidenote>
  */
 const id = `sn-${Math.random().toString(36).slice(2, 8)}`;
@@ -23,29 +23,64 @@ const id = `sn-${Math.random().toString(36).slice(2, 8)}`;
   }
   .sidenote-ref::after {
     content: counter(sidenote);
-    font-size: 0.7em;
-    vertical-align: super;
-    color: var(--color-accent);
-    padding-inline: 0.1em;
+    display: inline-grid;
+    min-width: 1.5em;
+    height: 1.5em;
+    place-items: center;
+    margin-inline: 0.15em;
+    border-radius: 999px;
+    background: var(--field, var(--color-accent));
+    color: var(--ink, var(--color-bg));
+    font-size: 0.68em;
+    font-weight: 800;
+    line-height: 1;
+    vertical-align: 0.35em;
+  }
+  /* A bigger tap target on phones without moving the text. */
+  @media (max-width: 71.99rem) {
+    .sidenote-ref {
+      position: relative;
+    }
+    .sidenote-ref::before {
+      content: "";
+      position: absolute;
+      inset: -0.7rem -0.5rem;
+    }
   }
   .sidenote-toggle {
-    display: none;
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .sidenote-toggle:focus-visible + .sidenote,
+  .sidenote-ref:has(+ .sidenote-toggle:focus-visible)::after {
+    outline: 3px solid var(--color-fg);
+    outline-offset: 2px;
   }
   .sidenote {
     display: none;
-    font-size: 0.85rem;
-    line-height: 1.5;
-    color: var(--color-muted);
+    font-family: var(--font-serif);
+    font-size: 1.05rem;
+    font-style: italic;
+    line-height: 1.3;
   }
   .sidenote::before {
     content: counter(sidenote) " ";
-    color: var(--color-accent);
+    font-family: var(--font-sans);
+    font-size: 0.75rem;
+    font-style: normal;
+    font-weight: 800;
+    color: var(--tone, var(--color-accent));
   }
   .sidenote-toggle:checked + .sidenote {
     display: block;
     margin: 0.75rem 0;
-    padding-left: 1rem;
-    border-left: 1px solid var(--color-border);
+    padding: 0.75rem 1rem;
+    background: var(--field, var(--color-code));
+    color: var(--ink, var(--color-fg));
+  }
+  .sidenote-toggle:checked + .sidenote::before {
+    color: inherit;
   }
   @media (min-width: 72rem) {
     .sidenote-ref {
@@ -58,8 +93,13 @@ const id = `sn-${Math.random().toString(36).slice(2, 8)}`;
       clear: right;
       width: 14rem;
       margin: 0.25rem -17rem 1rem 0;
-      padding: 0;
-      border: 0;
+      padding: 0.6rem 0 0;
+      border-top: 3px solid var(--tone, var(--color-accent));
+      background: none;
+      color: var(--color-fg);
+    }
+    .sidenote-toggle:checked + .sidenote::before {
+      color: var(--tone, var(--color-accent));
     }
   }
 </style>

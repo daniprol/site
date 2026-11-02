@@ -1,4 +1,5 @@
 ---
+/** The back cover: a solid ink field with the email set big, and the small print. */
 import { useTranslations, type Locale } from "@/i18n";
 import { site } from "@/site.config";
 
@@ -6,24 +7,72 @@ interface Props {
   locale: Locale;
 }
 const t = useTranslations(Astro.props.locale);
+const links = [
+  { label: "GitHub", href: site.socials.github },
+  { label: "LinkedIn", href: site.socials.linkedin },
+  { label: t("footer.rss"), href: "/rss.xml" },
+];
 ---
 
-<footer class="mx-auto mt-24 flex max-w-3xl flex-wrap justify-between gap-4 px-5 py-8 text-sm text-muted">
-  <p>
-    © {new Date().getFullYear()} {site.name}
-  </p>
-  <nav aria-label="Elsewhere" class="flex gap-4">
-    <a href={site.socials.github} class="hover:text-fg">
-      GitHub
+<footer class="back-cover mt-24">
+  <div class="wrap py-10 md:py-16">
+    <p class="font-serif text-xl italic md:text-2xl">{t("footer.hello")}</p>
+    <a href={`mailto:${site.email}`} class="email display">
+      {site.email.replace("@", "​@")}
     </a>
-    <a href={site.socials.linkedin} class="hover:text-fg">
-      LinkedIn
-    </a>
-    <a href={`mailto:${site.email}`} class="hover:text-fg">
-      Email
-    </a>
-    <a href="/rss.xml" class="hover:text-fg">
-      {t("footer.rss")}
-    </a>
-  </nav>
+    <div class="mt-10 flex flex-wrap items-end justify-between gap-6 border-t-2 border-current pt-4">
+      <nav aria-label="Elsewhere">
+        <ul class="flex flex-wrap gap-x-1">
+          {links.map((link) => (
+            <li>
+              <a href={link.href} class="back-link">
+                {link.label} ↗
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      <p class="label">
+        © {new Date().getFullYear()}
+        {site.name} · {site.location}
+      </p>
+    </div>
+  </div>
 </footer>
+
+<style>
+  .back-cover {
+    background: var(--color-fg);
+    color: var(--color-bg);
+  }
+  .email {
+    --wdth: 80;
+    display: block;
+    margin-top: 0.5rem;
+    font-size: clamp(2.2rem, 9.5vw, 8.5rem);
+    font-weight: 900;
+    overflow-wrap: anywhere;
+    text-decoration: underline;
+    text-decoration-color: var(--color-vermilion);
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.12em;
+    transition: color 0.3s;
+  }
+  .email:hover {
+    color: var(--color-vermilion);
+  }
+  .back-link {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    padding-inline: 0.75rem 0.5rem;
+    margin-left: -0.75rem;
+    margin-right: 0.75rem;
+    font-weight: 600;
+  }
+  .back-link:hover {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+  }
+</style>

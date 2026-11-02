@@ -1,61 +1,144 @@
 ---
+import Cover from "@/components/cover/Cover.astro";
 import { localeParams, useTranslations } from "@/i18n";
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import { makeCover } from "@/lib/cover";
 import { education, experience, site } from "@/site.config";
 
 export const getStaticPaths = localeParams;
 
 const { locale } = Astro.props;
 const t = useTranslations(locale);
+const coverSlug = "dani-prol";
+const { palette } = makeCover(coverSlug, site.name);
 ---
 
 <BaseLayout locale={locale} title={t("about.title")} description={`${site.name}, ${site.role}.`}>
-  <h1 class="mt-12 text-2xl font-semibold">{t("about.title")}</h1>
-  <div class="prose-site prose mt-6">
-    <p>
-      I'm a software and AI engineer based in {site.location}. I studied mathematics and economics, then spent the last
-      few years building full-stack products and AI systems. TODO: write this in your own words, and translate it in a
-      per-locale file if you want.
-    </p>
-  </div>
+  <article data-palette={palette}>
+    <div class="wrap pt-4 md:pt-6">
+      <Cover
+        slug={coverSlug}
+        title={site.name}
+        kicker={t("about.title")}
+        issue={site.location.split(",")[0]}
+        dek={site.role}
+        lines={[site.location]}
+        variant="spread"
+        as="h1"
+      />
+    </div>
 
-  <section class="mt-14">
-    <h2 class="mb-4 text-sm font-medium text-muted">{t("about.experience")}</h2>
-    <ul class="divide-y divide-border">
-      {experience.map((job) => (
-        <li class="grid gap-1 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
-          <span class="font-mono text-xs text-muted sm:pt-1">{job.period}</span>
-          <div>
-            <p class="font-medium">
-              {job.role} · {job.company}
-            </p>
-            <p class="mt-1 text-muted">{job.summary}</p>
-          </div>
-        </li>
-      ))}
-    </ul>
-  </section>
-
-  <section class="mt-14">
-    <h2 class="mb-4 text-sm font-medium text-muted">{t("about.education")}</h2>
-    <ul class="divide-y divide-border">
-      {education.map((item) => (
-        <li class="grid gap-1 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
-          <span class="font-mono text-xs text-muted sm:pt-1">{item.period}</span>
+    <div class="wrap">
+      <div class="about-column">
+        <div class="prose-site prose">
           <p>
-            {item.degree} · <span class="text-muted">{item.school}</span>
+            I'm a software and AI engineer based in {site.location}. I studied mathematics and economics, then spent the
+            last few years building full-stack products and AI systems. TODO: write this in your own words, and
+            translate it in a per-locale file if you want.
           </p>
-        </li>
-      ))}
-    </ul>
-  </section>
+        </div>
 
-  <section class="mt-14">
-    <h2 class="mb-4 text-sm font-medium text-muted">{t("about.contact")}</h2>
-    <p>
-      <a href={`mailto:${site.email}`} class="text-accent">
-        {site.email}
-      </a>
-    </p>
-  </section>
+        <section class="about-block">
+          <h2 class="about-h display">{t("about.experience")}</h2>
+          <ul>
+            {experience.map((job) => (
+              <li class="about-row">
+                <span class="about-period">{job.period}</span>
+                <div>
+                  <p class="about-role">{job.role}</p>
+                  <p class="about-org">{job.company}</p>
+                  <p class="mt-2 text-muted">{job.summary}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section class="about-block">
+          <h2 class="about-h display">{t("about.education")}</h2>
+          <ul>
+            {education.map((item) => (
+              <li class="about-row">
+                <span class="about-period">{item.period}</span>
+                <div>
+                  <p class="about-role">{item.degree}</p>
+                  <p class="about-org">{item.school}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section class="about-block">
+          <h2 class="about-h display">{t("about.contact")}</h2>
+          <a href={`mailto:${site.email}`} class="about-mail">
+            {site.email}
+          </a>
+        </section>
+      </div>
+    </div>
+  </article>
 </BaseLayout>
+
+<style>
+  .about-column {
+    max-width: 42rem;
+    margin-inline: auto;
+    padding-top: 2.5rem;
+  }
+  .about-block {
+    margin-top: 3.5rem;
+  }
+  .about-h {
+    --wdth: 125;
+    padding-bottom: 0.4rem;
+    border-bottom: 3px solid var(--color-fg);
+    font-size: 1.9rem;
+    text-transform: uppercase;
+  }
+  .about-row {
+    display: grid;
+    gap: 0.4rem;
+    padding-block: 1.1rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+  @media (min-width: 40rem) {
+    .about-row {
+      grid-template-columns: 9rem 1fr;
+      gap: 1.5rem;
+    }
+  }
+  .about-period {
+    padding-top: 0.25rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--tone);
+  }
+  .about-role {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 800;
+    font-variation-settings: "wdth" 90;
+    line-height: 1.05;
+  }
+  .about-org {
+    font-family: var(--font-serif);
+    font-size: 1.2rem;
+    font-style: italic;
+  }
+  .about-mail {
+    display: inline-block;
+    margin-top: 1rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.4rem, 6vw, 2.2rem);
+    font-weight: 800;
+    font-variation-settings: "wdth" 80;
+    overflow-wrap: anywhere;
+    text-decoration: underline;
+    text-decoration-color: var(--tone);
+    text-decoration-thickness: 3px;
+    text-underline-offset: 0.15em;
+  }
+</style>

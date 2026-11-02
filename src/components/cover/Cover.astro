@@ -1,0 +1,323 @@
+---
+/**
+ * A generated magazine cover for a post, project or page.
+ * "tile" is a 4:5 cover for walls; "spread" is the opening cover of a page, recomposed 2:1 on wide screens.
+ * When `href` is set the whole cover is one link (the headline's link is stretched over it).
+ */
+import { makeCover } from "@/lib/cover";
+
+import Barcode from "./Barcode.astro";
+import CoverArt from "./CoverArt.astro";
+
+interface Props {
+  slug: string;
+  title: string;
+  kicker: string;
+  /** Top-right of the masthead, e.g. "No. 03 · Oct 2026". */
+  issue?: string;
+  /** Small lines at the foot of the cover. */
+  lines?: string[];
+  /** A deck, shown on spreads. */
+  dek?: string;
+  href?: string;
+  variant?: "tile" | "spread";
+  as?: "h1" | "h2" | "h3";
+  transitionName?: string;
+}
+
+const {
+  slug,
+  title,
+  kicker,
+  issue,
+  lines = [],
+  dek,
+  href,
+  variant = "tile",
+  as: Heading = "h2",
+  transitionName,
+} = Astro.props;
+const cover = makeCover(slug, title);
+const style = {
+  "--wdth": cover.wdth,
+  "--wght": cover.wght,
+  "--size": cover.size,
+  "--spread-size": cover.spreadSize,
+  "--mast": cover.mastSize,
+};
+---
+
+<article
+  class="cover"
+  data-palette={cover.palette}
+  data-layout={cover.layout}
+  data-title-at={cover.titleAt}
+  data-variant={variant}
+  data-upper={cover.upper ? "" : undefined}
+  style={style}
+  transition:name={transitionName}
+>
+  <CoverArt art={cover.portrait} class="cover-art-portrait" />
+  {variant === "spread" && <CoverArt art={cover.spread} class="cover-art-spread" />}
+  {cover.layout === "initial" && (
+    <span class="cover-initial" aria-hidden="true">
+      {cover.initial}
+    </span>
+  )}
+
+  <div class="cover-mast" aria-hidden="true">
+    <span class="cover-logo">Prol</span>
+    {issue && <span class="cover-issue">{issue}</span>}
+  </div>
+
+  <div class="cover-body">
+    <p class="cover-kicker">{kicker}</p>
+    <Heading class="cover-title">
+      {href ? (
+        <a href={href} class="cover-link">
+          {title}
+        </a>
+      ) : (
+        title
+      )}
+    </Heading>
+    {dek && <p class="cover-dek">{dek}</p>}
+  </div>
+
+  <div class="cover-foot">
+    {lines.length > 0 && (
+      <ul class="cover-lines">
+        {lines.map((line) => (
+          <li>{line}</li>
+        ))}
+      </ul>
+    )}
+    <Barcode bars={cover.barcode} digits={cover.digits} />
+  </div>
+</article>
+
+<style>
+  .cover {
+    container-type: inline-size;
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+    /* Percentages resolve against the cover's own width here; cqi would read the parent container. */
+    padding: 5%;
+    background: var(--field);
+    color: var(--ink);
+  }
+  :global([data-theme="dark"]) .cover[data-palette="night"] {
+    box-shadow: inset 0 0 0 1px var(--color-border);
+  }
+
+  /* Artwork */
+  .cover :global(.cover-art) {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.9s var(--ease-out-expo);
+  }
+  .cover :global(.cover-art-spread) {
+    display: none;
+  }
+  .cover-initial {
+    position: absolute;
+    right: -6cqi;
+    bottom: -18cqi;
+    z-index: -1;
+    font-family: var(--font-display);
+    font-size: 118cqi;
+    font-weight: 900;
+    font-variation-settings: "wdth" var(--wdth);
+    line-height: 1;
+    color: var(--pop);
+    transition: transform 0.9s var(--ease-out-expo);
+  }
+
+  /* Masthead */
+  .cover-mast {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 4cqi;
+    border-bottom: max(1px, 0.5cqi) solid currentColor;
+    padding-bottom: 2cqi;
+  }
+  .cover-logo {
+    font-family: var(--font-display);
+    font-size: calc(var(--mast) * 1cqi);
+    font-weight: 900;
+    font-variation-settings: "wdth" var(--wdth);
+    line-height: 0.78;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+  }
+  .cover-issue {
+    padding-top: 0.2em;
+    font-size: max(11px, 3cqi);
+    font-weight: 600;
+    text-align: right;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Headline */
+  .cover-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5cqi;
+    padding-block: 5cqi;
+  }
+  .cover[data-title-at="top"] .cover-body {
+    justify-content: start;
+  }
+  .cover[data-title-at="bottom"] .cover-body {
+    justify-content: end;
+  }
+  .cover-kicker {
+    font-family: var(--font-serif);
+    font-size: max(15px, 5cqi);
+    font-style: italic;
+    line-height: 1;
+  }
+  .cover-title {
+    font-family: var(--font-display);
+    font-size: calc(var(--size) * 1cqi);
+    font-weight: var(--wght);
+    font-variation-settings: "wdth" var(--wdth);
+    line-height: 0.9;
+    letter-spacing: -0.025em;
+    text-wrap: balance;
+    overflow-wrap: break-word;
+  }
+  .cover[data-upper] .cover-title {
+    text-transform: uppercase;
+    line-height: 0.86;
+    letter-spacing: 0;
+  }
+  .cover-dek {
+    max-width: 34ch;
+    font-family: var(--font-serif);
+    font-size: max(18px, 4.6cqi);
+    font-style: italic;
+    line-height: 1.15;
+    text-wrap: pretty;
+  }
+  .cover-link {
+    outline: none;
+  }
+  .cover-link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+  }
+  .cover:has(.cover-link:focus-visible) {
+    outline: 3px solid var(--color-fg);
+    outline-offset: 3px;
+  }
+
+  /* Foot */
+  .cover-foot {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 4cqi;
+  }
+  .cover-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35em;
+    font-size: max(12px, 3.2cqi);
+    font-weight: 600;
+    line-height: 1.2;
+  }
+  .cover-lines li {
+    width: fit-content;
+    margin-left: -0.5em;
+    padding: 0.25em 0.5em;
+    background: var(--field);
+  }
+  .cover-foot :global(.barcode) {
+    flex: none;
+    width: max(64px, 20cqi);
+  }
+
+  /* Hover: the cover lifts, its art drifts. */
+  .cover:has(.cover-link) {
+    transition: translate 0.5s var(--ease-out-expo);
+  }
+  @media (hover: hover) {
+    .cover:has(.cover-link:hover) {
+      translate: 0 -6px;
+    }
+    .cover:has(.cover-link:hover) :global(.cover-art) {
+      transform: scale(1.06) rotate(-2deg);
+    }
+    .cover:has(.cover-link:hover) .cover-initial {
+      transform: translate(-3cqi, -2cqi);
+    }
+  }
+
+  /* Spread: full width on phones, 2:1 and recomposed on wide screens. */
+  .cover[data-variant="spread"] {
+    aspect-ratio: auto;
+    min-height: min(125vw, calc(100svh - 4rem));
+  }
+  @media (min-width: 56rem) {
+    .cover[data-variant="spread"] {
+      min-height: 0;
+      aspect-ratio: 2 / 1;
+      padding: 3%;
+    }
+    .cover[data-variant="spread"] :global(.cover-art-portrait) {
+      display: none;
+    }
+    .cover[data-variant="spread"] :global(.cover-art-spread) {
+      display: block;
+    }
+    .cover[data-variant="spread"] .cover-mast {
+      padding-bottom: 1cqi;
+      border-bottom-width: 3px;
+    }
+    .cover[data-variant="spread"] .cover-logo {
+      font-size: calc(var(--mast) * 0.45cqi);
+    }
+    .cover[data-variant="spread"] .cover-issue {
+      font-size: 14px;
+    }
+    .cover[data-variant="spread"] .cover-body {
+      max-width: 62%;
+      gap: 1.4cqi;
+      padding-block: 2cqi;
+    }
+    .cover[data-variant="spread"] .cover-kicker {
+      font-size: max(20px, 2cqi);
+    }
+    .cover[data-variant="spread"] .cover-title {
+      font-size: calc(var(--spread-size) * 1cqi);
+    }
+    .cover[data-variant="spread"] .cover-dek {
+      font-size: max(20px, 1.9cqi);
+    }
+    .cover[data-variant="spread"] .cover-lines {
+      font-size: 14px;
+    }
+    .cover[data-variant="spread"] .cover-foot :global(.barcode) {
+      width: 120px;
+      font-size: 9px;
+    }
+    .cover[data-variant="spread"] .cover-initial {
+      right: 4cqi;
+      bottom: -14cqi;
+      font-size: 62cqi;
+    }
+  }
+</style>

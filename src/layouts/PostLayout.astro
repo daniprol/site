@@ -1,9 +1,11 @@
 ---
 // KaTeX styles only load on pages that can contain math.
 import "katex/dist/katex.min.css";
-import DateTime from "@/components/ui/DateTime.astro";
+import Cover from "@/components/cover/Cover.astro";
 import { localePath, useTranslations, type Locale } from "@/i18n";
-import { getSeries, postSlug, readingTime, type Post } from "@/lib/content";
+import { getPosts, getSeries, postSlug, readingTime, type Post } from "@/lib/content";
+import { makeCover } from "@/lib/cover";
+import { formatDate } from "@/lib/format";
 
 import BaseLayout from "./BaseLayout.astro";
 
@@ -17,42 +19,149 @@ interface Props {
 
 const { locale, post, slug, isFallback, canonicalPath } = Astro.props;
 const t = useTranslations(locale);
-const { title, description, date, series } = post.data;
+const { title, description, date, series, tags } = post.data;
 const parts = series ? await getSeries(series) : [];
 const index = parts.findIndex((p) => postSlug(p) === slug);
 const previous = index > 0 ? parts[index - 1] : undefined;
 const next = index >= 0 ? parts[index + 1] : undefined;
+
+const all = await getPosts(locale);
+const number = all.length - all.findIndex((p) => p.slug === slug);
+// The article borrows its cover's palette, so links, rules and the drop cap share its colour.
+const { palette } = makeCover(slug, title);
+const lines = [
+  formatDate(date, locale),
+  t("post.readingTime", { n: readingTime(post.body) }),
+  ...(series ? [t("post.series", { n: index + 1 })] : []),
+];
 ---
 
 <BaseLayout locale={locale} title={title} description={description} canonicalPath={canonicalPath}>
-  <article class="mt-12">
-    <header class="mb-10">
-      <h1 class="text-3xl font-semibold text-balance" transition:name={`post-title-${slug}`}>
-        {title}
-      </h1>
-      <p class="mt-3 flex flex-wrap gap-x-3 text-sm text-muted">
-        <DateTime date={date} locale={locale} />
-        <span>{t("post.readingTime", { n: readingTime(post.body) })}</span>
-        {series && <span>{t("post.series", { n: index + 1 })}</span>}
-      </p>
-      {isFallback && (
-        <p class="mt-4 text-sm text-muted" lang={locale}>
-          {t("post.onlyInEnglish")}
-        </p>
-      )}
-    </header>
-    <div class="prose-site prose" lang={post.data.lang}>
-      <slot />
+  <article data-palette={palette} class="post">
+    <div class="wrap pt-4 md:pt-6">
+      <Cover
+        slug={slug}
+        title={title}
+        kicker={t("nav.writing")}
+        issue={t("cover.issue", { n: String(number).padStart(2, "0") })}
+        dek={description}
+        lines={lines}
+        variant="spread"
+        as="h1"
+        transitionName={`cover-${slug}`}
+      />
     </div>
-    {(previous || next) && (
-      <nav class="mt-16 flex justify-between gap-4 border-t border-border pt-6 text-sm">
-        {previous ? (
-          <a href={localePath(locale, `/writing/${postSlug(previous)}`)}>← {previous.data.title}</a>
-        ) : (
-          <span />
+
+    <div class="wrap">
+      <div class="post-column">
+        {(isFallback || tags.length > 0) && (
+          <div class="post-meta">
+            {tags.length > 0 && (
+              <ul class="flex flex-wrap gap-2">
+                {tags.map((tag) => (
+                  <li class="tag">#{tag}</li>
+                ))}
+              </ul>
+            )}
+            {isFallback && (
+              <p class="fallback" lang={locale}>
+                {t("post.onlyInEnglish")}
+              </p>
+            )}
+          </div>
         )}
-        {next && <a href={localePath(locale, `/writing/${postSlug(next)}`)}>{next.data.title} →</a>}
-      </nav>
-    )}
+        <div class="prose-site prose" lang={post.data.lang}>
+          <slot />
+        </div>
+        <span class="end-mark" aria-hidden="true"></span>
+
+        {(previous || next) && (
+          <nav class="series-nav" aria-label={t("post.series", { n: index + 1 })}>
+            {previous ? (
+              <a href={localePath(locale, `/writing/${postSlug(previous)}`)}>
+                <span class="label">← {t("post.previous")}</span>
+                <span class="series-title">{previous.data.title}</span>
+              </a>
+            ) : (
+              <span />
+            )}
+            {next && (
+              <a href={localePath(locale, `/writing/${postSlug(next)}`)} class="text-right">
+                <span class="label">{t("post.next")} →</span>
+                <span class="series-title">{next.data.title}</span>
+              </a>
+            )}
+          </nav>
+        )}
+      </div>
+    </div>
   </article>
 </BaseLayout>
+
+<style>
+  .post-column {
+    max-width: 42rem;
+    margin-inline: auto;
+    padding-top: 2.5rem;
+  }
+  @media (min-width: 72rem) {
+    /* Room on the right for sidenotes. */
+    .post-column {
+      max-width: calc(42rem + 17rem);
+      padding-right: 17rem;
+    }
+  }
+  .post-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+  }
+  .tag {
+    padding: 0.2rem 0.6rem;
+    border: 2px solid var(--tone);
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--tone);
+  }
+  .fallback {
+    padding: 0.4rem 0.7rem;
+    background: var(--field);
+    color: var(--ink);
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .end-mark {
+    display: block;
+    width: 1rem;
+    height: 1rem;
+    margin-top: 2rem;
+    background: var(--tone);
+  }
+  .series-nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 4rem;
+    padding-top: 1rem;
+    border-top: 2px solid var(--color-fg);
+  }
+  .series-nav a {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .series-nav a:hover .series-title {
+    color: var(--tone);
+  }
+  .series-title {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 800;
+    font-variation-settings: "wdth" 90;
+    line-height: 1;
+  }
+</style>

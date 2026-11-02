@@ -1,0 +1,46 @@
+---
+/** A rubber-stamp verdict for a snack: keep, maybe or drop. */
+interface Props {
+  verdict: "keep" | "maybe" | "drop";
+  label: string;
+}
+const { verdict, label } = Astro.props;
+---
+
+<span class="stamp" data-verdict={verdict}>
+  {label}
+</span>
+
+<style>
+  .stamp {
+    position: absolute;
+    top: 2.9rem;
+    right: 0.9rem;
+    display: grid;
+    width: 4.4rem;
+    height: 4.4rem;
+    place-items: center;
+    padding: 0.3rem;
+    border-radius: 50%;
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    font-weight: 900;
+    font-variation-settings: "wdth" 80;
+    line-height: 0.95;
+    text-align: center;
+    text-transform: uppercase;
+    rotate: -12deg;
+    background: var(--ink);
+    color: var(--field);
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+  }
+  .stamp[data-verdict="maybe"] {
+    rotate: 8deg;
+    border-radius: 0.4rem;
+  }
+  .stamp[data-verdict="drop"] {
+    rotate: -4deg;
+    border-radius: 0;
+  }
+</style>
