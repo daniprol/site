@@ -10,8 +10,10 @@ const t = useTranslations(locale);
 ---
 
 <BaseLayout locale={locale} title={t("about.title")} description={`${site.name}, ${site.role}.`}>
-  <h1 class="mt-12 text-2xl font-semibold">{t("about.title")}</h1>
-  <div class="prose-site prose mt-6">
+  <header class="page-head column">
+    <h1>{t("about.title")}</h1>
+  </header>
+  <div class="prose-site">
     <p>
       I'm a software and AI engineer based in {site.location}. I studied mathematics and economics, then spent the last
       few years building full-stack products and AI systems. TODO: write this in your own words, and translate it in a
@@ -19,43 +21,71 @@ const t = useTranslations(locale);
     </p>
   </div>
 
-  <section class="mt-14">
-    <h2 class="mb-4 text-sm font-medium text-muted">{t("about.experience")}</h2>
-    <ul class="divide-y divide-border">
+  <section class="column block">
+    <h2 class="meta">{t("about.experience")}</h2>
+    <ul>
       {experience.map((job) => (
-        <li class="grid gap-1 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
-          <span class="font-mono text-xs text-muted sm:pt-1">{job.period}</span>
-          <div>
-            <p class="font-medium">
-              {job.role} · {job.company}
-            </p>
-            <p class="mt-1 text-muted">{job.summary}</p>
-          </div>
+        <li class="row hang">
+          <span class="hang-label meta">{job.period}</span>
+          <p class="what">
+            {job.role}, <em>{job.company}</em>
+          </p>
+          <p class="detail">{job.summary}</p>
         </li>
       ))}
     </ul>
   </section>
 
-  <section class="mt-14">
-    <h2 class="mb-4 text-sm font-medium text-muted">{t("about.education")}</h2>
-    <ul class="divide-y divide-border">
+  <section class="column block">
+    <h2 class="meta">{t("about.education")}</h2>
+    <ul>
       {education.map((item) => (
-        <li class="grid gap-1 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
-          <span class="font-mono text-xs text-muted sm:pt-1">{item.period}</span>
-          <p>
-            {item.degree} · <span class="text-muted">{item.school}</span>
+        <li class="row hang">
+          {item.period && <span class="hang-label meta">{item.period}</span>}
+          <p class="what">
+            {item.degree}, <em>{item.school}</em>
           </p>
         </li>
       ))}
     </ul>
   </section>
 
-  <section class="mt-14">
-    <h2 class="mb-4 text-sm font-medium text-muted">{t("about.contact")}</h2>
-    <p>
-      <a href={`mailto:${site.email}`} class="text-accent">
+  <section class="column block">
+    <h2 class="meta">{t("about.contact")}</h2>
+    <p class="contact">
+      <a href={`mailto:${site.email}`} class="link">
         {site.email}
       </a>
     </p>
   </section>
 </BaseLayout>
+
+<style>
+  .block {
+    margin-top: calc(var(--spacing-line) * 2);
+  }
+  h2 {
+    border-bottom: 1px solid var(--color-border);
+  }
+  .row {
+    padding-block: calc(var(--spacing-line) / 2);
+  }
+  .row + .row {
+    border-top: 1px solid var(--color-faint);
+  }
+  .row .hang-label {
+    display: block;
+  }
+  .detail {
+    color: var(--color-muted);
+  }
+  .contact {
+    padding-top: calc(var(--spacing-line) / 2);
+  }
+  @media (min-width: 64rem) {
+    .row .hang-label {
+      top: calc(var(--spacing-line) / 2);
+      width: 8rem;
+    }
+  }
+</style>

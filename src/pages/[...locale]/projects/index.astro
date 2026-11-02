@@ -12,9 +12,17 @@ const projects = await getProjects();
 ---
 
 <BaseLayout locale={locale} title={t("projects.title")} description={t("projects.description")}>
-  <h1 class="mt-12 text-2xl font-semibold">{t("projects.title")}</h1>
-  <p class="mt-2 text-muted">{t("projects.description")}</p>
-  <div class="mt-10">
+  <header class="page-head column">
+    <h1>{t("projects.title")}</h1>
+    <p>{t("projects.description")}</p>
+  </header>
+  <div class="column list">
     <ProjectList items={projects} locale={locale} />
   </div>
 </BaseLayout>
+
+<style>
+  .list {
+    border-top: 1px solid var(--color-border);
+  }
+</style>

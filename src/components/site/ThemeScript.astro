@@ -1,12 +1,13 @@
 ---
 /**
  * Runs before paint to set data-theme on <html> and avoid a flash of the wrong theme.
- * Stored preference wins; otherwise follow the OS.
+ * Stored preference wins; otherwise follow the OS. Printing always uses the light theme.
  */
 ---
 
 <script is:inline>
   (() => {
+    const root = document.documentElement;
     const apply = () => {
       let stored = null;
       try {
@@ -15,9 +16,17 @@
         // Storage can be blocked (private mode); fall back to the OS preference.
       }
       const prefersDark = matchMedia("(prefers-color-scheme: dark)").matches;
-      document.documentElement.dataset.theme = stored ?? (prefersDark ? "dark" : "light");
+      root.dataset.theme = stored ?? (prefersDark ? "dark" : "light");
     };
     apply();
     document.addEventListener("astro:after-swap", apply);
+    let beforePrint = null;
+    addEventListener("beforeprint", () => {
+      beforePrint = root.dataset.theme;
+      root.dataset.theme = "light";
+    });
+    addEventListener("afterprint", () => {
+      if (beforePrint) root.dataset.theme = beforePrint;
+    });
   })();
 </script>

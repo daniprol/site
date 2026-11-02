@@ -17,7 +17,7 @@ interface Props {
 
 const { locale, post, slug, isFallback, canonicalPath } = Astro.props;
 const t = useTranslations(locale);
-const { title, description, date, series } = post.data;
+const { title, description, date, series, tags } = post.data;
 const parts = series ? await getSeries(series) : [];
 const index = parts.findIndex((p) => postSlug(p) === slug);
 const previous = index > 0 ? parts[index - 1] : undefined;
@@ -25,34 +25,114 @@ const next = index >= 0 ? parts[index + 1] : undefined;
 ---
 
 <BaseLayout locale={locale} title={title} description={description} canonicalPath={canonicalPath}>
-  <article class="mt-12">
-    <header class="mb-10">
-      <h1 class="text-3xl font-semibold text-balance" transition:name={`post-title-${slug}`}>
-        {title}
-      </h1>
-      <p class="mt-3 flex flex-wrap gap-x-3 text-sm text-muted">
-        <DateTime date={date} locale={locale} />
+  <article class="post">
+    <header class="post-head column">
+      <p class="meta facts">
+        <DateTime date={date} locale={locale} format="short" />
         <span>{t("post.readingTime", { n: readingTime(post.body) })}</span>
         {series && <span>{t("post.series", { n: index + 1 })}</span>}
       </p>
+      <h1 transition:name={`post-title-${slug}`}>{title}</h1>
+      <p class="standfirst">{description}</p>
+      {tags.length > 0 && <p class="meta tags">{tags.join(" · ")}</p>}
       {isFallback && (
-        <p class="mt-4 text-sm text-muted" lang={locale}>
+        <p class="meta notice" lang={locale}>
           {t("post.onlyInEnglish")}
         </p>
       )}
     </header>
-    <div class="prose-site prose" lang={post.data.lang}>
+    <div class="prose-site" lang={post.data.lang}>
       <slot />
     </div>
     {(previous || next) && (
-      <nav class="mt-16 flex justify-between gap-4 border-t border-border pt-6 text-sm">
+      <nav class="post-pager column meta" aria-label={t("post.series", { n: index + 1 })}>
         {previous ? (
-          <a href={localePath(locale, `/writing/${postSlug(previous)}`)}>← {previous.data.title}</a>
+          <a href={localePath(locale, `/writing/${postSlug(previous)}`)}>
+            <span>← {t("post.previous")}</span>
+            <span class="pager-title">{previous.data.title}</span>
+          </a>
         ) : (
           <span />
         )}
-        {next && <a href={localePath(locale, `/writing/${postSlug(next)}`)}>{next.data.title} →</a>}
+        {next && (
+          <a href={localePath(locale, `/writing/${postSlug(next)}`)} class="next">
+            <span>{t("post.next")} →</span>
+            <span class="pager-title">{next.data.title}</span>
+          </a>
+        )}
       </nav>
     )}
   </article>
 </BaseLayout>
+
+<style>
+  .post-head {
+    padding-block: calc(var(--spacing-line) * 2) calc(var(--spacing-line) * 1.5);
+  }
+  .facts,
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 0.5rem;
+  }
+  .facts > :global(* + *)::before {
+    content: "·";
+    margin-right: 0.5rem;
+  }
+  h1 {
+    margin-top: 0.5rem;
+    font-size: var(--text-title);
+    line-height: 1.12;
+    letter-spacing: -0.014em;
+    font-weight: 450;
+  }
+  .standfirst {
+    margin-top: 1rem;
+    font-size: var(--text-lead);
+    line-height: 1.95rem;
+    font-style: italic;
+    font-weight: 350;
+    color: var(--color-muted);
+    text-wrap: pretty;
+  }
+  .tags {
+    margin-top: 0.75rem;
+  }
+  .notice {
+    margin-top: 0.75rem;
+    color: var(--color-accent);
+  }
+  @media (min-width: 40rem) {
+    h1 {
+      font-size: 2.875rem;
+    }
+  }
+
+  .post-pager {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: calc(var(--spacing-line) * 3);
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--color-border);
+  }
+  .post-pager a {
+    display: flex;
+    flex-direction: column;
+    min-height: 44px;
+  }
+  .post-pager .next {
+    text-align: right;
+    grid-column: 2;
+  }
+  .pager-title {
+    font-family: var(--font-serif);
+    font-size: var(--text-small);
+    color: var(--color-fg);
+    line-height: 1.4;
+    transition: color 160ms var(--ease-quiet);
+  }
+  .post-pager a:hover .pager-title {
+    color: var(--color-accent);
+  }
+</style>

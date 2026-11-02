@@ -1,15 +1,46 @@
 /*
- * Design tokens. Each theme owns this file.
- * Colours use light-dark() so each token is defined once for both modes.
+ * Notebook — design tokens.
+ * Warm paper and ink, one oxide-red accent. Colours use light-dark(), so each token
+ * is defined once for both modes; color-scheme on <html> picks the side.
  */
 @theme {
-  --font-sans: ui-sans-serif, system-ui, sans-serif;
-  --font-serif: ui-serif, Georgia, serif;
-  --font-mono: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  /* Two families, no third. The serif carries reading; the mono carries metadata. */
+  --font-serif: var(--font-source-serif), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-serif);
+  --font-mono: var(--font-plex-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
 
-  --color-bg: light-dark(oklch(0.99 0 0), oklch(0.17 0 0));
-  --color-fg: light-dark(oklch(0.2 0 0), oklch(0.93 0 0));
-  --color-muted: light-dark(oklch(0.5 0 0), oklch(0.65 0 0));
-  --color-border: light-dark(oklch(0.9 0 0), oklch(0.3 0 0));
-  --color-accent: light-dark(oklch(0.5 0.15 250), oklch(0.75 0.12 250));
+  /* Paper, ink and pencil. */
+  --color-bg: light-dark(oklch(0.974 0.009 84), oklch(0.205 0.007 65));
+  --color-fg: light-dark(oklch(0.235 0.012 60), oklch(0.905 0.014 82));
+  --color-muted: light-dark(oklch(0.47 0.012 62), oklch(0.71 0.012 75));
+  --color-border: light-dark(oklch(0.865 0.013 78), oklch(0.335 0.009 65));
+  /* Ruled lines and graph paper: barely there. */
+  --color-faint: light-dark(oklch(0.915 0.014 80), oklch(0.258 0.008 65));
+  /* A slightly deeper sheet for code and figure plates. */
+  --color-code: light-dark(oklch(0.955 0.011 82), oklch(0.235 0.008 65));
+
+  /* The one accent: oxide red. Links, active nav, diagram highlights. */
+  --color-accent: light-dark(oklch(0.505 0.145 33), oklch(0.735 0.12 40));
+  --color-accent-soft: light-dark(oklch(0.905 0.04 45), oklch(0.36 0.06 38));
+
+  /* Type scale (rem). Body is 18px on a 28px line. */
+  --text-meta: 0.75rem;
+  --text-small: 0.9375rem;
+  --text-body: 1.125rem;
+  --text-lead: 1.3125rem;
+  --text-title: 2.25rem;
+
+  /* Baseline: one line of body text. Vertical rhythm is set in multiples of it. */
+  --spacing-line: 1.75rem;
+
+  /* Page geometry: a text column, a gap, and a margin column for notes. */
+  --spacing-measure: 37rem;
+  --spacing-gap: 3rem;
+  --spacing-margin: 14rem;
+  --spacing-hang: 5rem;
+  --spacing-gutter: 1.25rem;
+
+  --breakpoint-wide: 64rem;
+
+  --ease-quiet: cubic-bezier(0.2, 0, 0, 1);
 }

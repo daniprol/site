@@ -1,4 +1,5 @@
 ---
+/** Projects as entries in an index: name and year, one line of summary, the stack in mono. */
 import { localePath, type Locale } from "@/i18n";
 import type { Project } from "@/lib/content";
 
@@ -9,14 +10,52 @@ interface Props {
 const { items, locale } = Astro.props;
 ---
 
-<ul class="grid gap-6 sm:grid-cols-2">
+<ul class="projects">
   {items.map((project) => (
     <li>
-      <a href={localePath(locale, `/projects/${project.id}`)} class="group block">
-        <p class="font-medium group-hover:text-accent">{project.data.title}</p>
-        <p class="mt-1 text-sm text-muted">{project.data.summary}</p>
-        <p class="mt-2 font-mono text-xs text-muted">{project.data.stack.join(" · ")}</p>
+      <a href={localePath(locale, `/projects/${project.id}`)} class="entry">
+        <span class="head">
+          <span class="title" transition:name={`project-title-${project.id}`}>
+            {project.data.title}
+          </span>
+          <span class="meta">{project.data.year}</span>
+        </span>
+        <span class="summary">{project.data.summary}</span>
+        <span class="meta stack">{project.data.stack.join(" · ")}</span>
       </a>
     </li>
   ))}
 </ul>
+
+<style>
+  .projects li + li {
+    border-top: 1px solid var(--color-faint);
+  }
+  .entry {
+    display: block;
+    padding-block: calc(var(--spacing-line) / 2);
+  }
+  .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+  }
+  .title {
+    font-size: 1.25rem;
+    font-weight: 500;
+    font-style: italic;
+    transition: color 160ms var(--ease-quiet);
+  }
+  .entry:hover .title {
+    color: var(--color-accent);
+  }
+  .summary {
+    display: block;
+    color: var(--color-muted);
+    text-wrap: pretty;
+  }
+  .stack {
+    display: block;
+  }
+</style>

@@ -8,14 +8,35 @@ interface Props {
 const { title, href, linkLabel } = Astro.props;
 ---
 
-<section class="mt-16">
-  <div class="mb-4 flex items-baseline justify-between">
-    <h2 class="text-sm font-medium text-muted">{title}</h2>
-    {href && (
-      <a href={href} class="text-sm text-muted hover:text-fg">
-        {linkLabel} →
-      </a>
-    )}
+<section class="section column">
+  <div class="label meta">
+    <h2>{title}</h2>
+    {href && <a href={href}>{linkLabel}&thinsp;→</a>}
   </div>
   <slot />
 </section>
+
+<style>
+  .section {
+    margin-top: calc(var(--spacing-line) * 2);
+  }
+  .label {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .label h2 {
+    font-weight: 400;
+  }
+  .label a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    margin-block: -8px;
+    transition: color 160ms var(--ease-quiet);
+  }
+  .label a:hover {
+    color: var(--color-accent);
+  }
+</style>

@@ -12,9 +12,17 @@ const snacks = await getSnacks();
 ---
 
 <BaseLayout locale={locale} title={t("snacks.title")} description={t("snacks.description")}>
-  <h1 class="mt-12 text-2xl font-semibold">{t("snacks.title")}</h1>
-  <p class="mt-2 text-muted">{t("snacks.description")}</p>
-  <div class="mt-10">
+  <header class="page-head column">
+    <h1>{t("snacks.title")}</h1>
+    <p>{t("snacks.description")}</p>
+  </header>
+  <div class="column list">
     <SnackList items={snacks} locale={locale} />
   </div>
 </BaseLayout>
+
+<style>
+  .list {
+    border-top: 1px solid var(--color-border);
+  }
+</style>

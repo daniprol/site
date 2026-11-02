@@ -1,4 +1,9 @@
 ---
+/**
+ * Snacks, typeset on ruled paper. Every line — date, title, review — is one baseline tall,
+ * and each entry is followed by one blank ruled line, so the text sits on the rules.
+ * The verdict is a single small word: keep, maybe, or drop (struck through).
+ */
 import { render } from "astro:content";
 
 import { useTranslations, type Locale } from "@/i18n";
@@ -15,28 +20,138 @@ const t = useTranslations(locale);
 const entries = await Promise.all(items.map(async (snack) => ({ snack, Content: (await render(snack)).Content })));
 ---
 
-<ol class="divide-y divide-border">
+<ol class="ruled">
   {entries.map(({ snack, Content }) => (
-    <li id={snack.id} class="grid gap-1 py-4 sm:grid-cols-[7rem_1fr] sm:gap-6">
-      <DateTime date={snack.data.date} locale={locale} format="iso" class="font-mono text-xs text-muted sm:pt-1" />
-      <div>
-        <p class="flex flex-wrap items-baseline gap-x-3">
-          {snack.data.url ? (
-            <a href={snack.data.url} class="font-medium hover:text-accent">
-              {snack.data.title}
-            </a>
-          ) : (
-            <span class="font-medium">{snack.data.title}</span>
-          )}
-          <span class="font-mono text-xs text-muted">{snack.data.kind}</span>
-          <span class="font-mono text-xs" data-verdict={snack.data.verdict}>
-            {t(`verdict.${snack.data.verdict}`)}
-          </span>
-        </p>
-        <div class="mt-1 text-muted">
-          <Content />
-        </div>
+    <li id={snack.id} class="snack">
+      <DateTime date={snack.data.date} locale={locale} format="iso" class="meta snack-date" />
+      <span class="meta kind">{snack.data.kind}</span>
+      <span class="meta verdict" data-verdict={snack.data.verdict}>
+        {t(`verdict.${snack.data.verdict}`)}
+      </span>
+      <p class="title">
+        {snack.data.url ? (
+          <a href={snack.data.url}>
+            {snack.data.title}
+            <span class="arrow" aria-hidden="true">
+              ↗
+            </span>
+          </a>
+        ) : (
+          snack.data.title
+        )}
+      </p>
+      <div class="body">
+        <Content />
       </div>
     </li>
   ))}
 </ol>
+
+<style>
+  .ruled {
+    --rule-shift: 0.3125rem; /* lifts each rule from the line-box bottom to just under the baseline */
+    background-image: linear-gradient(
+      to bottom,
+      transparent calc(var(--spacing-line) - 1px),
+      var(--color-faint) calc(var(--spacing-line) - 1px)
+    );
+    background-size: 100% var(--spacing-line);
+    background-position: 0 calc(var(--rule-shift) * -1);
+  }
+  .snack {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      "date kind verdict"
+      "title title title"
+      "body body body";
+    column-gap: 0.75rem;
+    padding-bottom: var(--spacing-line);
+    line-height: var(--spacing-line);
+    scroll-margin-top: var(--spacing-line);
+  }
+  .snack:last-child {
+    padding-bottom: 0;
+  }
+  :global(.snack-date) {
+    grid-area: date;
+  }
+  .kind {
+    grid-area: kind;
+  }
+  .verdict {
+    grid-area: verdict;
+    color: var(--color-fg);
+  }
+  .verdict[data-verdict="keep"] {
+    font-weight: 500;
+  }
+  .verdict[data-verdict="maybe"] {
+    color: var(--color-muted);
+  }
+  .verdict[data-verdict="drop"] {
+    color: var(--color-muted);
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+  }
+  .title {
+    grid-area: title;
+    font-weight: 500;
+  }
+  .title a {
+    transition: color 160ms var(--ease-quiet);
+  }
+  .title a:hover {
+    color: var(--color-accent);
+  }
+  .arrow {
+    margin-left: 0.15em;
+    font-family: var(--font-mono);
+    font-size: var(--text-meta);
+    font-weight: 400;
+    color: var(--color-muted);
+  }
+  .body {
+    grid-area: body;
+    font-size: 1.0625rem;
+    color: var(--color-muted);
+  }
+  .body :global(p + p) {
+    margin-top: 0;
+  }
+  .body :global(a) {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+  }
+  .body :global(code) {
+    font-family: var(--font-mono);
+    font-size: 0.8em;
+  }
+
+  /* Wide: the dates hang in the left margin and the rules run under them, like a log book. */
+  @media (min-width: 64rem) {
+    .ruled {
+      --hang: calc(var(--spacing-hang) + 1.25rem);
+      margin-left: calc(var(--hang) * -1);
+      padding-left: var(--hang);
+    }
+    .snack {
+      position: relative;
+      grid-template-areas:
+        "title kind verdict"
+        "body body body";
+    }
+    :global(.snack-date) {
+      position: absolute;
+      left: calc(var(--hang) * -1);
+      width: var(--spacing-hang);
+      text-align: right;
+      white-space: nowrap;
+    }
+    .kind {
+      justify-self: start;
+    }
+  }
+</style>

@@ -1,4 +1,8 @@
 ---
+/**
+ * Site header. Phones: name and utilities on one line, the four sections on a ruled line
+ * beneath with full-height tap targets. From 40rem: everything on a single line.
+ */
 import { localePath, stripLocale, useTranslations, type Locale } from "@/i18n";
 import { site } from "@/site.config";
 
@@ -13,23 +17,87 @@ const t = useTranslations(locale);
 const current = stripLocale(Astro.url.pathname);
 ---
 
-<header class="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-4 px-5 py-6">
-  <a href={localePath(locale)} class="font-semibold">
-    {site.name}
-  </a>
-  <nav aria-label="Main" class="flex flex-wrap gap-4 text-sm">
-    {site.nav.map(({ key, href }) => (
-      <a
-        href={localePath(locale, href)}
-        aria-current={current.startsWith(href) ? "page" : undefined}
-        class:list={["hover:text-fg", current.startsWith(href) ? "text-fg" : "text-muted"]}
-      >
-        {t(key)}
-      </a>
-    ))}
-  </nav>
-  <div class="flex items-center gap-4">
-    <LanguagePicker locale={locale} />
-    <ThemeToggle locale={locale} />
+<header class="site-header sheet">
+  <div class="bar">
+    <a href={localePath(locale)} class="name">
+      {site.name}
+    </a>
+    <nav aria-label="Main" class="sections meta">
+      {site.nav.map(({ key, href }) => (
+        <a href={localePath(locale, href)} aria-current={current.startsWith(href) ? "page" : undefined}>
+          {t(key)}
+        </a>
+      ))}
+    </nav>
+    <div class="utilities">
+      <LanguagePicker locale={locale} />
+      <ThemeToggle locale={locale} />
+    </div>
   </div>
 </header>
+
+<style>
+  .bar {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "name utilities"
+      "sections sections";
+    align-items: center;
+    padding-top: 0.5rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .name {
+    grid-area: name;
+    font-size: var(--text-body);
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+  .utilities {
+    grid-area: utilities;
+    display: flex;
+    align-items: center;
+    margin-right: -0.625rem;
+  }
+  .sections {
+    grid-area: sections;
+    display: flex;
+    justify-content: space-between;
+    border-top: 1px solid var(--color-faint);
+    margin-inline: -0.5rem;
+  }
+  .sections a {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    padding-inline: 0.5rem;
+    color: var(--color-muted);
+    transition: color 160ms var(--ease-quiet);
+  }
+  .sections a:hover {
+    color: var(--color-fg);
+  }
+  .sections a[aria-current="page"] {
+    color: var(--color-accent);
+  }
+
+  @media (min-width: 40rem) {
+    .bar {
+      grid-template-columns: 1fr auto auto;
+      grid-template-areas: "name sections utilities";
+      column-gap: 1.25rem;
+      padding-block: 1rem;
+    }
+    .sections {
+      border-top: 0;
+      gap: 0.25rem;
+      margin-inline: 0;
+    }
+    .sections a {
+      padding-inline: 0.5rem;
+    }
+  }
+</style>

@@ -11,6 +11,8 @@ const en = {
   "nav.projects": "Projects",
   "nav.about": "About",
   "home.now": "Now",
+  "home.intro":
+    "I build small, careful tools for AI agents, usually a Rust core with a Python API, and write down how they work. Mathematics and economics by training.",
   "home.latestWriting": "Latest writing",
   "home.latestSnacks": "Latest snacks",
   "home.selectedProjects": "Selected projects",
@@ -36,6 +38,7 @@ const en = {
   "theme.toggle": "Toggle colour theme",
   language: "Language",
   "footer.rss": "RSS",
+  "footer.colophon": "Set in Source Serif and IBM Plex Mono.",
   "notFound.title": "Page not found",
   "notFound.body": "Nothing lives at this address.",
 };
@@ -51,6 +54,8 @@ export const ui: Record<Locale, Record<UIKey, string>> = {
     "nav.projects": "Proyectos",
     "nav.about": "Sobre mí",
     "home.now": "Ahora",
+    "home.intro":
+      "Construyo herramientas pequeñas y cuidadas para agentes de IA, normalmente con núcleo en Rust y API en Python, y escribo cómo funcionan. Formado en matemáticas y economía.",
     "home.latestWriting": "Últimos artículos",
     "home.latestSnacks": "Últimos snacks",
     "home.selectedProjects": "Proyectos destacados",
@@ -76,6 +81,7 @@ export const ui: Record<Locale, Record<UIKey, string>> = {
     "theme.toggle": "Cambiar tema de color",
     language: "Idioma",
     "footer.rss": "RSS",
+    "footer.colophon": "Compuesto en Source Serif e IBM Plex Mono.",
     "notFound.title": "Página no encontrada",
     "notFound.body": "No hay nada en esta dirección.",
   },
@@ -86,6 +92,8 @@ export const ui: Record<Locale, Record<UIKey, string>> = {
     "nav.projects": "Proxectos",
     "nav.about": "Sobre min",
     "home.now": "Agora",
+    "home.intro":
+      "Constrúo ferramentas pequenas e coidadas para axentes de IA, normalmente cun núcleo en Rust e unha API en Python, e escribo como funcionan. Formado en matemáticas e economía.",
     "home.latestWriting": "Últimos artigos",
     "home.latestSnacks": "Últimos snacks",
     "home.selectedProjects": "Proxectos destacados",
@@ -111,6 +119,7 @@ export const ui: Record<Locale, Record<UIKey, string>> = {
     "theme.toggle": "Cambiar o tema de cor",
     language: "Idioma",
     "footer.rss": "RSS",
+    "footer.colophon": "Composto en Source Serif e IBM Plex Mono.",
     "notFound.title": "Páxina non atopada",
     "notFound.body": "Non hai nada neste enderezo.",
   },

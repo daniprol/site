@@ -1,4 +1,8 @@
 ---
+/**
+ * Posts as a table of contents: title, dot leaders, date.
+ * The title carries a view-transition name so it morphs into the post's heading.
+ */
 import { localePath, type Locale } from "@/i18n";
 import type { Post } from "@/lib/content";
 
@@ -11,18 +15,60 @@ interface Props {
 const { items, locale } = Astro.props;
 ---
 
-<ul class="divide-y divide-border">
+<ul class="posts">
   {items.map(({ post, slug }) => (
     <li>
-      <a
-        href={localePath(locale, `/writing/${slug}`)}
-        class="group flex flex-col gap-1 py-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6"
-      >
-        <span class="group-hover:text-accent" transition:name={`post-title-${slug}`}>
+      <a href={localePath(locale, `/writing/${slug}`)} class="entry">
+        <span class="title" transition:name={`post-title-${slug}`}>
           {post.data.title}
         </span>
-        <DateTime date={post.data.date} locale={locale} format="short" class="shrink-0 text-sm text-muted" />
+        <span class="leader" aria-hidden="true"></span>
+        <DateTime date={post.data.date} locale={locale} format="short" class="meta date" />
       </a>
     </li>
   ))}
 </ul>
+
+<style>
+  .posts li + li {
+    border-top: 1px solid var(--color-faint);
+  }
+  .entry {
+    display: flex;
+    flex-direction: column;
+    padding-block: calc(var(--spacing-line) / 2);
+  }
+  .title {
+    text-wrap: balance;
+    transition: color 160ms var(--ease-quiet);
+  }
+  .entry:hover .title {
+    color: var(--color-accent);
+  }
+  .leader {
+    display: none;
+  }
+  @media (min-width: 40rem) {
+    .entry {
+      flex-direction: row;
+      align-items: baseline;
+      gap: 0.75rem;
+    }
+    .title {
+      flex: 0 1 auto;
+    }
+    /* Dot leaders, as in a table of contents. An empty flex item's baseline is its bottom edge. */
+    .leader {
+      display: block;
+      flex: 1 1 2rem;
+      height: 0.5em;
+      background-image: radial-gradient(circle, var(--color-border) 0.75px, transparent 1.25px);
+      background-size: 7px 4px;
+      background-position: left bottom;
+      background-repeat: repeat-x;
+    }
+    :global(.date) {
+      flex: none;
+    }
+  }
+</style>

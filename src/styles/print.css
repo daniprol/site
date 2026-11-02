@@ -1,0 +1,82 @@
+/*
+ * Print: a post becomes a clean, paginated paper.
+ * ThemeScript switches to the light theme before printing so code and maths print in ink.
+ */
+@media print {
+  @page {
+    size: A4;
+    margin: 22mm 24mm 24mm;
+  }
+
+  html {
+    color-scheme: light !important;
+    background: white;
+  }
+  body {
+    font-size: 10.5pt;
+    line-height: 1.5;
+    color: var(--color-fg);
+    background: white;
+  }
+
+  /* Chrome off: header, footer, toggles, interactive controls. */
+  .site-header,
+  .site-footer,
+  [data-theme-toggle],
+  .post-pager,
+  .skip-link {
+    display: none !important;
+  }
+
+  .sheet {
+    max-width: none;
+    padding: 0;
+  }
+  .prose-site {
+    max-width: none;
+  }
+
+  h1,
+  h2,
+  h3 {
+    break-after: avoid;
+  }
+  figure,
+  pre,
+  .katex-display,
+  blockquote,
+  table {
+    break-inside: avoid;
+  }
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+
+  /* External links print their destination. */
+  .prose-site a[href^="http"]::after {
+    content: " ⟨" attr(href) "⟩";
+    font-family: var(--font-mono);
+    font-size: 7.5pt;
+    color: var(--color-muted);
+    word-break: break-all;
+  }
+
+  /* Margin notes print inline as small indented notes; no checkbox needed. */
+  .sidenote {
+    display: block !important;
+    float: none !important;
+    width: auto !important;
+    margin: 0.5em 0 0.5em 1.5em !important;
+    font-size: 8.5pt !important;
+  }
+  .sidenote-ref {
+    pointer-events: none;
+  }
+
+  /* Graph paper and ruled lines are for screens. */
+  .figure-plate,
+  .ruled {
+    background-image: none !important;
+  }
+}

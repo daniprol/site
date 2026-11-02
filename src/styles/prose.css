@@ -1,15 +1,199 @@
-/* Long-form typography for posts and case studies. Applied with the .prose-site class. */
+/*
+ * Long-form typography for posts and case studies. Applied with the .prose-site class.
+ * Set like a paper: numbered sections, hanging numbers, margin notes, a tombstone at the end.
+ */
 @layer components {
   .prose-site {
-    --tw-prose-body: var(--color-fg);
-    --tw-prose-headings: var(--color-fg);
-    --tw-prose-links: var(--color-accent);
-    --tw-prose-bold: var(--color-fg);
-    --tw-prose-quotes: var(--color-muted);
-    --tw-prose-code: var(--color-fg);
-    --tw-prose-hr: var(--color-border);
-    --tw-prose-bullets: var(--color-muted);
-    --tw-prose-counters: var(--color-muted);
-    max-width: 65ch;
+    max-width: var(--spacing-measure);
+    counter-reset: section;
+    hanging-punctuation: first;
+  }
+
+  .prose-site > * + * {
+    margin-top: var(--spacing-line);
+  }
+
+  .prose-site p {
+    text-wrap: pretty;
+  }
+
+  .prose-site em {
+    font-style: italic;
+  }
+  .prose-site strong {
+    font-weight: 600;
+  }
+
+  .prose-site a {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+    text-decoration-color: color-mix(in oklch, currentColor 40%, transparent);
+  }
+  .prose-site a:hover {
+    text-decoration-color: currentColor;
+  }
+
+  /* Sections are numbered, and the number hangs in the left margin on wide screens. */
+  .prose-site h2 {
+    counter-increment: section;
+    counter-reset: subsection;
+    margin-top: calc(var(--spacing-line) * 2);
+    font-size: 1.5rem;
+    line-height: var(--spacing-line);
+    letter-spacing: -0.005em;
+  }
+  .prose-site h2::before {
+    content: counter(section);
+    display: inline-block;
+    min-width: 1.5em;
+    font-family: var(--font-mono);
+    font-size: var(--text-meta);
+    font-weight: 400;
+    color: var(--color-muted);
+    vertical-align: 0.2em;
+  }
+  .prose-site h3 {
+    counter-increment: subsection;
+    margin-top: calc(var(--spacing-line) * 1.5);
+    font-size: var(--text-body);
+    font-style: italic;
+    font-weight: 450;
+  }
+  .prose-site h3::before {
+    content: counter(section) "." counter(subsection);
+    display: inline-block;
+    min-width: 2.75em;
+    font-family: var(--font-mono);
+    font-size: var(--text-meta);
+    font-style: normal;
+    color: var(--color-muted);
+  }
+  .prose-site h2 + *,
+  .prose-site h3 + * {
+    margin-top: calc(var(--spacing-line) / 2);
+  }
+  @media (min-width: 64rem) {
+    .prose-site h2::before,
+    .prose-site h3::before {
+      position: absolute;
+      transform: translateX(calc(-100% - 1.25rem));
+      min-width: 0;
+      text-align: right;
+    }
+  }
+
+  /* Lists: only the article's own, so diagrams and figures keep their markup clean. */
+  .prose-site > ul,
+  .prose-site > ol {
+    padding-left: 1.25em;
+  }
+  .prose-site > ul {
+    list-style: none;
+  }
+  .prose-site > ul > li::before {
+    content: "–";
+    position: absolute;
+    margin-left: -1.25em;
+    color: var(--color-muted);
+  }
+  .prose-site > ol {
+    list-style: decimal;
+  }
+  .prose-site > ol > li::marker {
+    font-family: var(--font-mono);
+    font-size: var(--text-meta);
+    color: var(--color-muted);
+  }
+  .prose-site > :is(ul, ol) > li + li {
+    margin-top: calc(var(--spacing-line) / 4);
+  }
+
+  /* Blockquotes read as an aside in the writer's own hand: italic, ruled on the left. */
+  .prose-site blockquote {
+    padding-left: 1.25rem;
+    border-left: 1px solid var(--color-border);
+    font-style: italic;
+    color: var(--color-muted);
+  }
+
+  .prose-site hr {
+    border: 0;
+    height: var(--spacing-line);
+    text-align: center;
+  }
+  .prose-site hr::after {
+    content: "\2042"; /* ⁂ */
+    color: var(--color-muted);
+  }
+
+  .prose-site :not(pre) > code {
+    font-family: var(--font-mono);
+    font-size: 0.8em;
+    padding: 0.1em 0.3em;
+    background: var(--color-code);
+    border: 1px solid var(--color-faint);
+    border-radius: 2px;
+    font-variant-numeric: lining-nums;
+  }
+
+  .prose-site table {
+    width: 100%;
+    font-size: var(--text-small);
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  .prose-site th {
+    font-family: var(--font-mono);
+    font-size: var(--text-meta);
+    font-weight: 400;
+    text-align: left;
+    color: var(--color-muted);
+    border-bottom: 1px solid var(--color-fg);
+  }
+  .prose-site td,
+  .prose-site th {
+    padding: 0.35rem 0.75rem 0.35rem 0;
+  }
+  .prose-site td {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .prose-site img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Display math scrolls on its own instead of widening the page. */
+  .prose-site .katex-display {
+    margin-block: var(--spacing-line);
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-block: 0.25rem;
+  }
+  .prose-site .katex {
+    font-size: 1.05em;
+  }
+
+  .prose-site .expressive-code {
+    margin-block: var(--spacing-line);
+  }
+  @media (max-width: 40rem) {
+    /* Code runs to the screen edges on phones: more room, no nested box. */
+    .prose-site .expressive-code {
+      margin-inline: calc(var(--spacing-gutter) * -1);
+    }
+    .prose-site .expressive-code figure.frame {
+      border-inline: 0;
+    }
+  }
+
+  /* End of article: a tombstone, as at the end of a proof. */
+  article .prose-site > p:last-child::after {
+    content: "\220E"; /* ∎ */
+    margin-left: 0.5em;
+    color: var(--color-muted);
+    font-size: 0.85em;
   }
 }
