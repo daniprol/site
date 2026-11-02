@@ -21,27 +21,73 @@ const { title, summary, stack, repo, url, year } = project.data;
 ---
 
 <BaseLayout locale={locale} title={title} description={summary} canonicalPath={`/projects/${project.id}`}>
-  <article class="mt-12">
-    <header class="mb-10">
-      <h1 class="text-3xl font-semibold">{title}</h1>
-      <p class="mt-3 text-muted">{summary}</p>
-      <p class="mt-4 flex flex-wrap gap-x-4 font-mono text-xs text-muted">
-        <span>{year}</span>
-        <span>{stack.join(" · ")}</span>
-        {repo && (
-          <a href={repo} class="hover:text-fg">
-            Source ↗
-          </a>
-        )}
-        {url && (
-          <a href={url} class="hover:text-fg">
-            Live ↗
-          </a>
-        )}
-      </p>
+  <article class="rail project">
+    <header class="project-title">
+      <h1 class="text-xl font-semibold tracking-[-0.022em] sm:text-2xl">{title}</h1>
+      <p class="mt-2 max-w-[34rem] text-pretty text-muted">{summary}</p>
     </header>
+
+    <div class="rail-label project-meta">
+      <p class="meta">{year}</p>
+      <p class="meta flex flex-wrap gap-x-3 gap-y-1">
+        {stack.map((tech) => (
+          <span>{tech}</span>
+        ))}
+      </p>
+      {(repo || url) && (
+        <p class="-ml-3 flex flex-wrap text-sm">
+          {repo && (
+            <a href={repo} class="press px-3">
+              Source <span aria-hidden="true">↗</span>
+            </a>
+          )}
+          {url && (
+            <a href={url} class="press px-3">
+              Live <span aria-hidden="true">↗</span>
+            </a>
+          )}
+        </p>
+      )}
+    </div>
+
     <div class="prose-site prose" lang="en">
       <Content />
     </div>
   </article>
 </BaseLayout>
+
+<style>
+  .project {
+    margin-top: 2.5rem;
+  }
+  .project-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0 1rem;
+    margin-block: 0.75rem 2rem;
+    padding-block: 0.25rem;
+    border-block: 1px solid var(--color-border);
+  }
+  @media (min-width: 70rem) {
+    .project {
+      margin-top: 4rem;
+    }
+    .project-title {
+      grid-row: 1;
+      margin-bottom: 2.5rem;
+    }
+    .rail > .project-meta {
+      grid-row: 1 / span 2;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+      margin: 0;
+      padding: 0.5rem 0 0;
+      border: 0;
+    }
+    .project-meta .meta:nth-child(2) {
+      flex-direction: column;
+    }
+  }
+</style>

@@ -1,5 +1,7 @@
 ---
+import PageHeader from "@/components/ui/PageHeader.astro";
 import SnackList from "@/components/ui/SnackList.astro";
+import Verdict from "@/components/ui/Verdict.astro";
 import { localeParams, useTranslations } from "@/i18n";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { getSnacks } from "@/lib/content";
@@ -9,12 +11,19 @@ export const getStaticPaths = localeParams;
 const { locale } = Astro.props;
 const t = useTranslations(locale);
 const snacks = await getSnacks();
+const verdicts = ["keep", "maybe", "drop"] as const;
 ---
 
 <BaseLayout locale={locale} title={t("snacks.title")} description={t("snacks.description")}>
-  <h1 class="mt-12 text-2xl font-semibold">{t("snacks.title")}</h1>
-  <p class="mt-2 text-muted">{t("snacks.description")}</p>
-  <div class="mt-10">
+  <PageHeader title={t("snacks.title")} description={t("snacks.description")} />
+  <section class="rail mt-8 rail:mt-12">
+    <ul class="rail-label hidden flex-col items-start gap-1.5 pt-3.5 rail:flex" aria-hidden="true">
+      {verdicts.map((v) => (
+        <li>
+          <Verdict verdict={v} label={t(`verdict.${v}`)} />
+        </li>
+      ))}
+    </ul>
     <SnackList items={snacks} locale={locale} />
-  </div>
+  </section>
 </BaseLayout>

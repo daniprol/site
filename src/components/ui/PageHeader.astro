@@ -1,0 +1,29 @@
+---
+/** Title and one-line description at the top of an index page. */
+interface Props {
+  title: string;
+  description?: string;
+}
+const { title, description } = Astro.props;
+---
+
+<header class="rail page-header">
+  <div class="rail-label hidden rail:block">
+    <slot name="label" />
+  </div>
+  <div>
+    <h1 class="text-xl font-semibold tracking-[-0.02em] text-balance">{title}</h1>
+    {description && <p class="mt-2 max-w-[34rem] text-pretty text-muted">{description}</p>}
+  </div>
+</header>
+
+<style>
+  .page-header {
+    margin-top: 2.5rem;
+  }
+  @media (min-width: 70rem) {
+    .page-header {
+      margin-top: 4rem;
+    }
+  }
+</style>

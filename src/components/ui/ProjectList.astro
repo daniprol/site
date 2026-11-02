@@ -9,14 +9,34 @@ interface Props {
 const { items, locale } = Astro.props;
 ---
 
-<ul class="grid gap-6 sm:grid-cols-2">
+<ul class="rows">
   {items.map((project) => (
-    <li>
-      <a href={localePath(locale, `/projects/${project.id}`)} class="group block">
-        <p class="font-medium group-hover:text-accent">{project.data.title}</p>
-        <p class="mt-1 text-sm text-muted">{project.data.summary}</p>
-        <p class="mt-2 font-mono text-xs text-muted">{project.data.stack.join(" · ")}</p>
+    <li class="reveal">
+      <a href={localePath(locale, `/projects/${project.id}`)} class="row">
+        <span class="flex items-baseline justify-between gap-4">
+          <span class="font-medium tracking-[-0.011em]">{project.data.title}</span>
+          <span class="meta row-end">
+            <span>{project.data.year}</span>
+            <span class="row-arrow max-sm:hidden" aria-hidden="true">
+              →
+            </span>
+          </span>
+        </span>
+        <span class="mt-1 block text-[0.9375rem] text-pretty text-muted">{project.data.summary}</span>
+        <span class="meta mt-2 flex flex-wrap gap-1.5">
+          {project.data.stack.map((tech) => (
+            <span class="tag">{tech}</span>
+          ))}
+        </span>
       </a>
     </li>
   ))}
 </ul>
+
+<style>
+  .tag {
+    padding: 0.0625rem 0.4375rem;
+    border-radius: var(--radius-sm);
+    box-shadow: inset 0 0 0 1px var(--color-border);
+  }
+</style>

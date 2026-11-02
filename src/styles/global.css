@@ -17,7 +17,11 @@
     background: var(--color-bg);
     color: var(--color-fg);
     -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    scrollbar-color: var(--color-border-strong) transparent;
   }
   html[data-theme="light"] {
     color-scheme: light;
@@ -28,12 +32,43 @@
 
   body {
     font-family: var(--font-sans);
+    /* Inter: tailed l (cv05), round quotes and commas (ss03), open digits (cv01 no-base 1). */
+    font-feature-settings: "cv01", "cv05", "ss03";
+    font-optical-sizing: auto;
+    font-size: var(--text-base);
+    line-height: var(--text-base--line-height);
     min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  /* Paper grain over the whole page, pointer-transparent. Barely there; it softens flat greys. */
+  body::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 100;
+    pointer-events: none;
+    background-image: var(--grain);
+    opacity: var(--grain-opacity);
+  }
+
+  ::selection {
+    background: var(--color-accent-soft);
   }
 
   :focus-visible {
     outline: 2px solid var(--color-accent);
     outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  code,
+  kbd,
+  samp,
+  pre {
+    font-feature-settings: normal;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -41,8 +76,292 @@
     *::before,
     *::after {
       animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
     }
+  }
+}
+
+@layer components {
+  /* ---------- Layout ---------- */
+
+  /* The centred column. At the rail breakpoint it widens to hold label | main | margin. */
+  .shell {
+    width: 100%;
+    max-width: calc(var(--col-main) + 2 * var(--gutter));
+    margin-inline: auto;
+    padding-inline: var(--gutter);
+  }
+
+  /*
+   * A rail row: .rail-label on the left, everything else in the reading column.
+   * Below the breakpoint it collapses to a single column with the label on top.
+   */
+  .rail > .rail-label {
+    margin-bottom: 0.75rem;
+  }
+
+  @media (min-width: 70rem) {
+    .shell {
+      max-width: calc(var(--col-label) + var(--col-main) + var(--col-margin) + 2 * var(--col-gap) + 2 * var(--gutter));
+    }
+    .rail {
+      display: grid;
+      grid-template-columns: var(--col-label) minmax(0, var(--col-main)) var(--col-margin);
+      column-gap: var(--col-gap);
+    }
+    .rail > * {
+      grid-column: 2;
+    }
+    .rail > .rail-label {
+      grid-column: 1;
+      grid-row: 1 / span 2;
+      align-self: start;
+      position: sticky;
+      top: 2rem;
+      margin-bottom: 0;
+    }
+    .rail > .rail-margin {
+      grid-column: 3;
+      grid-row: 1;
+    }
+  }
+
+  /* Small grey label used on the rail and for section titles. */
+  .eyebrow {
+    font-size: var(--text-sm);
+    line-height: var(--text-sm--line-height);
+    font-weight: 500;
+    color: var(--color-faint);
+    letter-spacing: 0.005em;
+  }
+
+  .meta {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    line-height: var(--text-xs--line-height);
+    color: var(--color-faint);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+
+  /* ---------- Rows: list items that respond ---------- */
+
+  /* Hairlines between items; a hovered row lifts a panel that covers its own hairlines. */
+  .rows > li + li {
+    border-top: 1px solid var(--color-border);
+  }
+
+  .row {
+    --row-bleed: 0.75rem;
+    position: relative;
+    isolation: isolate;
+    display: block;
+    padding-block: 0.875rem;
+    border-radius: var(--radius-md);
+    outline: none;
+    transition: transform var(--duration-spring) var(--ease-spring);
+  }
+  .row::before {
+    content: "";
+    position: absolute;
+    inset: -1px calc(-1 * var(--row-bleed));
+    z-index: -1;
+    border-radius: inherit;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-raised);
+    opacity: 0;
+    transform: scale(0.97, 0.9);
+    transition:
+      opacity var(--duration-fast) var(--ease-out),
+      transform var(--duration-spring) var(--ease-spring),
+      background-color var(--duration-fast) var(--ease-out);
+  }
+  @media (hover: hover) {
+    a.row:hover::before {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  a.row:focus-visible::before {
+    opacity: 1;
+    transform: none;
+    box-shadow:
+      var(--shadow-raised),
+      0 0 0 2px var(--color-accent);
+  }
+  /* Pressed: the panel sinks and the row gives a little. Works on touch too. */
+  a.row:active {
+    transform: scale(0.988);
+    transition-duration: var(--duration-fast);
+  }
+  a.row:active::before {
+    opacity: 1;
+    transform: none;
+    background: var(--color-surface-hover);
+    box-shadow: inset 0 0 0 1px var(--color-border);
+  }
+
+  /*
+   * Trailing metadata (a date, a year) with an arrow tucked behind it.
+   * On hover the metadata steps aside and the arrow slides in; at rest the column stays flush.
+   */
+  .row-end {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+  }
+  .row-end > :first-child {
+    transition: translate var(--duration-spring) var(--ease-spring);
+  }
+  .row-arrow {
+    position: absolute;
+    right: 0;
+    color: var(--color-faint);
+    opacity: 0;
+    translate: -0.375rem 0;
+    transition:
+      opacity var(--duration-fast) var(--ease-out),
+      translate var(--duration-spring) var(--ease-spring);
+  }
+  @media (hover: hover) {
+    a.row:hover .row-end > :first-child {
+      translate: -1.25rem 0;
+    }
+    a.row:hover .row-arrow {
+      opacity: 1;
+      translate: 0 0;
+    }
+  }
+
+  /* ---------- Controls ---------- */
+
+  /* A quiet, tactile button. 44px hit area whatever the visual size. */
+  .press {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    border-radius: 999px;
+    color: var(--color-muted);
+    cursor: pointer;
+    transition:
+      color var(--duration-fast) var(--ease-out),
+      background-color var(--duration-fast) var(--ease-out),
+      transform var(--duration-spring) var(--ease-spring);
+  }
+  @media (hover: hover) {
+    .press:hover {
+      color: var(--color-fg);
+      background: var(--color-surface-hover);
+    }
+  }
+  .press:active {
+    transform: scale(0.92);
+    background: var(--color-surface-active);
+    transition-duration: var(--duration-fast);
+  }
+
+  /* Text link with a hairline underline that firms up on hover. */
+  .link {
+    text-decoration-line: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.25em;
+    text-decoration-color: var(--color-border-strong);
+    transition:
+      text-decoration-color var(--duration-fast) var(--ease-out),
+      color var(--duration-fast) var(--ease-out);
+  }
+  .link:hover {
+    text-decoration-color: var(--color-accent);
+  }
+
+  /* "View all →" style link whose arrow nudges. */
+  .more {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    min-height: 2.75rem;
+    font-size: var(--text-sm);
+    color: var(--color-muted);
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+  .more > span[aria-hidden] {
+    transition: translate var(--duration-spring) var(--ease-spring);
+  }
+  .more:hover {
+    color: var(--color-fg);
+  }
+  .more:hover > span[aria-hidden] {
+    translate: 0.1875rem 0;
+  }
+}
+
+/* ---------- Motion ---------- */
+
+/* Reveal on scroll, CSS only, where scroll-driven animations exist. */
+@keyframes reveal {
+  from {
+    opacity: 0;
+    translate: 0 0.625rem;
+    filter: blur(2px);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .reveal {
+      animation: reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 35%;
+    }
+  }
+}
+
+/* View transitions: chrome stays put, the page content lifts in. */
+@keyframes vt-out {
+  to {
+    opacity: 0;
+    translate: 0 -0.25rem;
+  }
+}
+@keyframes vt-in {
+  from {
+    opacity: 0;
+    translate: 0 0.5rem;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root) {
+    animation: 140ms var(--ease-out) both vt-out;
+  }
+  ::view-transition-new(root) {
+    animation: 280ms var(--ease-out) 40ms both vt-in;
+  }
+  ::view-transition-group(*) {
+    animation-duration: var(--duration-spring);
+    animation-timing-function: var(--ease-spring);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+/* PipelineStepper: the detail text eases in each time the stage changes (React remounts it by key). */
+@keyframes detail-in {
+  from {
+    opacity: 0;
+    translate: 0 0.25rem;
+    filter: blur(2px);
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .stepper-detail {
+    animation: detail-in var(--duration-base) var(--ease-out) both;
   }
 }

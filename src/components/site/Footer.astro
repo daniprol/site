@@ -6,24 +6,41 @@ interface Props {
   locale: Locale;
 }
 const t = useTranslations(Astro.props.locale);
+const links = [
+  { label: "GitHub", href: site.socials.github },
+  { label: "LinkedIn", href: site.socials.linkedin },
+  { label: "Email", href: `mailto:${site.email}` },
+  { label: t("footer.rss"), href: "/rss.xml" },
+];
 ---
 
-<footer class="mx-auto mt-24 flex max-w-3xl flex-wrap justify-between gap-4 px-5 py-8 text-sm text-muted">
-  <p>
-    © {new Date().getFullYear()} {site.name}
-  </p>
-  <nav aria-label="Elsewhere" class="flex gap-4">
-    <a href={site.socials.github} class="hover:text-fg">
-      GitHub
-    </a>
-    <a href={site.socials.linkedin} class="hover:text-fg">
-      LinkedIn
-    </a>
-    <a href={`mailto:${site.email}`} class="hover:text-fg">
-      Email
-    </a>
-    <a href="/rss.xml" class="hover:text-fg">
-      {t("footer.rss")}
-    </a>
-  </nav>
+<footer class="shell site-footer">
+  <div class="rail border-t border-border pt-6">
+    <p class="meta rail-label flex min-h-11 items-center">
+      © {new Date().getFullYear()} {site.shortName}
+    </p>
+    <nav aria-label="Elsewhere" class="-ml-3 flex flex-wrap">
+      {links.map(({ label, href }) => (
+        <a href={href} class="press px-3 text-sm">
+          {label}
+        </a>
+      ))}
+    </nav>
+  </div>
 </footer>
+
+<style>
+  .site-footer {
+    margin-top: 6rem;
+    /* Room for the floating dock on phones. */
+    padding-bottom: calc(var(--dock-h) + 2.5rem + env(safe-area-inset-bottom));
+  }
+  @media (min-width: 48rem) {
+    .site-footer {
+      padding-bottom: 3rem;
+    }
+  }
+  .rail > .rail-label {
+    position: static;
+  }
+</style>

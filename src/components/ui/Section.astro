@@ -1,21 +1,64 @@
 ---
-/** A titled block on an index page, with an optional "view all" link. */
+/**
+ * A titled block. On wide screens the title sits in the left rail and stays in view
+ * while its content scrolls past; on phones it is a small header above the content.
+ */
 interface Props {
   title: string;
   href?: string;
   linkLabel?: string;
+  /** Optional count shown beside the title as quiet metadata. */
+  count?: number;
+  /** Set the title in monospace, e.g. for years. */
+  mono?: boolean;
 }
-const { title, href, linkLabel } = Astro.props;
+const { title, href, linkLabel, count, mono = false } = Astro.props;
 ---
 
-<section class="mt-16">
-  <div class="mb-4 flex items-baseline justify-between">
-    <h2 class="text-sm font-medium text-muted">{title}</h2>
+<section class="rail section">
+  <div class="rail-label section-label">
+    <h2 class:list={[mono ? "meta text-muted" : "eyebrow", "flex items-baseline gap-2"]}>
+      {title}
+      {count !== undefined && <span class="meta">{String(count).padStart(2, "0")}</span>}
+    </h2>
     {href && (
-      <a href={href} class="text-sm text-muted hover:text-fg">
-        {linkLabel} →
+      <a href={href} class="more -my-3">
+        {linkLabel}
+        <span aria-hidden="true">→</span>
       </a>
     )}
   </div>
-  <slot />
+  <div>
+    <slot />
+  </div>
 </section>
+
+<style>
+  .section {
+    margin-top: 3.5rem;
+  }
+  .section-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 1.25rem;
+  }
+  @media (min-width: 70rem) {
+    .section {
+      margin-top: 4.5rem;
+    }
+    /* Line the label up with the first row's text, below the row padding. */
+    .section-label {
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-start;
+      gap: 0.25rem;
+      padding-top: 0.875rem;
+    }
+    .section-label .more {
+      margin-block: 0;
+      min-height: 0;
+    }
+  }
+</style>

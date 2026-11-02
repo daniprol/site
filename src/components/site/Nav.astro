@@ -1,0 +1,139 @@
+---
+/**
+ * Main navigation. A segmented control whose "thumb" marks the current section.
+ * The thumb carries a view-transition name, so it glides to the new item when the page changes.
+ * On phones the control floats as a bottom dock, within reach of the thumb that taps it.
+ */
+import { localePath, stripLocale, useTranslations, type Locale } from "@/i18n";
+import { site } from "@/site.config";
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const current = stripLocale(Astro.url.pathname);
+---
+
+<nav aria-label="Main" class="nav">
+  <ul class="nav-track">
+    {site.nav.map(({ key, href }) => {
+      const active = current.startsWith(href);
+      return (
+        <li>
+          <a href={localePath(locale, href)} aria-current={active ? "page" : undefined} class="nav-item">
+            {active && <span class="nav-thumb" aria-hidden="true" transition:name="nav-thumb" />}
+            <span class="nav-label">{t(key)}</span>
+          </a>
+        </li>
+      );
+    })}
+  </ul>
+</nav>
+
+<style>
+  .nav {
+    position: fixed;
+    z-index: 40;
+    inset-inline: 0;
+    bottom: max(0.75rem, env(safe-area-inset-bottom));
+    width: min(100% - 2 * var(--gutter), 26rem);
+    margin-inline: auto;
+    view-transition-name: nav-dock;
+  }
+  .nav-track {
+    display: grid;
+    grid-auto-columns: 1fr;
+    grid-auto-flow: column;
+    gap: 0.125rem;
+    padding: 0.25rem;
+    border-radius: 999px;
+    background: var(--color-surface);
+    box-shadow: var(--shadow-float);
+  }
+  .nav-item {
+    position: relative;
+    isolation: isolate;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 2.75rem;
+    padding-inline: 0.5rem;
+    border-radius: 999px;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--color-muted);
+    white-space: nowrap;
+    transition:
+      color var(--duration-fast) var(--ease-out),
+      transform var(--duration-spring) var(--ease-spring);
+  }
+  .nav-item::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+    border-radius: inherit;
+    background: var(--color-surface-hover);
+    opacity: 0;
+    transition: opacity var(--duration-fast) var(--ease-out);
+  }
+  @media (hover: hover) {
+    .nav-item:hover {
+      color: var(--color-fg);
+    }
+    .nav-item:hover::before {
+      opacity: 1;
+    }
+  }
+  .nav-item:active {
+    transform: scale(0.95);
+    transition-duration: var(--duration-fast);
+  }
+  .nav-item[aria-current="page"] {
+    color: var(--color-fg);
+  }
+  /* The thumb: a pill pressed into the track, with an inner hairline and top light. */
+  .nav-thumb {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: var(--color-surface-active);
+    box-shadow:
+      inset 0 0 0 1px var(--color-border),
+      inset 0 1px 1px oklch(0 0 0 / 0.04);
+  }
+
+  @media (min-width: 48rem) {
+    .nav {
+      position: static;
+      width: auto;
+      margin: 0;
+      view-transition-name: none;
+    }
+    .nav-track {
+      display: flex;
+      gap: 0.125rem;
+      padding: 0;
+      background: none;
+      box-shadow: none;
+    }
+    .nav-item {
+      height: 2.25rem;
+      padding-inline: 0.875rem;
+    }
+    /* Keep a 44px hit area around the slimmer desktop pill. */
+    .nav-item::after {
+      content: "";
+      position: absolute;
+      inset: -0.25rem 0;
+    }
+  }
+
+  @media (min-width: 70rem) {
+    .nav-track {
+      margin-inline-start: -0.875rem;
+    }
+  }
+</style>

@@ -5,6 +5,7 @@ import { useTranslations, type Locale } from "@/i18n";
 import type { Snack } from "@/lib/content";
 
 import DateTime from "./DateTime.astro";
+import Verdict from "./Verdict.astro";
 
 interface Props {
   items: Snack[];
@@ -15,28 +16,45 @@ const t = useTranslations(locale);
 const entries = await Promise.all(items.map(async (snack) => ({ snack, Content: (await render(snack)).Content })));
 ---
 
-<ol class="divide-y divide-border">
+<ol class="rows">
   {entries.map(({ snack, Content }) => (
-    <li id={snack.id} class="grid gap-1 py-4 sm:grid-cols-[7rem_1fr] sm:gap-6">
-      <DateTime date={snack.data.date} locale={locale} format="iso" class="font-mono text-xs text-muted sm:pt-1" />
-      <div>
-        <p class="flex flex-wrap items-baseline gap-x-3">
+    <li id={snack.id} class="snack reveal grid gap-1 py-3.5 sm:grid-cols-[5.5rem_1fr] sm:gap-4">
+      <DateTime date={snack.data.date} locale={locale} format="iso" class="meta sm:pt-1" />
+      <div class="min-w-0">
+        <p class="flex flex-wrap items-center gap-x-2.5 gap-y-1">
           {snack.data.url ? (
-            <a href={snack.data.url} class="font-medium hover:text-accent">
+            <a href={snack.data.url} class="link font-medium">
               {snack.data.title}
             </a>
           ) : (
             <span class="font-medium">{snack.data.title}</span>
           )}
-          <span class="font-mono text-xs text-muted">{snack.data.kind}</span>
-          <span class="font-mono text-xs" data-verdict={snack.data.verdict}>
-            {t(`verdict.${snack.data.verdict}`)}
-          </span>
+          <span class="meta">{snack.data.kind}</span>
+          <Verdict verdict={snack.data.verdict} label={t(`verdict.${snack.data.verdict}`)} />
         </p>
-        <div class="mt-1 text-muted">
+        <div class="snack-body mt-1 text-[0.9375rem] text-pretty text-muted">
           <Content />
         </div>
       </div>
     </li>
   ))}
 </ol>
+
+<style>
+  .snack {
+    scroll-margin-top: 2rem;
+  }
+  .snack:target {
+    border-radius: var(--radius-md);
+    background: var(--color-accent-soft);
+    box-shadow: 0 0 0 0.75rem var(--color-accent-soft);
+  }
+  .snack-body :global(p + p) {
+    margin-top: 0.5rem;
+  }
+  .snack-body :global(a) {
+    text-decoration: underline;
+    text-decoration-color: var(--color-border-strong);
+    text-underline-offset: 0.25em;
+  }
+</style>

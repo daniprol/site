@@ -1,35 +1,103 @@
 ---
-import { localePath, stripLocale, useTranslations, type Locale } from "@/i18n";
+/**
+ * Site header. Below 48rem the main nav detaches into a bottom dock (see Nav.astro);
+ * at the rail breakpoint the three parts line up with the page's label | main | margin grid.
+ */
+import { localePath, type Locale } from "@/i18n";
 import { site } from "@/site.config";
 
 import LanguagePicker from "./LanguagePicker.astro";
+import Nav from "./Nav.astro";
 import ThemeToggle from "./ThemeToggle.astro";
 
 interface Props {
   locale: Locale;
 }
 const { locale } = Astro.props;
-const t = useTranslations(locale);
-const current = stripLocale(Astro.url.pathname);
 ---
 
-<header class="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-4 px-5 py-6">
-  <a href={localePath(locale)} class="font-semibold">
-    {site.name}
+<header class="shell site-header">
+  <a href={localePath(locale)} class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">{site.name}</span>
   </a>
-  <nav aria-label="Main" class="flex flex-wrap gap-4 text-sm">
-    {site.nav.map(({ key, href }) => (
-      <a
-        href={localePath(locale, href)}
-        aria-current={current.startsWith(href) ? "page" : undefined}
-        class:list={["hover:text-fg", current.startsWith(href) ? "text-fg" : "text-muted"]}
-      >
-        {t(key)}
-      </a>
-    ))}
-  </nav>
-  <div class="flex items-center gap-4">
+  <Nav locale={locale} />
+  <div class="tools">
     <LanguagePicker locale={locale} />
     <ThemeToggle locale={locale} />
   </div>
 </header>
+
+<style>
+  .site-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: 0.75rem;
+    /* The view-transition name makes the header a stacking context; lift it so the dock inside stays on top. */
+    position: relative;
+    z-index: 40;
+    view-transition-name: site-header;
+  }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    min-height: 2.75rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    letter-spacing: -0.012em;
+  }
+  /* A small raised tile: the site's only logo, echoed in the favicon. */
+  .brand-mark {
+    position: relative;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 0.375rem;
+    background: var(--color-fg);
+    box-shadow:
+      inset 0 1px 0 oklch(1 0 0 / 0.18),
+      0 1px 2px oklch(0 0 0 / 0.2);
+    transition:
+      transform var(--duration-spring) var(--ease-spring),
+      border-radius var(--duration-spring) var(--ease-spring);
+  }
+  .brand-mark::after {
+    content: "";
+    position: absolute;
+    inset: 0.3125rem;
+    border-radius: 999px;
+    background: var(--color-bg);
+    transition: inset var(--duration-spring) var(--ease-spring);
+  }
+  @media (hover: hover) {
+    .brand:hover .brand-mark {
+      transform: rotate(-8deg);
+    }
+    .brand:hover .brand-mark::after {
+      inset: 0.375rem;
+    }
+  }
+  .brand:active .brand-mark {
+    transform: scale(0.9);
+  }
+  .tools {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-inline-end: -0.5rem;
+  }
+
+  @media (min-width: 70rem) {
+    .site-header {
+      display: grid;
+      grid-template-columns: var(--col-label) minmax(0, var(--col-main)) var(--col-margin);
+      column-gap: var(--col-gap);
+      padding-block: 1.5rem;
+    }
+    .tools {
+      justify-content: flex-end;
+    }
+  }
+</style>

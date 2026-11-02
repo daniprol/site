@@ -1,15 +1,118 @@
 /*
- * Design tokens. Each theme owns this file.
- * Colours use light-dark() so each token is defined once for both modes.
+ * Studio — design tokens. Grey on grey, one quiet accent.
+ * Colours use light-dark() so each token is defined once for both modes;
+ * html[data-theme] sets color-scheme, which picks the side.
  */
 @theme {
-  --font-sans: ui-sans-serif, system-ui, sans-serif;
-  --font-serif: ui-serif, Georgia, serif;
-  --font-mono: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  /* Type. --font-inter / --font-geist-mono come from Astro's Fonts API (<Font /> in BaseLayout). */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-serif: var(--font-sans);
 
-  --color-bg: light-dark(oklch(0.99 0 0), oklch(0.17 0 0));
-  --color-fg: light-dark(oklch(0.2 0 0), oklch(0.93 0 0));
-  --color-muted: light-dark(oklch(0.5 0 0), oklch(0.65 0 0));
-  --color-border: light-dark(oklch(0.9 0 0), oklch(0.3 0 0));
-  --color-accent: light-dark(oklch(0.5 0.15 250), oklch(0.75 0.12 250));
+  /* A 4px baseline: every line-height is a multiple of 4. */
+  --text-2xs: 0.6875rem; /* 11 / 16 */
+  --text-2xs--line-height: 1rem;
+  --text-xs: 0.75rem; /* 12 / 16 */
+  --text-xs--line-height: 1rem;
+  --text-sm: 0.8125rem; /* 13 / 20 */
+  --text-sm--line-height: 1.25rem;
+  --text-base: 1rem; /* 16 / 24 */
+  --text-base--line-height: 1.5rem;
+  --text-md: 1.0625rem; /* 17 / 28, long-form body */
+  --text-md--line-height: 1.75rem;
+  --text-lg: 1.25rem; /* 20 / 28 */
+  --text-lg--line-height: 1.75rem;
+  --text-xl: 1.5rem; /* 24 / 32 */
+  --text-xl--line-height: 2rem;
+  --text-2xl: 1.875rem; /* 30 / 36 */
+  --text-2xl--line-height: 2.25rem;
+
+  /* Surfaces, from the page down (sunken) and up (raised). Steps are deliberately small. */
+  --color-bg: light-dark(oklch(0.982 0.002 260), oklch(0.162 0.003 260));
+  --color-surface-sunken: light-dark(oklch(0.962 0.003 260), oklch(0.142 0.003 260));
+  --color-surface: light-dark(oklch(0.997 0.001 260), oklch(0.194 0.004 260));
+  --color-surface-hover: light-dark(oklch(0.958 0.003 260), oklch(0.212 0.004 260));
+  --color-surface-active: light-dark(oklch(0.938 0.004 260), oklch(0.238 0.005 260));
+
+  /* Lines. --color-highlight is the 1px inner top light that makes a surface feel raised. */
+  --color-border: light-dark(oklch(0.912 0.003 260), oklch(0.262 0.004 260));
+  --color-border-strong: light-dark(oklch(0.86 0.004 260), oklch(0.33 0.005 260));
+  --color-highlight: light-dark(oklch(1 0 0 / 0.9), oklch(1 0 0 / 0.06));
+
+  /* Text. All three pass WCAG AA on bg and surface. */
+  --color-fg: light-dark(oklch(0.218 0.004 260), oklch(0.948 0.002 260));
+  --color-muted: light-dark(oklch(0.45 0.005 260), oklch(0.73 0.004 260));
+  --color-faint: light-dark(oklch(0.525 0.005 260), oklch(0.635 0.004 260));
+
+  /* The one hue: a warm signal orange, for focus, the current-page dot and link hovers. */
+  --color-accent: light-dark(oklch(0.56 0.16 42), oklch(0.76 0.13 52));
+  --color-accent-soft: light-dark(oklch(0.56 0.16 42 / 0.14), oklch(0.76 0.13 52 / 0.18));
+
+  /* Snack verdicts: dots only, desaturated. */
+  --color-keep: light-dark(oklch(0.6 0.11 150), oklch(0.72 0.11 150));
+  --color-maybe: light-dark(oklch(0.72 0.12 85), oklch(0.8 0.11 85));
+  --color-drop: light-dark(oklch(0.62 0.13 25), oklch(0.68 0.12 25));
+
+  /* Depth. */
+  --shadow-raised:
+    inset 0 1px 0 var(--color-highlight), 0 0 0 1px var(--color-border), 0 1px 2px oklch(0.2 0.01 260 / 0.06),
+    0 2px 6px -2px oklch(0.2 0.01 260 / 0.06);
+  --shadow-float:
+    inset 0 1px 0 var(--color-highlight), 0 0 0 1px var(--color-border), 0 4px 12px -4px oklch(0.1 0.01 260 / 0.14),
+    0 12px 32px -12px oklch(0.1 0.01 260 / 0.22);
+
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+
+  /* Motion. --ease-spring is a sampled damped spring (~4% overshoot); use with ~500ms. */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: linear(
+    0,
+    0.052,
+    0.173,
+    0.325,
+    0.482,
+    0.625,
+    0.748,
+    0.846,
+    0.92,
+    0.972,
+    1.006,
+    1.026,
+    1.036,
+    1.038,
+    1.036,
+    1.031,
+    1.026,
+    1.02,
+    1.014,
+    1.009,
+    1.006,
+    1.003,
+    1.001,
+    1
+  );
+  --duration-fast: 160ms;
+  --duration-base: 240ms;
+  --duration-spring: 520ms;
+
+  /* Layout: a label rail, the reading column, a margin for notes. The rail appears at --breakpoint-rail. */
+  --breakpoint-rail: 70rem;
+  --gutter: 1.25rem;
+  --col-label: 9rem;
+  --col-main: 38rem;
+  --col-margin: 12rem;
+  --col-gap: 2.5rem;
+  --header-h: 4rem;
+  --dock-h: 3.5rem;
+}
+
+/* Paper grain, used once on <body>. Kept here so the data URI isn't scattered around. */
+:root {
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --grain-opacity: 0.035;
+}
+:root[data-theme="dark"] {
+  --grain-opacity: 0.05;
 }

@@ -11,17 +11,19 @@ interface Props {
 const { items, locale } = Astro.props;
 ---
 
-<ul class="divide-y divide-border">
+<ul class="rows">
   {items.map(({ post, slug }) => (
-    <li>
-      <a
-        href={localePath(locale, `/writing/${slug}`)}
-        class="group flex flex-col gap-1 py-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6"
-      >
-        <span class="group-hover:text-accent" transition:name={`post-title-${slug}`}>
+    <li class="reveal">
+      <a href={localePath(locale, `/writing/${slug}`)} class="row grid gap-1 sm:grid-cols-[1fr_auto] sm:gap-6">
+        <span class="font-medium tracking-[-0.011em] text-pretty" transition:name={`post-title-${slug}`}>
           {post.data.title}
         </span>
-        <DateTime date={post.data.date} locale={locale} format="short" class="shrink-0 text-sm text-muted" />
+        <span class="meta row-end self-start sm:pt-1">
+          <DateTime date={post.data.date} locale={locale} format="short" />
+          <span class="row-arrow max-sm:hidden" aria-hidden="true">
+            →
+          </span>
+        </span>
       </a>
     </li>
   ))}

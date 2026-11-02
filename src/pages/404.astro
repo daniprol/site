@@ -6,11 +6,17 @@ const t = useTranslations(DEFAULT_LOCALE);
 ---
 
 <BaseLayout locale={DEFAULT_LOCALE} title={t("notFound.title")} description={t("notFound.body")}>
-  <h1 class="mt-24 text-2xl font-semibold">{t("notFound.title")}</h1>
-  <p class="mt-2 text-muted">{t("notFound.body")}</p>
-  <p class="mt-8">
-    <a href="/" class="text-accent">
-      ← {t("nav.home")}
-    </a>
-  </p>
+  <div class="rail mt-16 rail:mt-24">
+    <p class="rail-label meta">404</p>
+    <div>
+      <h1 class="text-xl font-semibold tracking-[-0.02em]">{t("notFound.title")}</h1>
+      <p class="mt-2 text-muted">{t("notFound.body")}</p>
+      <p class="mt-6">
+        <a href="/" class="more">
+          <span aria-hidden="true">←</span>
+          {t("nav.home")}
+        </a>
+      </p>
+    </div>
+  </div>
 </BaseLayout>
