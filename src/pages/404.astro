@@ -6,11 +6,21 @@ const t = useTranslations(DEFAULT_LOCALE);
 ---
 
 <BaseLayout locale={DEFAULT_LOCALE} title={t("notFound.title")} description={t("notFound.body")}>
-  <h1 class="mt-24 text-2xl font-semibold">{t("notFound.title")}</h1>
-  <p class="mt-2 text-muted">{t("notFound.body")}</p>
-  <p class="mt-8">
-    <a href="/" class="text-accent">
-      ← {t("nav.home")}
-    </a>
-  </p>
+  <section class="grid-page pt-10 md:pt-16">
+    <p class="text-mega font-black tracking-(--tracking-display) text-accent md:col-span-12" aria-hidden="true">
+      404
+    </p>
+    <div class="mt-8 border-t-2 border-fg pt-4 md:col-span-12 md:grid md:grid-cols-12 md:gap-x-(--grid-gutter)">
+      <h1 class="text-title font-bold tracking-(--tracking-title) md:col-span-5">{t("notFound.title")}</h1>
+      <div class="md:col-span-6 md:col-start-7">
+        <p class="mt-2 text-lg text-muted md:mt-1">{t("notFound.body")}</p>
+        <p class="mt-6">
+          <a href="/" class="group inline-flex h-11 items-center gap-2 font-semibold">
+            <span aria-hidden="true">←</span>
+            <span class="wipe group-hover:text-accent">{t("nav.home")}</span>
+          </a>
+        </p>
+      </div>
+    </div>
+  </section>
 </BaseLayout>

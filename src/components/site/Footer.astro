@@ -1,4 +1,5 @@
 ---
+/** Colophon: a large contact line, then a numbered list of links. */
 import { useTranslations, type Locale } from "@/i18n";
 import { site } from "@/site.config";
 
@@ -6,24 +7,41 @@ interface Props {
   locale: Locale;
 }
 const t = useTranslations(Astro.props.locale);
+const links = [
+  { label: "GitHub", href: site.socials.github },
+  { label: "LinkedIn", href: site.socials.linkedin },
+  { label: t("footer.rss"), href: "/rss.xml" },
+];
 ---
 
-<footer class="mx-auto mt-24 flex max-w-3xl flex-wrap justify-between gap-4 px-5 py-8 text-sm text-muted">
-  <p>
-    © {new Date().getFullYear()} {site.name}
-  </p>
-  <nav aria-label="Elsewhere" class="flex gap-4">
-    <a href={site.socials.github} class="hover:text-fg">
-      GitHub
-    </a>
-    <a href={site.socials.linkedin} class="hover:text-fg">
-      LinkedIn
-    </a>
-    <a href={`mailto:${site.email}`} class="hover:text-fg">
-      Email
-    </a>
-    <a href="/rss.xml" class="hover:text-fg">
-      {t("footer.rss")}
-    </a>
-  </nav>
+<footer class="mt-32 lg:mt-48">
+  <div class="grid-page border-t border-fg pt-6 pb-10 lg:pb-14">
+    <p class="label text-muted md:col-span-3">{t("footer.contact")}</p>
+    <p class="mt-3 md:col-span-9 md:mt-0">
+      <a
+        href={`mailto:${site.email}`}
+        class="text-[clamp(1.5rem,5.4vw,4.5rem)] leading-none font-extrabold tracking-(--tracking-display) wrap-anywhere transition-colors hover:text-accent"
+      >
+        <span class="wipe">{site.email}</span>
+      </a>
+    </p>
+
+    <nav aria-label="Elsewhere" class="mt-12 md:col-span-9 md:col-start-4">
+      <ul class="flex flex-wrap gap-x-8">
+        {links.map(({ label, href }) => (
+          <li>
+            <a href={href} class="group flex h-11 items-center gap-2 font-medium">
+              <span class="wipe group-hover:text-accent">{label}</span>
+              <span aria-hidden="true" class="text-muted">
+                ↗
+              </span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+    <p class="label mt-8 text-muted md:col-span-9 md:col-start-4">
+      © {new Date().getFullYear()} {site.name} · {site.location}
+    </p>
+  </div>
 </footer>

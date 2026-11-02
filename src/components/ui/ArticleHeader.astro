@@ -1,0 +1,38 @@
+---
+/**
+ * Header for posts and case studies: a back link, the title at headline size,
+ * a standfirst aligned with the text column, then a heavy rule.
+ */
+interface Props {
+  title: string;
+  standfirst?: string;
+  backHref: string;
+  backLabel: string;
+  /** View-transition name shared with the list the reader came from. */
+  transitionName?: string;
+}
+const { title, standfirst, backHref, backLabel, transitionName } = Astro.props;
+---
+
+<header class="grid-page pt-8 md:pt-12 lg:pt-16">
+  <p class="md:col-span-12">
+    <a href={backHref} class="group label -ml-1 inline-flex h-11 items-center gap-2 px-1 text-muted hover:text-fg">
+      <span aria-hidden="true" class="transition-transform group-hover:-translate-x-0.5">
+        ←
+      </span>
+      <span class="wipe">{backLabel}</span>
+    </a>
+  </p>
+  <h1
+    class="mt-4 text-headline font-extrabold tracking-[-0.045em] text-balance md:col-span-12 lg:col-span-10"
+    transition:name={transitionName}
+  >
+    {title}
+  </h1>
+  {standfirst && (
+    <p class="mt-6 max-w-[40ch] text-[clamp(1.1875rem,1.8vw,1.4375rem)] leading-snug text-pretty text-muted md:col-span-10 lg:col-span-7 lg:col-start-4 lg:mt-10">
+      {standfirst}
+    </p>
+  )}
+  <div class="mt-10 border-t-2 border-fg md:col-span-12 lg:mt-14"></div>
+</header>

@@ -1,0 +1,27 @@
+---
+/**
+ * The top of an index page, set like a poster: a section number, a display-size title,
+ * and a short description in the right-hand columns. A heavy rule closes it.
+ */
+interface Props {
+  title: string;
+  description?: string;
+  /** Section number, e.g. "02". */
+  index?: string;
+}
+const { title, description, index } = Astro.props;
+---
+
+<header class="grid-page pt-10 md:pt-16 lg:pt-24">
+  {index && <p class="label mb-4 text-accent tabular-nums md:col-span-12">{index}</p>}
+  <h1 class="text-display font-black tracking-(--tracking-display) text-balance md:col-span-12 lg:col-span-8">
+    {title}
+  </h1>
+  {description && (
+    <p class="mt-6 max-w-[34ch] text-lg leading-snug text-pretty text-muted md:col-span-6 md:col-start-7 lg:col-span-4 lg:col-start-9 lg:mt-0 lg:self-end lg:pb-[0.4em]">
+      {description}
+    </p>
+  )}
+  <div class="mt-10 border-t-2 border-fg md:col-span-12 lg:mt-16"></div>
+  <slot />
+</header>

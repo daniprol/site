@@ -1,0 +1,12 @@
+---
+/** A zero-padded index number for typographic lists: 1 -> "01". */
+interface Props {
+  n: number;
+  class?: string;
+}
+const { n, class: className } = Astro.props;
+---
+
+<span class:list={["label text-muted tabular-nums", className]} aria-hidden="true">
+  {String(n).padStart(2, "0")}
+</span>

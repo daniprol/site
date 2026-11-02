@@ -1,28 +1,40 @@
 ---
+/**
+ * Posts as a numbered index. Numbers count down from `startAt`, so a post keeps its
+ * number wherever it is listed (the newest post has the highest number).
+ */
 import { localePath, type Locale } from "@/i18n";
 import type { Post } from "@/lib/content";
 
 import DateTime from "./DateTime.astro";
+import IndexNumber from "./IndexNumber.astro";
 
 interface Props {
   items: { post: Post; slug: string }[];
   locale: Locale;
+  startAt?: number;
 }
-const { items, locale } = Astro.props;
+const { items, locale, startAt = items.length } = Astro.props;
 ---
 
-<ul class="divide-y divide-border">
-  {items.map(({ post, slug }) => (
-    <li>
+<ol>
+  {items.map(({ post, slug }, i) => (
+    <li class="border-b border-border last:border-b-0">
       <a
         href={localePath(locale, `/writing/${slug}`)}
-        class="group flex flex-col gap-1 py-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6"
+        class="group grid grid-cols-[2.5rem_minmax(0,1fr)] gap-y-1.5 py-5 md:grid-cols-[3.5rem_minmax(0,1fr)_8rem] md:py-6"
       >
-        <span class="group-hover:text-accent" transition:name={`post-title-${slug}`}>
-          {post.data.title}
+        <IndexNumber n={startAt - i} class="pt-1 transition-colors group-hover:text-accent md:pt-2.5" />
+        <span class="text-title font-semibold tracking-(--tracking-title) text-balance transition-colors group-hover:text-accent">
+          <span transition:name={`post-title-${slug}`}>{post.data.title}</span>
         </span>
-        <DateTime date={post.data.date} locale={locale} format="short" class="shrink-0 text-sm text-muted" />
+        <DateTime
+          date={post.data.date}
+          locale={locale}
+          format="short"
+          class="label col-start-2 text-muted md:col-start-3 md:pt-2.5 md:text-right"
+        />
       </a>
     </li>
   ))}
-</ul>
+</ol>

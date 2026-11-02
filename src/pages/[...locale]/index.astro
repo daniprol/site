@@ -12,31 +12,61 @@ export const getStaticPaths = localeParams;
 
 const { locale } = Astro.props;
 const t = useTranslations(locale);
-const posts = (await getPosts(locale)).slice(0, 3);
+const allPosts = await getPosts(locale);
+const posts = allPosts.slice(0, 3);
 const snacks = (await getSnacks()).slice(0, 5);
 const projects = (await getProjects()).filter((p) => p.data.featured).slice(0, 3);
+const [first, ...rest] = site.name.split(" ");
 ---
 
 <BaseLayout locale={locale} description={`${site.name}, ${site.role}.`}>
-  <section class="mt-12">
-    <h1 class="text-2xl font-semibold">{site.name}</h1>
-    <p class="mt-2 text-muted">
-      {site.role} · {site.location}
-    </p>
-    <p class="mt-6 max-w-prose">
-      <span class="text-muted">{t("home.now")}:</span> {site.now}
-    </p>
+  <!-- Poster: the name at full width, the last line finished by a red bar carrying the role. -->
+  <section class="grid-page pt-8 md:pt-14 lg:pt-20">
+    <h1 class="text-mega font-black tracking-(--tracking-display) md:col-span-12">
+      <span class="block">{first}</span>
+      <span class="flex items-end gap-[0.08em]">
+        <span>{rest.join(" ")}</span>
+        <span class="mb-[0.075em] flex h-[0.71em] min-w-0 flex-1 items-end bg-accent p-[clamp(0.5rem,1.2vw,1rem)]">
+          <span class="block text-[clamp(0.8125rem,1.7vw,1.625rem)] leading-[1.1] font-semibold tracking-tight text-accent-ink">
+            {site.role}
+          </span>
+        </span>
+      </span>
+    </h1>
+
+    <dl class="mt-10 grid gap-6 border-t border-fg pt-4 md:col-span-12 md:grid-cols-12 md:gap-x-(--grid-gutter) lg:mt-14">
+      <div class="md:col-span-4 lg:col-span-3">
+        <dt class="label text-muted">{t("home.location")}</dt>
+        <dd class="mt-1.5 font-medium">{site.location}</dd>
+      </div>
+      <div class="md:col-span-8 lg:col-span-6 lg:col-start-7">
+        <dt class="label text-muted">{t("home.now")}</dt>
+        <dd class="mt-1.5 text-[clamp(1.25rem,2.2vw,1.625rem)] leading-snug font-medium tracking-tight text-pretty">
+          {site.now}
+        </dd>
+      </div>
+    </dl>
   </section>
 
-  <Section title={t("home.latestWriting")} href={localePath(locale, "/writing")} linkLabel={t("home.viewAll")}>
-    <PostList items={posts} locale={locale} />
+  <Section
+    index="01"
+    title={t("home.latestWriting")}
+    href={localePath(locale, "/writing")}
+    linkLabel={t("home.viewAll")}
+  >
+    <PostList items={posts} locale={locale} startAt={allPosts.length} />
   </Section>
 
-  <Section title={t("home.latestSnacks")} href={localePath(locale, "/snacks")} linkLabel={t("home.viewAll")}>
+  <Section index="02" title={t("home.latestSnacks")} href={localePath(locale, "/snacks")} linkLabel={t("home.viewAll")}>
     <SnackList items={snacks} locale={locale} />
   </Section>
 
-  <Section title={t("home.selectedProjects")} href={localePath(locale, "/projects")} linkLabel={t("home.viewAll")}>
+  <Section
+    index="03"
+    title={t("home.selectedProjects")}
+    href={localePath(locale, "/projects")}
+    linkLabel={t("home.viewAll")}
+  >
     <ProjectList items={projects} locale={locale} />
   </Section>
 </BaseLayout>

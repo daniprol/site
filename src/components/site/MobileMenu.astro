@@ -1,0 +1,110 @@
+---
+/**
+ * Full-screen navigation for phones and tablets: huge numbered links, then language and theme.
+ * Uses the native popover API, so it opens, closes on Esc and traps nothing without any JS.
+ */
+import { localePath, useTranslations, type Locale } from "@/i18n";
+import { site } from "@/site.config";
+
+import LanguagePicker from "./LanguagePicker.astro";
+import ThemeToggle from "./ThemeToggle.astro";
+import Wordmark from "./Wordmark.astro";
+
+interface Props {
+  locale: Locale;
+  current: string;
+}
+const { locale, current } = Astro.props;
+const t = useTranslations(locale);
+---
+
+<div id="site-menu" popover class="menu bg-bg text-fg lg:hidden">
+  <div class="flex min-h-full flex-col px-(--grid-margin)">
+    <div class="flex h-16 items-center justify-between">
+      <Wordmark locale={locale} />
+      <button
+        type="button"
+        popovertarget="site-menu"
+        popovertargetaction="hide"
+        class="label -mr-3 flex h-11 cursor-pointer items-center gap-2 px-3"
+      >
+        <span aria-hidden="true" class="relative block size-4">
+          <span class="absolute top-1/2 left-0 h-0.5 w-4 rotate-45 bg-current"></span>
+          <span class="absolute top-1/2 left-0 h-0.5 w-4 -rotate-45 bg-current"></span>
+        </span>
+        {t("nav.close")}
+      </button>
+    </div>
+
+    <nav aria-label="Main" class="mt-6">
+      <ul class="border-t border-fg">
+        <li class="border-b border-fg">
+          <a
+            href={localePath(locale)}
+            aria-current={current === "/" ? "page" : undefined}
+            class="menu-link flex items-baseline gap-4 py-3"
+          >
+            <span class="label w-6 text-muted tabular-nums">00</span>
+            <span>{t("nav.home")}</span>
+          </a>
+        </li>
+        {site.nav.map(({ key, href }, i) => (
+          <li class="border-b border-fg">
+            <a
+              href={localePath(locale, href)}
+              aria-current={current.startsWith(href) ? "page" : undefined}
+              class="menu-link flex items-baseline gap-4 py-3"
+            >
+              <span class="label w-6 text-muted tabular-nums">{String(i + 1).padStart(2, "0")}</span>
+              <span>{t(key)}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <div class="mt-auto flex items-center justify-between py-6">
+      <LanguagePicker locale={locale} />
+      <ThemeToggle locale={locale} />
+    </div>
+  </div>
+</div>
+
+<style>
+  .menu {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    overflow-y: auto;
+  }
+  .menu:popover-open {
+    animation: menu-in 220ms var(--ease-snap);
+  }
+  @keyframes menu-in {
+    from {
+      opacity: 0;
+      translate: 0 -0.75rem;
+    }
+  }
+  .menu-link {
+    font-size: clamp(2.5rem, 12vw, 4.5rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: var(--tracking-display);
+    transition: color 150ms var(--ease-snap);
+  }
+  .menu-link:hover,
+  .menu-link[aria-current="page"] {
+    color: var(--color-accent);
+  }
+  /* Lock page scroll while the menu covers it. */
+  :global(html:has(#site-menu:popover-open)) {
+    overflow: hidden;
+  }
+</style>

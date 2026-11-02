@@ -1,7 +1,9 @@
 ---
 import { render } from "astro:content";
 
-import { DEFAULT_LOCALE, LOCALES, type Locale } from "@/i18n";
+import ArticleBody from "@/components/ui/ArticleBody.astro";
+import ArticleHeader from "@/components/ui/ArticleHeader.astro";
+import { DEFAULT_LOCALE, LOCALES, localePath, useTranslations, type Locale } from "@/i18n";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { getProjects, type Project } from "@/lib/content";
 
@@ -16,32 +18,41 @@ export async function getStaticPaths() {
 }
 
 const { locale, project } = Astro.props as { locale: Locale; project: Project };
+const t = useTranslations(locale);
 const { Content } = await render(project);
 const { title, summary, stack, repo, url, year } = project.data;
+const links = [
+  repo && { label: t("projects.source"), href: repo },
+  url && { label: t("projects.live"), href: url },
+].filter((l) => !!l);
 ---
 
 <BaseLayout locale={locale} title={title} description={summary} canonicalPath={`/projects/${project.id}`}>
-  <article class="mt-12">
-    <header class="mb-10">
-      <h1 class="text-3xl font-semibold">{title}</h1>
-      <p class="mt-3 text-muted">{summary}</p>
-      <p class="mt-4 flex flex-wrap gap-x-4 font-mono text-xs text-muted">
-        <span>{year}</span>
-        <span>{stack.join(" · ")}</span>
-        {repo && (
-          <a href={repo} class="hover:text-fg">
-            Source ↗
-          </a>
-        )}
-        {url && (
-          <a href={url} class="hover:text-fg">
-            Live ↗
-          </a>
-        )}
-      </p>
-    </header>
-    <div class="prose-site prose" lang="en">
+  <article>
+    <ArticleHeader
+      title={title}
+      standfirst={summary}
+      backHref={localePath(locale, "/projects")}
+      backLabel={t("nav.projects")}
+      transitionName={`project-title-${project.id}`}
+    />
+    <ArticleBody lang="en">
+      <ul
+        slot="aside"
+        class="label grid grid-cols-2 gap-x-(--grid-gutter) text-muted lg:grid-cols-1 lg:border-t lg:border-fg"
+      >
+        <li class="border-b border-border py-2.5 tabular-nums">{year}</li>
+        <li class="border-b border-border py-2.5">{stack.join(" / ")}</li>
+        {links.map(({ label, href }) => (
+          <li class="border-b border-border">
+            <a href={href} class="group flex h-11 items-center gap-2 text-fg">
+              <span class="wipe group-hover:text-accent">{label}</span>
+              <span aria-hidden="true">↗</span>
+            </a>
+          </li>
+        ))}
+      </ul>
       <Content />
-    </div>
+    </ArticleBody>
   </article>
 </BaseLayout>

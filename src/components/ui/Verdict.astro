@@ -1,0 +1,25 @@
+---
+/** A snack verdict as a print mark: keep is a solid red block, maybe an outline, drop struck through. */
+import { useTranslations, type Locale } from "@/i18n";
+
+interface Props {
+  verdict: "keep" | "maybe" | "drop";
+  locale: Locale;
+}
+const { verdict, locale } = Astro.props;
+const t = useTranslations(locale);
+---
+
+<span
+  data-verdict={verdict}
+  class:list={[
+    "label inline-block px-1.5 py-0.5 whitespace-nowrap",
+    {
+      "bg-accent font-medium text-accent-ink": verdict === "keep",
+      "outline outline-1 -outline-offset-1 outline-fg": verdict === "maybe",
+      "text-muted line-through decoration-1": verdict === "drop",
+    },
+  ]}
+>
+  {t(`verdict.${verdict}`)}
+</span>

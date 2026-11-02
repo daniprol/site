@@ -1,6 +1,9 @@
 ---
+/** Projects as a numbered index: big name, one-line summary, stack and year. */
 import { localePath, type Locale } from "@/i18n";
 import type { Project } from "@/lib/content";
+
+import IndexNumber from "./IndexNumber.astro";
 
 interface Props {
   items: Project[];
@@ -9,14 +12,25 @@ interface Props {
 const { items, locale } = Astro.props;
 ---
 
-<ul class="grid gap-6 sm:grid-cols-2">
-  {items.map((project) => (
-    <li>
-      <a href={localePath(locale, `/projects/${project.id}`)} class="group block">
-        <p class="font-medium group-hover:text-accent">{project.data.title}</p>
-        <p class="mt-1 text-sm text-muted">{project.data.summary}</p>
-        <p class="mt-2 font-mono text-xs text-muted">{project.data.stack.join(" · ")}</p>
+<ol>
+  {items.map((project, i) => (
+    <li class="border-b border-border last:border-b-0">
+      <a
+        href={localePath(locale, `/projects/${project.id}`)}
+        class="group grid grid-cols-[2.5rem_minmax(0,1fr)] gap-y-2 py-6 md:grid-cols-[3.5rem_minmax(0,5fr)_minmax(0,4fr)] md:gap-x-6 md:py-8"
+      >
+        <IndexNumber n={i + 1} class="pt-2 transition-colors group-hover:text-accent md:pt-3.5" />
+        <h3 class="text-[clamp(2.25rem,5.5vw,4.25rem)] leading-[0.95] font-extrabold tracking-(--tracking-display) transition-colors group-hover:text-accent">
+          <span transition:name={`project-title-${project.id}`}>{project.data.title}</span>
+        </h3>
+        <div class="col-start-2 md:col-start-3 md:pt-2">
+          <p class="max-w-[38ch] text-pretty">{project.data.summary}</p>
+          <p class="label mt-3 flex flex-wrap gap-x-3 text-muted">
+            <span class="tabular-nums">{project.data.year}</span>
+            <span>{project.data.stack.join(" / ")}</span>
+          </p>
+        </div>
       </a>
     </li>
   ))}
-</ul>
+</ol>

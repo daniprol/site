@@ -1,4 +1,6 @@
 ---
+import PageHeader from "@/components/ui/PageHeader.astro";
+import Section from "@/components/ui/Section.astro";
 import { localeParams, useTranslations } from "@/i18n";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { education, experience, site } from "@/site.config";
@@ -10,52 +12,45 @@ const t = useTranslations(locale);
 ---
 
 <BaseLayout locale={locale} title={t("about.title")} description={`${site.name}, ${site.role}.`}>
-  <h1 class="mt-12 text-2xl font-semibold">{t("about.title")}</h1>
-  <div class="prose-site prose mt-6">
-    <p>
-      I'm a software and AI engineer based in {site.location}. I studied mathematics and economics, then spent the last
-      few years building full-stack products and AI systems. TODO: write this in your own words, and translate it in a
-      per-locale file if you want.
-    </p>
+  <PageHeader index="04" title={t("about.title")} />
+
+  <div class="grid-page">
+    <p class="label pt-5 text-muted md:col-span-3">{site.role}</p>
+    <div class="pt-4 md:col-span-9 lg:col-span-7">
+      <p class="text-[clamp(1.375rem,2.6vw,2rem)] leading-[1.25] font-medium tracking-(--tracking-title) text-pretty">
+        I'm a software and AI engineer based in {site.location}. I studied mathematics and economics, then spent the
+        last few years building full-stack products and AI systems. TODO: write this in your own words, and translate it
+        in a per-locale file if you want.
+      </p>
+    </div>
   </div>
 
-  <section class="mt-14">
-    <h2 class="mb-4 text-sm font-medium text-muted">{t("about.experience")}</h2>
-    <ul class="divide-y divide-border">
+  <Section index="A" title={t("about.experience")}>
+    <ol>
       {experience.map((job) => (
-        <li class="grid gap-1 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
-          <span class="font-mono text-xs text-muted sm:pt-1">{job.period}</span>
+        <li class="grid gap-1 border-b border-border py-5 last:border-b-0 md:grid-cols-[10rem_minmax(0,1fr)] md:gap-6">
+          <span class="label text-muted md:pt-1.5">{job.period}</span>
           <div>
-            <p class="font-medium">
-              {job.role} · {job.company}
-            </p>
-            <p class="mt-1 text-muted">{job.summary}</p>
+            <p class="text-title font-semibold tracking-(--tracking-title)">{job.role}</p>
+            <p class="mt-1 font-medium">{job.company}</p>
+            <p class="mt-2 max-w-[56ch] text-muted">{job.summary}</p>
           </div>
         </li>
       ))}
-    </ul>
-  </section>
+    </ol>
+  </Section>
 
-  <section class="mt-14">
-    <h2 class="mb-4 text-sm font-medium text-muted">{t("about.education")}</h2>
-    <ul class="divide-y divide-border">
+  <Section index="B" title={t("about.education")}>
+    <ol>
       {education.map((item) => (
-        <li class="grid gap-1 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
-          <span class="font-mono text-xs text-muted sm:pt-1">{item.period}</span>
-          <p>
-            {item.degree} · <span class="text-muted">{item.school}</span>
-          </p>
+        <li class="grid gap-1 border-b border-border py-5 last:border-b-0 md:grid-cols-[10rem_minmax(0,1fr)] md:gap-6">
+          <span class="label text-muted md:pt-1.5">{item.period || "—"}</span>
+          <div>
+            <p class="text-title font-semibold tracking-(--tracking-title)">{item.degree}</p>
+            <p class="mt-1 text-muted">{item.school}</p>
+          </div>
         </li>
       ))}
-    </ul>
-  </section>
-
-  <section class="mt-14">
-    <h2 class="mb-4 text-sm font-medium text-muted">{t("about.contact")}</h2>
-    <p>
-      <a href={`mailto:${site.email}`} class="text-accent">
-        {site.email}
-      </a>
-    </p>
-  </section>
+    </ol>
+  </Section>
 </BaseLayout>

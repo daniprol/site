@@ -1,5 +1,7 @@
 ---
+import PageHeader from "@/components/ui/PageHeader.astro";
 import SnackList from "@/components/ui/SnackList.astro";
+import Verdict from "@/components/ui/Verdict.astro";
 import { localeParams, useTranslations } from "@/i18n";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { getSnacks } from "@/lib/content";
@@ -9,12 +11,26 @@ export const getStaticPaths = localeParams;
 const { locale } = Astro.props;
 const t = useTranslations(locale);
 const snacks = await getSnacks();
+const verdicts = (["keep", "maybe", "drop"] as const).map((v) => ({
+  verdict: v,
+  count: snacks.filter((s) => s.data.verdict === v).length,
+}));
 ---
 
 <BaseLayout locale={locale} title={t("snacks.title")} description={t("snacks.description")}>
-  <h1 class="mt-12 text-2xl font-semibold">{t("snacks.title")}</h1>
-  <p class="mt-2 text-muted">{t("snacks.description")}</p>
-  <div class="mt-10">
-    <SnackList items={snacks} locale={locale} />
+  <PageHeader index="02" title={t("snacks.title")} description={t("snacks.description")} />
+  <div class="grid-page">
+    <!-- Legend: the three marks with their tallies. -->
+    <ul class="flex gap-5 pt-5 pb-3 md:col-span-3 md:flex-col md:gap-3">
+      {verdicts.map(({ verdict, count }) => (
+        <li class="flex items-center gap-2">
+          <Verdict verdict={verdict} locale={locale} />
+          <span class="label text-muted tabular-nums">{count}</span>
+        </li>
+      ))}
+    </ul>
+    <div class="md:col-span-9 md:pt-1">
+      <SnackList items={snacks} locale={locale} />
+    </div>
   </div>
 </BaseLayout>

@@ -1,0 +1,17 @@
+---
+/** The name as a masthead: a red square and the name in bold. */
+import { localePath, type Locale } from "@/i18n";
+import { site } from "@/site.config";
+
+interface Props {
+  locale: Locale;
+}
+---
+
+<a
+  href={localePath(Astro.props.locale)}
+  class="group -ml-1 flex h-11 items-center gap-2.5 px-1 font-bold tracking-tight"
+>
+  <span aria-hidden="true" class="size-3 bg-accent transition-transform duration-200 group-hover:rotate-45"></span>
+  <span>{site.name}</span>
+</a>
