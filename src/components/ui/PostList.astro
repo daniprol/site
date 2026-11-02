@@ -1,6 +1,7 @@
 ---
-import { localePath, type Locale } from "@/i18n";
-import type { Post } from "@/lib/content";
+/** Posts as datasheet rows: ISO date · title · length. */
+import { localePath, useTranslations, type Locale } from "@/i18n";
+import { readingTime, type Post } from "@/lib/content";
 
 import DateTime from "./DateTime.astro";
 
@@ -9,19 +10,26 @@ interface Props {
   locale: Locale;
 }
 const { items, locale } = Astro.props;
+const t = useTranslations(locale);
 ---
 
-<ul class="divide-y divide-border">
+<ul class="divide-y divide-rule">
   {items.map(({ post, slug }) => (
     <li>
       <a
         href={localePath(locale, `/writing/${slug}`)}
-        class="group flex flex-col gap-1 py-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6"
+        class="group tick-row grid grid-cols-[6.5rem_minmax(0,1fr)] items-baseline gap-x-3 py-4 sm:grid-cols-[7.5rem_minmax(0,1fr)_auto] sm:gap-x-6"
       >
-        <span class="group-hover:text-accent" transition:name={`post-title-${slug}`}>
+        <DateTime date={post.data.date} locale={locale} format="iso" class="font-mono text-data text-muted" />
+        <span
+          class="font-medium text-pretty transition-colors duration-(--duration-fast) group-hover:text-signal"
+          transition:name={`post-title-${slug}`}
+        >
           {post.data.title}
         </span>
-        <DateTime date={post.data.date} locale={locale} format="short" class="shrink-0 text-sm text-muted" />
+        <span class="hidden font-mono text-data text-muted tabular-nums sm:inline">
+          {t("post.readingTime", { n: readingTime(post.body) })}
+        </span>
       </a>
     </li>
   ))}

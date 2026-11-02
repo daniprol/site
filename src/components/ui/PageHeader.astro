@@ -1,0 +1,24 @@
+---
+/** Title block of an index page: section index and entry count in the rail, title and one line beside it. */
+interface Props {
+  index: number;
+  title: string;
+  description?: string;
+  /** Number of entries listed below, shown as "n = 6". */
+  count?: number;
+}
+const { index, title, description, count } = Astro.props;
+---
+
+<header class="rail-grid pt-10 pb-10 sm:pt-16 lg:pb-14">
+  <p class="label flex items-center justify-between self-start text-muted lg:flex-col lg:items-start lg:justify-start lg:gap-2 lg:pt-3">
+    <span>
+      <span class="text-signal tabular-nums">{String(index).padStart(2, "0")}</span> / {title}
+    </span>
+    {count !== undefined && <span class="normal-case tabular-nums">n = {count}</span>}
+  </p>
+  <div>
+    <h1 class="text-title font-semibold tracking-[-0.025em] text-balance sm:text-display">{title}</h1>
+    {description && <p class="mt-4 max-w-[38ch] text-muted sm:text-lg">{description}</p>}
+  </div>
+</header>

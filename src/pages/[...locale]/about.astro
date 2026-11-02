@@ -1,4 +1,7 @@
 ---
+import LogRow from "@/components/ui/LogRow.astro";
+import PageHeader from "@/components/ui/PageHeader.astro";
+import Section from "@/components/ui/Section.astro";
 import { localeParams, useTranslations } from "@/i18n";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { education, experience, site } from "@/site.config";
@@ -10,52 +13,56 @@ const t = useTranslations(locale);
 ---
 
 <BaseLayout locale={locale} title={t("about.title")} description={`${site.name}, ${site.role}.`}>
-  <h1 class="mt-12 text-2xl font-semibold">{t("about.title")}</h1>
-  <div class="prose-site prose mt-6">
-    <p>
-      I'm a software and AI engineer based in {site.location}. I studied mathematics and economics, then spent the last
-      few years building full-stack products and AI systems. TODO: write this in your own words, and translate it in a
-      per-locale file if you want.
-    </p>
+  <PageHeader index={4} title={t("about.title")} />
+
+  <!-- The one place the sheet speaks in first person: larger, looser, no apparatus. -->
+  <div class="rail-grid">
+    <p class="label hidden text-muted lg:block lg:pt-2">{site.shortName}</p>
+    <div class="max-w-(--width-content) text-xl leading-normal text-pretty sm:text-[1.375rem]">
+      <p>
+        I'm a software and AI engineer based in {site.location}. I studied mathematics and economics, then spent the
+        last few years building full-stack products and AI systems. TODO: write this in your own words, and translate it
+        in a per-locale file if you want.
+      </p>
+    </div>
   </div>
 
-  <section class="mt-14">
-    <h2 class="mb-4 text-sm font-medium text-muted">{t("about.experience")}</h2>
-    <ul class="divide-y divide-border">
+  <Section index={1} title={t("about.experience")}>
+    <ul class="divide-y divide-rule">
       {experience.map((job) => (
-        <li class="grid gap-1 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
-          <span class="font-mono text-xs text-muted sm:pt-1">{job.period}</span>
-          <div>
-            <p class="font-medium">
-              {job.role} · {job.company}
-            </p>
-            <p class="mt-1 text-muted">{job.summary}</p>
-          </div>
-        </li>
-      ))}
-    </ul>
-  </section>
-
-  <section class="mt-14">
-    <h2 class="mb-4 text-sm font-medium text-muted">{t("about.education")}</h2>
-    <ul class="divide-y divide-border">
-      {education.map((item) => (
-        <li class="grid gap-1 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
-          <span class="font-mono text-xs text-muted sm:pt-1">{item.period}</span>
-          <p>
-            {item.degree} · <span class="text-muted">{item.school}</span>
+        <LogRow period={job.period}>
+          <p class="font-medium">
+            {job.role} <span class="text-muted">· {job.company}</span>
           </p>
-        </li>
+          <p class="mt-1 text-[0.9375rem] text-muted">{job.summary}</p>
+        </LogRow>
       ))}
     </ul>
-  </section>
+  </Section>
 
-  <section class="mt-14">
-    <h2 class="mb-4 text-sm font-medium text-muted">{t("about.contact")}</h2>
-    <p>
-      <a href={`mailto:${site.email}`} class="text-accent">
+  <Section index={2} title={t("about.education")}>
+    <ul class="divide-y divide-rule">
+      {education.map((item) => (
+        <LogRow period={item.period}>
+          <p>
+            {item.degree} <span class="text-muted">· {item.school}</span>
+          </p>
+        </LogRow>
+      ))}
+    </ul>
+  </Section>
+
+  <Section index={3} title={t("about.contact")}>
+    <p class="py-4">
+      <a
+        href={`mailto:${site.email}`}
+        class="group inline-flex min-h-11 items-center gap-2 text-lg font-medium break-all underline decoration-signal decoration-1 underline-offset-[0.25em] hover:text-signal sm:text-xl"
+      >
         {site.email}
+        <span class="step-arrow text-signal" aria-hidden="true">
+          →
+        </span>
       </a>
     </p>
-  </section>
+  </Section>
 </BaseLayout>

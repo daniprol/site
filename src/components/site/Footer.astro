@@ -1,29 +1,50 @@
 ---
+/** The sheet's title block: owner, location, revision stamp and outbound links. */
 import { useTranslations, type Locale } from "@/i18n";
+import { isoDate } from "@/lib/format";
 import { site } from "@/site.config";
 
 interface Props {
   locale: Locale;
 }
 const t = useTranslations(Astro.props.locale);
+/** Santiago de Compostela, to two decimals. */
+const COORDINATES = "42.88°N 8.54°W";
+const links = [
+  { label: "GitHub", href: site.socials.github },
+  { label: "LinkedIn", href: site.socials.linkedin },
+  { label: "Email", href: `mailto:${site.email}` },
+  { label: t("footer.rss"), href: "/rss.xml" },
+];
 ---
 
-<footer class="mx-auto mt-24 flex max-w-3xl flex-wrap justify-between gap-4 px-5 py-8 text-sm text-muted">
-  <p>
-    © {new Date().getFullYear()} {site.name}
-  </p>
-  <nav aria-label="Elsewhere" class="flex gap-4">
-    <a href={site.socials.github} class="hover:text-fg">
-      GitHub
-    </a>
-    <a href={site.socials.linkedin} class="hover:text-fg">
-      LinkedIn
-    </a>
-    <a href={`mailto:${site.email}`} class="hover:text-fg">
-      Email
-    </a>
-    <a href="/rss.xml" class="hover:text-fg">
-      {t("footer.rss")}
-    </a>
-  </nav>
+<footer class="mt-24 border-t border-rule-strong sm:mt-32">
+  <div class="shell rail-grid py-6 lg:py-8">
+    <p class="label text-fg">{site.name}</p>
+    <div class="grid gap-6 sm:grid-cols-[1fr_auto] sm:items-start">
+      <dl class="grid grid-cols-[auto_1fr] gap-x-6 gap-y-1 font-mono text-data text-muted">
+        <dt class="label leading-5">©</dt>
+        <dd>{new Date().getFullYear()}</dd>
+        <dt class="label leading-5">{t("home.base")}</dt>
+        <dd>{COORDINATES}</dd>
+        <dt class="label leading-5">{t("footer.revision")}</dt>
+        <dd>
+          <time datetime={isoDate(new Date())}>{isoDate(new Date())}</time>
+        </dd>
+      </dl>
+      <nav aria-label="Elsewhere" class="-mx-3 grid grid-cols-2 sm:flex">
+        {links.map(({ label, href }) => (
+          <a
+            href={href}
+            class="group label flex min-h-11 items-center gap-1.5 px-3 text-muted transition-colors duration-(--duration-fast) hover:text-fg"
+          >
+            {label}
+            <span class="step-arrow text-signal" aria-hidden="true">
+              ↗
+            </span>
+          </a>
+        ))}
+      </nav>
+    </div>
+  </div>
 </footer>

@@ -1,35 +1,50 @@
 ---
-import { localePath, stripLocale, useTranslations, type Locale } from "@/i18n";
+/**
+ * Top panel. Phones: brand + controls on one row, the four sections as a segmented switch below.
+ * From md: one row. The ruler strip underneath is the sheet's edge.
+ */
+import { localePath, stripLocale, type Locale } from "@/i18n";
 import { site } from "@/site.config";
 
 import LanguagePicker from "./LanguagePicker.astro";
+import NavItem from "./NavItem.astro";
+import Ruler from "./Ruler.astro";
 import ThemeToggle from "./ThemeToggle.astro";
 
 interface Props {
   locale: Locale;
 }
 const { locale } = Astro.props;
-const t = useTranslations(locale);
 const current = stripLocale(Astro.url.pathname);
 ---
 
-<header class="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-4 px-5 py-6">
-  <a href={localePath(locale)} class="font-semibold">
-    {site.name}
-  </a>
-  <nav aria-label="Main" class="flex flex-wrap gap-4 text-sm">
-    {site.nav.map(({ key, href }) => (
-      <a
-        href={localePath(locale, href)}
-        aria-current={current.startsWith(href) ? "page" : undefined}
-        class:list={["hover:text-fg", current.startsWith(href) ? "text-fg" : "text-muted"]}
-      >
-        {t(key)}
-      </a>
-    ))}
-  </nav>
-  <div class="flex items-center gap-4">
-    <LanguagePicker locale={locale} />
-    <ThemeToggle locale={locale} />
+<header>
+  <div class="shell grid grid-cols-[1fr_auto] items-center md:grid-cols-[auto_1fr_auto] md:gap-8 lg:grid-cols-[var(--width-rail)_1fr_auto]">
+    <a href={localePath(locale)} class="group flex min-h-11 items-center gap-2.5 self-stretch py-2">
+      <span
+        class="block size-2.5 bg-fg transition-colors duration-(--duration-fast) ease-(--ease-instrument) group-hover:bg-signal"
+        aria-hidden="true"
+      ></span>
+      <span class="text-[0.9375rem] font-semibold tracking-[-0.01em]">{site.name}</span>
+    </a>
+    <nav
+      aria-label="Main"
+      class="order-last col-span-2 grid grid-cols-4 border-t border-rule md:order-0 md:col-span-1 md:flex md:self-stretch md:border-t-0"
+    >
+      {site.nav.map(({ key, href }, i) => (
+        <NavItem
+          href={localePath(locale, href)}
+          label={key}
+          index={i + 1}
+          locale={locale}
+          active={current.startsWith(href)}
+        />
+      ))}
+    </nav>
+    <div class="flex items-center">
+      <LanguagePicker locale={locale} />
+      <ThemeToggle locale={locale} />
+    </div>
   </div>
+  <Ruler />
 </header>

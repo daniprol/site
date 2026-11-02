@@ -1,6 +1,6 @@
 ---
 /**
- * A margin note. On wide screens it floats into the right margin; on narrow screens
+ * A margin note. On wide screens it sits in the right margin; on narrow screens
  * it collapses to a numbered note the reader can toggle. Pure CSS, no JS.
  * Usage in MDX: text<Sidenote>the note</Sidenote>
  */
@@ -14,40 +14,49 @@ const id = `sn-${Math.random().toString(36).slice(2, 8)}`;
 </span>
 
 <style>
-  :global(.prose-site) {
-    counter-reset: sidenote;
-  }
+  /* The sidenote counter is reset on .prose-site in prose.css. */
   .sidenote-ref {
     counter-increment: sidenote;
     cursor: pointer;
+    /* Bigger hit area on phones without moving the line. */
+    padding: 0.5rem 0.25rem;
+    margin: -0.5rem 0;
   }
   .sidenote-ref::after {
     content: counter(sidenote);
-    font-size: 0.7em;
+    font-family: var(--font-mono);
+    font-size: 0.65em;
+    font-weight: 500;
     vertical-align: super;
-    color: var(--color-accent);
-    padding-inline: 0.1em;
+    color: var(--color-signal);
+    padding: 0 0.2em;
+    border: 1px solid var(--color-rule-strong);
+    margin-left: 0.1em;
   }
   .sidenote-toggle {
     display: none;
   }
   .sidenote {
     display: none;
-    font-size: 0.85rem;
-    line-height: 1.5;
+    font-size: 0.875rem;
+    line-height: 1.55;
     color: var(--color-muted);
   }
   .sidenote::before {
-    content: counter(sidenote) " ";
-    color: var(--color-accent);
+    content: counter(sidenote);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-signal);
+    margin-right: 0.5rem;
   }
   .sidenote-toggle:checked + .sidenote {
     display: block;
     margin: 0.75rem 0;
-    padding-left: 1rem;
-    border-left: 1px solid var(--color-border);
+    padding: 0.5rem 0 0.5rem 0.875rem;
+    border-left: 2px solid var(--color-signal);
   }
-  @media (min-width: 72rem) {
+  /* Only once the right margin (--width-margin + gap) is really there. */
+  @media (min-width: 78rem) {
     .sidenote-ref {
       cursor: default;
     }
@@ -56,10 +65,11 @@ const id = `sn-${Math.random().toString(36).slice(2, 8)}`;
       display: block;
       float: right;
       clear: right;
-      width: 14rem;
-      margin: 0.25rem -17rem 1rem 0;
-      padding: 0;
+      width: var(--width-margin);
+      margin: 0.3rem calc(-1 * (var(--width-margin) + 3rem)) 1rem 0;
+      padding: 0.5rem 0 0 0;
       border: 0;
+      border-top: 1px solid var(--color-rule);
     }
   }
 </style>

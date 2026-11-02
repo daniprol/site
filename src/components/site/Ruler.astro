@@ -1,0 +1,20 @@
+---
+/** A hairline with a measuring scale: minor ticks every 8px, major every 64px. Decorative. */
+---
+
+<div class="ruler" aria-hidden="true"></div>
+
+<style>
+  .ruler {
+    height: 7px;
+    border-top: 1px solid var(--color-rule-strong);
+    background-image:
+      repeating-linear-gradient(to right, var(--color-rule-strong) 0 1px, transparent 1px 64px),
+      repeating-linear-gradient(to right, var(--color-rule) 0 1px, transparent 1px 8px);
+    background-size:
+      100% 6px,
+      100% 3px;
+    background-repeat: no-repeat;
+    background-position: 0 0;
+  }
+</style>

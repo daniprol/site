@@ -1,0 +1,16 @@
+---
+/** One row of a dated record (experience, education): period in mono on the left, the entry beside it. */
+interface Props {
+  period?: string;
+}
+const { period } = Astro.props;
+---
+
+<li class="grid gap-1 py-4 sm:grid-cols-[9rem_minmax(0,1fr)] sm:gap-6">
+  <span class:list={["font-mono text-data text-muted tabular-nums sm:block sm:pt-0.5", !period && "hidden"]}>
+    {period || "—"}
+  </span>
+  <div>
+    <slot />
+  </div>
+</li>

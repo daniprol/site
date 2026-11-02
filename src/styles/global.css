@@ -18,6 +18,8 @@
     color: var(--color-fg);
     -webkit-text-size-adjust: 100%;
     text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: "ss01", "cv11";
   }
   html[data-theme="light"] {
     color-scheme: light;
@@ -28,11 +30,20 @@
 
   body {
     font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: var(--text-body--line-height);
     min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  ::selection {
+    background: var(--color-signal);
+    color: var(--color-signal-ink);
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-accent);
+    outline: 2px solid var(--color-signal);
     outline-offset: 2px;
   }
 
@@ -44,5 +55,94 @@
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
     }
+  }
+}
+
+@layer components {
+  /* Page container with the 20px mobile gutter. */
+  .shell {
+    width: 100%;
+    max-width: var(--width-shell);
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+  @media (min-width: 48rem) {
+    .shell {
+      padding-inline: 2rem;
+    }
+  }
+
+  /* Rail grid: section label on the left, content to the right (stacks on phones). */
+  .rail-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+  @media (min-width: 64rem) {
+    .rail-grid {
+      grid-template-columns: var(--width-rail) minmax(0, 1fr);
+      gap: 2rem;
+    }
+  }
+
+  /* Small mono caps used for every label on the sheet. */
+  .label {
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    line-height: var(--text-label--line-height);
+    letter-spacing: var(--text-label--letter-spacing);
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  /* Rows that light a 2px signal tick on hover. */
+  .tick-row {
+    position: relative;
+    transition: background-color var(--duration-fast) var(--ease-instrument);
+  }
+  .tick-row::before {
+    content: "";
+    position: absolute;
+    inset-block: -1px;
+    /* Sits in the gutter, so row text stays on the column line. */
+    left: -0.75rem;
+    width: 2px;
+    background: var(--color-signal);
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform var(--duration-base) var(--ease-instrument);
+  }
+  .tick-row:hover::before,
+  .tick-row:focus-visible::before {
+    transform: scaleY(1);
+  }
+
+  /* Arrow glyph that steps forward on hover of its group. */
+  .step-arrow {
+    display: inline-block;
+    transition: transform var(--duration-fast) var(--ease-instrument);
+  }
+  .group:hover .step-arrow,
+  .group:focus-visible .step-arrow {
+    transform: translateX(3px);
+  }
+}
+
+/* View transitions: short cross-fade with a 4px lift on the incoming page. */
+::view-transition-old(root) {
+  animation: 120ms var(--ease-instrument) both vt-out;
+}
+::view-transition-new(root) {
+  animation: 180ms var(--ease-instrument) both vt-in;
+}
+@keyframes vt-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes vt-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
   }
 }

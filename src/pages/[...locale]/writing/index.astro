@@ -1,4 +1,5 @@
 ---
+import PageHeader from "@/components/ui/PageHeader.astro";
 import PostList from "@/components/ui/PostList.astro";
 import { localeParams, useTranslations } from "@/i18n";
 import BaseLayout from "@/layouts/BaseLayout.astro";
@@ -13,12 +14,13 @@ const years = Map.groupBy(posts, ({ post }) => post.data.date.getFullYear());
 ---
 
 <BaseLayout locale={locale} title={t("writing.title")} description={t("writing.description")}>
-  <h1 class="mt-12 text-2xl font-semibold">{t("writing.title")}</h1>
-  <p class="mt-2 text-muted">{t("writing.description")}</p>
+  <PageHeader index={1} title={t("writing.title")} description={t("writing.description")} count={posts.length} />
   {[...years].map(([year, items]) => (
-    <section class="mt-12">
-      <h2 class="mb-2 font-mono text-sm text-muted">{year}</h2>
-      <PostList items={items} locale={locale} />
+    <section class="rail-grid gap-0 border-t border-rule-strong lg:gap-8">
+      <h2 class="label flex min-h-11 items-center self-start text-muted tabular-nums lg:min-h-0 lg:pt-5">{year}</h2>
+      <div class="border-t border-rule lg:border-t-0">
+        <PostList items={items} locale={locale} />
+      </div>
     </section>
   ))}
 </BaseLayout>

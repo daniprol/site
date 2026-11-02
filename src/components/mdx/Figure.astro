@@ -1,14 +1,19 @@
 ---
-/** Numbered figure with a caption. Numbers come from a CSS counter on the article. */
+/** Numbered figure framed by crop marks, with a "FIG. 01" plate. Numbers come from a CSS counter on the article. */
 interface Props {
   caption?: string;
 }
 const { caption } = Astro.props;
 ---
 
-<figure class="figure not-prose my-10">
-  <slot />
-  {caption && <figcaption class="mt-3 text-sm text-muted">{caption}</figcaption>}
+<figure class="figure not-prose my-12">
+  <div class="plate">
+    <slot />
+  </div>
+  <figcaption class="mt-3 grid grid-cols-[auto_1fr] gap-x-3 text-[0.9375rem] leading-snug text-muted">
+    <span class="fig-no label pt-0.5 text-fg tabular-nums"></span>
+    {caption && <span>{caption}</span>}
+  </figcaption>
 </figure>
 
 <style>
@@ -18,9 +23,24 @@ const { caption } = Astro.props;
   .figure {
     counter-increment: figure;
   }
-  figcaption::before {
-    content: "Fig. " counter(figure) " — ";
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
+  .fig-no::before {
+    content: "Fig. " counter(figure, decimal-leading-zero);
+  }
+  /* Four L-shaped crop marks just outside the plate's corners. */
+  .plate {
+    --mark: var(--color-rule-strong);
+    --len: 10px;
+    position: relative;
+    padding: 6px;
+    background:
+      linear-gradient(var(--mark), var(--mark)) top left / var(--len) 1px,
+      linear-gradient(var(--mark), var(--mark)) top left / 1px var(--len),
+      linear-gradient(var(--mark), var(--mark)) top right / var(--len) 1px,
+      linear-gradient(var(--mark), var(--mark)) top right / 1px var(--len),
+      linear-gradient(var(--mark), var(--mark)) bottom left / var(--len) 1px,
+      linear-gradient(var(--mark), var(--mark)) bottom left / 1px var(--len),
+      linear-gradient(var(--mark), var(--mark)) bottom right / var(--len) 1px,
+      linear-gradient(var(--mark), var(--mark)) bottom right / 1px var(--len);
+    background-repeat: no-repeat;
   }
 </style>

@@ -1,6 +1,9 @@
 ---
+/** Projects as a ruled two-column sheet: index, year, name, one line, stack. */
 import { localePath, type Locale } from "@/i18n";
 import type { Project } from "@/lib/content";
+
+import StackTags from "./StackTags.astro";
 
 interface Props {
   items: Project[];
@@ -9,13 +12,25 @@ interface Props {
 const { items, locale } = Astro.props;
 ---
 
-<ul class="grid gap-6 sm:grid-cols-2">
-  {items.map((project) => (
-    <li>
-      <a href={localePath(locale, `/projects/${project.id}`)} class="group block">
-        <p class="font-medium group-hover:text-accent">{project.data.title}</p>
-        <p class="mt-1 text-sm text-muted">{project.data.summary}</p>
-        <p class="mt-2 font-mono text-xs text-muted">{project.data.stack.join(" · ")}</p>
+<ul class="grid sm:grid-cols-2">
+  {items.map((project, i) => (
+    <li class="border-b border-rule sm:odd:border-r sm:odd:pr-6 sm:even:pl-6">
+      <a
+        href={localePath(locale, `/projects/${project.id}`)}
+        class="group tick-row flex h-full flex-col gap-3 py-5 sm:py-6"
+      >
+        <p class="flex items-center justify-between font-mono text-data text-muted tabular-nums">
+          <span>P-{String(i + 1).padStart(2, "0")}</span>
+          <span>{project.data.year}</span>
+        </p>
+        <p class="flex items-baseline justify-between gap-3 text-xl font-semibold tracking-[-0.015em]">
+          <span class="transition-colors duration-(--duration-fast) group-hover:text-signal">{project.data.title}</span>
+          <span class="step-arrow text-base font-normal text-muted" aria-hidden="true">
+            →
+          </span>
+        </p>
+        <p class="text-[0.9375rem] leading-relaxed text-muted">{project.data.summary}</p>
+        <StackTags stack={project.data.stack} class="mt-auto pt-1" />
       </a>
     </li>
   ))}

@@ -1,6 +1,8 @@
 ---
 import { render } from "astro:content";
 
+import MetaList from "@/components/ui/MetaList.astro";
+import StackTags from "@/components/ui/StackTags.astro";
 import { DEFAULT_LOCALE, LOCALES, type Locale } from "@/i18n";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { getProjects, type Project } from "@/lib/content";
@@ -18,30 +20,39 @@ export async function getStaticPaths() {
 const { locale, project } = Astro.props as { locale: Locale; project: Project };
 const { Content } = await render(project);
 const { title, summary, stack, repo, url, year } = project.data;
+const links = [
+  { label: "Source", href: repo },
+  { label: "Live", href: url },
+].filter((link) => link.href);
 ---
 
 <BaseLayout locale={locale} title={title} description={summary} canonicalPath={`/projects/${project.id}`}>
-  <article class="mt-12">
-    <header class="mb-10">
-      <h1 class="text-3xl font-semibold">{title}</h1>
-      <p class="mt-3 text-muted">{summary}</p>
-      <p class="mt-4 flex flex-wrap gap-x-4 font-mono text-xs text-muted">
-        <span>{year}</span>
-        <span>{stack.join(" · ")}</span>
-        {repo && (
-          <a href={repo} class="hover:text-fg">
-            Source ↗
-          </a>
-        )}
-        {url && (
-          <a href={url} class="hover:text-fg">
-            Live ↗
-          </a>
-        )}
-      </p>
+  <article class="pt-10 sm:pt-16">
+    <header class="rail-grid gap-6 border-b border-rule-strong pb-8 sm:pb-10 lg:gap-8">
+      <MetaList class="order-2 lg:order-1 lg:pt-3">
+        <li>{year}</li>
+        {links.map(({ label, href }) => (
+          <li>
+            <a href={href} class="group -my-3 inline-flex min-h-11 items-center gap-1 text-fg hover:text-signal">
+              {label}
+              <span class="step-arrow text-signal" aria-hidden="true">
+                ↗
+              </span>
+            </a>
+          </li>
+        ))}
+      </MetaList>
+      <div class="order-1 lg:order-2">
+        <h1 class="text-title font-semibold tracking-[-0.025em] sm:text-display">{title}</h1>
+        <p class="mt-4 max-w-(--width-content) text-muted sm:text-lg">{summary}</p>
+        <StackTags stack={stack} class="mt-5" />
+      </div>
     </header>
-    <div class="prose-site prose" lang="en">
-      <Content />
+    <div class="rail-grid mt-8 sm:mt-10">
+      <div class="hidden lg:block"></div>
+      <div class="prose-site prose" lang="en">
+        <Content />
+      </div>
     </div>
   </article>
 </BaseLayout>

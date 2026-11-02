@@ -1,0 +1,51 @@
+---
+/** One cell of the main navigation: a small index above (phones) or before (desktop) the label. */
+import { useTranslations, type Locale } from "@/i18n";
+import type { UIKey } from "@/i18n/ui";
+
+interface Props {
+  href: string;
+  label: UIKey;
+  index: number;
+  locale: Locale;
+  active: boolean;
+}
+const { href, label, index, locale, active } = Astro.props;
+const t = useTranslations(locale);
+---
+
+<a
+  href={href}
+  aria-current={active ? "page" : undefined}
+  class:list={[
+    "nav-item relative flex min-h-13 flex-col justify-center gap-0.5 border-rule px-2 not-first:border-l first:pl-0 md:min-h-14 md:flex-row md:items-center md:gap-2 md:border-l-0 md:px-3",
+    active ? "text-fg" : "text-muted hover:text-fg",
+  ]}
+>
+  <span class:list={["font-mono text-[0.6875rem] leading-none tabular-nums", active ? "text-signal" : "opacity-70"]}>
+    {String(index).padStart(2, "0")}
+  </span>
+  <span class="truncate text-[0.875rem] leading-tight font-medium">{t(label)}</span>
+</a>
+
+<style>
+  /* The active cell sits on the ruler with a signal bar. */
+  .nav-item::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    background: var(--color-signal);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--duration-base) var(--ease-instrument);
+  }
+  .nav-item[aria-current="page"]::after {
+    transform: scaleX(1);
+  }
+  .nav-item:not([aria-current="page"]):hover::after {
+    transform: scaleX(0.25);
+  }
+</style>

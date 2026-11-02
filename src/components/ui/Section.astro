@@ -1,21 +1,38 @@
 ---
-/** A titled block on an index page, with an optional "view all" link. */
+/** A titled, indexed block on an index page ("01 — Latest writing"), with an optional "view all" link. */
 interface Props {
+  index: number;
   title: string;
   href?: string;
   linkLabel?: string;
 }
-const { title, href, linkLabel } = Astro.props;
+const { index, title, href, linkLabel } = Astro.props;
 ---
 
-<section class="mt-16">
-  <div class="mb-4 flex items-baseline justify-between">
-    <h2 class="text-sm font-medium text-muted">{title}</h2>
-    {href && (
-      <a href={href} class="text-sm text-muted hover:text-fg">
-        {linkLabel} →
-      </a>
-    )}
+<section class="mt-16 border-t border-rule-strong sm:mt-20">
+  <div class="rail-grid gap-0 lg:gap-8">
+    <div class="flex items-center justify-between lg:flex-col lg:items-start lg:justify-start lg:gap-3 lg:pt-4">
+      <h2 class="label flex min-h-11 items-center gap-2 lg:min-h-0">
+        <span class="text-signal tabular-nums">{String(index).padStart(2, "0")}</span>
+        <span class="text-rule-strong" aria-hidden="true">
+          —
+        </span>
+        <span>{title}</span>
+      </h2>
+      {href && (
+        <a
+          href={href}
+          class="group label -mr-2 flex min-h-11 items-center gap-1.5 px-2 text-muted hover:text-fg lg:mr-0 lg:-ml-2 lg:min-h-8"
+        >
+          {linkLabel}
+          <span class="step-arrow" aria-hidden="true">
+            →
+          </span>
+        </a>
+      )}
+    </div>
+    <div class="border-t border-rule lg:border-t-0">
+      <slot />
+    </div>
   </div>
-  <slot />
 </section>

@@ -1,0 +1,39 @@
+---
+/** The home page's identity block: name, then role / base / now as a labelled spec table. */
+import { useTranslations, type Locale } from "@/i18n";
+import { site } from "@/site.config";
+
+interface Props {
+  locale: Locale;
+}
+const t = useTranslations(Astro.props.locale);
+const specs = [
+  { label: t("home.role"), value: site.role },
+  { label: t("home.base"), value: site.location, note: "42.88°N 8.54°W" },
+  { label: t("home.now"), value: site.now },
+];
+---
+
+<section class="rail-grid pt-10 sm:pt-20">
+  <p class="label flex items-center gap-2 self-start text-muted lg:pt-5">
+    <span class="text-signal tabular-nums">00</span>
+    <span class="text-rule-strong" aria-hidden="true">
+      —
+    </span>
+    <span>{t("nav.home")}</span>
+  </p>
+  <div>
+    <h1 class="text-display font-semibold tracking-[-0.035em] lg:text-hero">{site.name}</h1>
+    <dl class="mt-10 grid border-t border-rule-strong sm:mt-14 sm:grid-cols-[1fr_1fr_1.6fr]">
+      {specs.map(({ label, value, note }) => (
+        <div class="grid grid-cols-[4.5rem_1fr] gap-x-3 border-b border-rule py-3.5 sm:block sm:border-b-0 sm:py-4 sm:pr-6 sm:not-first:border-l sm:not-first:pl-5">
+          <dt class="label pt-1 text-muted sm:pt-0">{label}</dt>
+          <dd class="text-pretty sm:mt-2">
+            {value}
+            {note && <span class="mt-0.5 block font-mono text-data text-muted">{note}</span>}
+          </dd>
+        </div>
+      ))}
+    </dl>
+  </div>
+</section>

@@ -1,0 +1,40 @@
+---
+/** A snack's verdict as a status lamp: ■ keep (signal), ◧ maybe (half), □ drop (hollow). */
+import { useTranslations, type Locale } from "@/i18n";
+
+interface Props {
+  verdict: "keep" | "maybe" | "drop";
+  locale: Locale;
+}
+const { verdict, locale } = Astro.props;
+const t = useTranslations(locale);
+---
+
+<span class="verdict label inline-flex items-center gap-2" data-verdict={verdict}>
+  <span class="lamp" aria-hidden="true"></span>
+  {t(`verdict.${verdict}`)}
+</span>
+
+<style>
+  .lamp {
+    width: 0.5625rem;
+    height: 0.5625rem;
+    border: 1.5px solid currentColor;
+    flex: none;
+  }
+  [data-verdict="keep"] {
+    color: var(--color-signal);
+  }
+  [data-verdict="keep"] .lamp {
+    background: currentColor;
+  }
+  [data-verdict="maybe"] {
+    color: var(--color-fg);
+  }
+  [data-verdict="maybe"] .lamp {
+    background: linear-gradient(to right, currentColor 50%, transparent 50%);
+  }
+  [data-verdict="drop"] {
+    color: var(--color-muted);
+  }
+</style>
