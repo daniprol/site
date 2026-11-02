@@ -1,0 +1,35 @@
+---
+import { hash, seedLabel } from "@/components/field/field";
+/** Full-bleed header art for a post or project, seeded by its slug. */
+import FieldGlyph from "@/components/field/FieldGlyph.astro";
+import { useTranslations, type Locale } from "@/i18n";
+
+interface Props {
+  seed: string;
+  locale: Locale;
+}
+const { seed, locale } = Astro.props;
+const t = useTranslations(locale);
+---
+
+<div class="banner">
+  <FieldGlyph seed={seed} variant="banner" />
+  <p class="banner__seed label frame">{`${t("field.seed")} ${seedLabel(hash(seed))}`}</p>
+</div>
+
+<style>
+  .banner {
+    position: relative;
+    height: clamp(11rem, 52vw, 24rem);
+    background: var(--color-field);
+    color: var(--color-field-ink);
+    overflow: hidden;
+  }
+  .banner__seed {
+    position: absolute;
+    inset: auto 0 0;
+    padding-block: 0.75rem;
+    color: var(--color-on-field);
+    text-transform: uppercase;
+  }
+</style>

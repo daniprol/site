@@ -1,0 +1,44 @@
+---
+/** A snack's verdict as a mark plus its word: keep (filled), maybe (half), drop (empty). */
+import { useTranslations, type Locale } from "@/i18n";
+
+interface Props {
+  verdict: "keep" | "maybe" | "drop";
+  locale: Locale;
+}
+const { verdict, locale } = Astro.props;
+const t = useTranslations(locale);
+---
+
+<span class="verdict label" data-verdict={verdict}>
+  <span class="verdict__mark" aria-hidden="true"></span>
+  {t(`verdict.${verdict}`)}
+</span>
+
+<style>
+  .verdict {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .verdict__mark {
+    width: 0.6rem;
+    height: 0.6rem;
+    border: 1.5px solid currentColor;
+  }
+  [data-verdict="keep"] {
+    color: var(--color-accent);
+  }
+  [data-verdict="keep"] .verdict__mark {
+    background: var(--color-flare);
+    border-color: var(--color-flare);
+  }
+  [data-verdict="maybe"] .verdict__mark {
+    background: linear-gradient(90deg, currentColor 50%, transparent 50%);
+  }
+  [data-verdict="drop"] {
+    color: var(--color-muted);
+  }
+</style>

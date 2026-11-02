@@ -1,21 +1,43 @@
 ---
-/** A titled block on an index page, with an optional "view all" link. */
+/** A titled block on an index page, with an optional "view all" link. The title is kinetic display type. */
 interface Props {
   title: string;
   href?: string;
   linkLabel?: string;
+  /** Position on the page, shown as a small counter ("01"). */
+  index?: number;
 }
-const { title, href, linkLabel } = Astro.props;
+const { title, href, linkLabel, index } = Astro.props;
 ---
 
-<section class="mt-16">
-  <div class="mb-4 flex items-baseline justify-between">
-    <h2 class="text-sm font-medium text-muted">{title}</h2>
+<section class="frame mt-20 md:mt-32">
+  <div class="mb-6 flex flex-wrap items-end justify-between gap-x-4 gap-y-2 md:mb-10">
+    <h2 class="section-title display display--kinetic">
+      {index !== undefined && <span class="label section-index">{String(index).padStart(2, "0")}</span>}
+      {title}
+    </h2>
     {href && (
-      <a href={href} class="text-sm text-muted hover:text-fg">
-        {linkLabel} →
+      <a href={href} class="label inline-flex min-h-11 shrink-0 items-center gap-2 uppercase hover:text-accent">
+        {linkLabel}
+        <span aria-hidden="true">→</span>
       </a>
     )}
   </div>
   <slot />
 </section>
+
+<style>
+  .section-title {
+    position: relative;
+    font-size: clamp(2.5rem, 11.2vw, 10rem);
+    color: var(--color-fg);
+  }
+  .section-index {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: translateY(-140%);
+    font-weight: 450;
+    color: var(--color-accent);
+  }
+</style>

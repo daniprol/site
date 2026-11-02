@@ -1,0 +1,154 @@
+---
+import FieldGlyph from "@/components/field/FieldGlyph.astro";
+/**
+ * Phone navigation: a full-screen field with the sections set large.
+ * Built on <details>, so it works without JS; a small script closes it on Escape.
+ */
+import { localePath, stripLocale, useTranslations, type Locale } from "@/i18n";
+import { site } from "@/site.config";
+
+import LanguagePicker from "./LanguagePicker.astro";
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const current = stripLocale(Astro.url.pathname);
+---
+
+<details class="menu md:hidden" data-menu>
+  <summary class="menu__toggle label">
+    <span class="menu__open">{t("nav.menu")}</span>
+    <span class="menu__close">{t("nav.close")}</span>
+  </summary>
+  <div class="menu__panel">
+    <div class="menu__art" aria-hidden="true">
+      <FieldGlyph seed="menu" variant="banner" />
+    </div>
+    <nav aria-label="Main">
+      <ol>
+        {site.nav.map(({ key, href }, i) => (
+          <li style={`--i:${i}`}>
+            <a href={localePath(locale, href)} aria-current={current.startsWith(href) ? "page" : undefined}>
+              <span class="label">{String(i + 1).padStart(2, "0")}</span>
+              {t(key)}
+            </a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+    <div class="menu__foot">
+      <LanguagePicker locale={locale} />
+      <a href={`mailto:${site.email}`} class="label">
+        {site.email}
+      </a>
+    </div>
+  </div>
+</details>
+
+<script>
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    document.querySelectorAll<HTMLDetailsElement>("[data-menu][open]").forEach((menu) => {
+      menu.open = false;
+      menu.querySelector("summary")?.focus();
+    });
+  });
+</script>
+
+<style>
+  .menu__toggle {
+    position: relative;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    min-width: 44px;
+    min-height: 44px;
+    padding-inline: 0.875rem;
+    margin-right: -0.875rem;
+    list-style: none;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+  }
+  .menu__toggle::-webkit-details-marker {
+    display: none;
+  }
+  .menu__close,
+  .menu[open] .menu__open {
+    display: none;
+  }
+  .menu[open] .menu__close {
+    display: inline;
+  }
+  .menu[open] .menu__toggle {
+    color: var(--color-on-field);
+  }
+  .menu__panel {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: calc(var(--header-h) + 2rem) var(--gutter) 1.5rem;
+    background: var(--color-field);
+    color: var(--color-on-field);
+    --color-muted: color-mix(in oklab, var(--color-on-field) 75%, transparent);
+    --color-fg: var(--color-on-field);
+    overflow-y: auto;
+    isolation: isolate;
+  }
+  .menu__art {
+    position: absolute;
+    inset: auto 0 4.5rem;
+    height: 38%;
+    z-index: -1;
+    color: color-mix(in oklab, var(--color-field-ink) 55%, transparent);
+    pointer-events: none;
+  }
+  .menu ol {
+    display: grid;
+    gap: 0.25rem;
+  }
+  .menu li a {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    font-family: var(--font-display);
+    font-size: clamp(2.75rem, 15vw, 5rem);
+    font-weight: 800;
+    font-stretch: 85%;
+    line-height: 1;
+    text-transform: uppercase;
+    padding-block: 0.15em;
+  }
+  .menu li a .label {
+    font-stretch: 100%;
+    color: var(--color-muted);
+  }
+  .menu li a[aria-current="page"] {
+    color: var(--color-flare);
+  }
+  .menu[open] li {
+    animation: rise 0.6s var(--ease-out-expo) both;
+    animation-delay: calc(var(--i) * 50ms);
+  }
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(1.5rem);
+      font-stretch: 50%;
+    }
+  }
+  .menu__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid color-mix(in oklab, var(--color-on-field) 35%, transparent);
+  }
+</style>

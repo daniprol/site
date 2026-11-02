@@ -1,4 +1,5 @@
 ---
+import FieldGlyph from "@/components/field/FieldGlyph.astro";
 import { useTranslations, type Locale } from "@/i18n";
 import { site } from "@/site.config";
 
@@ -6,24 +7,62 @@ interface Props {
   locale: Locale;
 }
 const t = useTranslations(Astro.props.locale);
+const [user, domain] = site.email.split("@");
 ---
 
-<footer class="mx-auto mt-24 flex max-w-3xl flex-wrap justify-between gap-4 px-5 py-8 text-sm text-muted">
-  <p>
-    © {new Date().getFullYear()} {site.name}
-  </p>
-  <nav aria-label="Elsewhere" class="flex gap-4">
-    <a href={site.socials.github} class="hover:text-fg">
-      GitHub
+<footer class="mt-32 md:mt-44">
+  <div class="h-10 text-accent">
+    <FieldGlyph seed="footer" variant="rule" />
+  </div>
+  <div class="frame pt-10 pb-8">
+    <p class="label text-muted">{t("footer.cta")}</p>
+    <a href={`mailto:${site.email}`} class="footer-mail display mt-3 block break-words">
+      {user}
+      <wbr />@{domain}
     </a>
-    <a href={site.socials.linkedin} class="hover:text-fg">
-      LinkedIn
-    </a>
-    <a href={`mailto:${site.email}`} class="hover:text-fg">
-      Email
-    </a>
-    <a href="/rss.xml" class="hover:text-fg">
-      {t("footer.rss")}
-    </a>
-  </nav>
+    <div class="label mt-14 flex flex-col gap-4 text-muted sm:flex-row sm:items-center sm:justify-between">
+      <nav aria-label="Elsewhere" class="-ml-2 flex flex-wrap">
+        <a href={site.socials.github} class="footer-link">
+          GitHub
+        </a>
+        <a href={site.socials.linkedin} class="footer-link">
+          LinkedIn
+        </a>
+        <a href="/rss.xml" class="footer-link">
+          {t("footer.rss")}
+        </a>
+      </nav>
+      <p>
+        © {new Date().getFullYear()} {site.name} · {site.location}
+      </p>
+    </div>
+  </div>
 </footer>
+
+<style>
+  .footer-mail {
+    font-size: clamp(1.9rem, 9.4vw, 7.5rem);
+    font-stretch: 78%;
+    text-transform: none;
+    letter-spacing: -0.02em;
+    transition:
+      font-stretch 0.7s var(--ease-out-expo),
+      color 0.3s;
+  }
+  .footer-mail:hover {
+    font-stretch: 100%;
+    color: var(--color-accent);
+  }
+  .footer-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding-inline: 0.5rem;
+    text-transform: uppercase;
+  }
+  .footer-link:hover {
+    color: var(--color-fg);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+</style>

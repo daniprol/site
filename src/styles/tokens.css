@@ -1,15 +1,45 @@
 /*
- * Design tokens. Each theme owns this file.
+ * Design tokens for the "Field" theme. Each theme owns this file.
  * Colours use light-dark() so each token is defined once for both modes.
+ * Palette: ultramarine field, blue-black ink, cool paper, one flare of signal orange.
  */
 @theme {
-  --font-sans: ui-sans-serif, system-ui, sans-serif;
-  --font-serif: ui-serif, Georgia, serif;
-  --font-mono: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  /* Faces are registered by the Fonts API (astro.config.ts) and loaded in BaseLayout. */
+  --font-sans: var(--font-schibsted), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-anybody), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-martian), ui-monospace, "SFMono-Regular", Menlo, monospace;
 
-  --color-bg: light-dark(oklch(0.99 0 0), oklch(0.17 0 0));
-  --color-fg: light-dark(oklch(0.2 0 0), oklch(0.93 0 0));
-  --color-muted: light-dark(oklch(0.5 0 0), oklch(0.65 0 0));
-  --color-border: light-dark(oklch(0.9 0 0), oklch(0.3 0 0));
-  --color-accent: light-dark(oklch(0.5 0.15 250), oklch(0.75 0.12 250));
+  --color-bg: light-dark(oklch(0.985 0.004 265), oklch(0.16 0.024 268));
+  --color-surface: light-dark(oklch(0.955 0.01 265), oklch(0.2 0.03 268));
+  --color-fg: light-dark(oklch(0.2 0.035 268), oklch(0.95 0.008 265));
+  --color-muted: light-dark(oklch(0.46 0.035 268), oklch(0.74 0.025 265));
+  --color-border: light-dark(oklch(0.87 0.018 268), oklch(0.31 0.035 268));
+  /* Ultramarine. Text-safe on bg in both modes (AA). */
+  --color-accent: light-dark(oklch(0.47 0.26 266), oklch(0.76 0.14 268));
+
+  /* The generative surface (hero, post headers) and what is drawn on it. */
+  --color-field: light-dark(oklch(0.47 0.26 266), oklch(0.29 0.16 266));
+  --color-field-ink: light-dark(oklch(0.96 0.03 265), oklch(0.8 0.13 268));
+  --color-on-field: oklch(0.98 0.01 265);
+  /* The attractor: one warm point in a cold system. Used for marks, never for body text. */
+  --color-flare: oklch(0.77 0.17 55);
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:root {
+  /* Layout: a 4-column phone grid that opens to 12 columns. */
+  --gutter: 1rem;
+  --measure: 40rem;
+  --header-h: 3.75rem;
+}
+@media (min-width: 48rem) {
+  :root {
+    --gutter: 2rem;
+  }
+}
+@media (min-width: 80rem) {
+  :root {
+    --gutter: 3rem;
+  }
 }

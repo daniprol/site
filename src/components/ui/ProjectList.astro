@@ -1,4 +1,5 @@
 ---
+import FieldGlyph from "@/components/field/FieldGlyph.astro";
 import { localePath, type Locale } from "@/i18n";
 import type { Project } from "@/lib/content";
 
@@ -9,14 +10,82 @@ interface Props {
 const { items, locale } = Astro.props;
 ---
 
-<ul class="grid gap-6 sm:grid-cols-2">
-  {items.map((project) => (
-    <li>
-      <a href={localePath(locale, `/projects/${project.id}`)} class="group block">
-        <p class="font-medium group-hover:text-accent">{project.data.title}</p>
-        <p class="mt-1 text-sm text-muted">{project.data.summary}</p>
-        <p class="mt-2 font-mono text-xs text-muted">{project.data.stack.join(" · ")}</p>
+<ol class="border-b border-border">
+  {items.map((project, i) => (
+    <li class="border-t border-border">
+      <a href={localePath(locale, `/projects/${project.id}`)} class="project-row">
+        <span class="label project-index text-accent">{String(i + 1).padStart(2, "0")}</span>
+        <span class="project-title">{project.data.title}</span>
+        <span class="project-body">
+          <span class="block text-muted">{project.data.summary}</span>
+          <span class="label mt-3 block text-muted">{project.data.stack.join(" / ")}</span>
+        </span>
+        <span class="project-tile">
+          <FieldGlyph seed={project.id} variant="tile" />
+        </span>
       </a>
     </li>
   ))}
-</ul>
+</ol>
+
+<style>
+  .project-row {
+    display: grid;
+    grid-template-columns: 1fr 3.5rem;
+    grid-template-areas: "index tile" "title tile" "body body";
+    column-gap: 1rem;
+    padding-block: 1.5rem;
+  }
+  @media (min-width: 64rem) {
+    .project-row {
+      grid-template-columns: 9rem minmax(0, 1.3fr) minmax(0, 1fr) 6.5rem;
+      grid-template-areas: "index title body tile";
+      column-gap: 2rem;
+      align-items: start;
+      padding-block: 2rem;
+    }
+  }
+  .project-index {
+    grid-area: index;
+    padding-top: 0.5rem;
+  }
+  .project-title {
+    grid-area: title;
+    font-family: var(--font-display);
+    font-size: clamp(2.5rem, 13vw, 5.5rem);
+    font-weight: 800;
+    font-stretch: 80%;
+    line-height: 0.95;
+    letter-spacing: -0.01em;
+    overflow-wrap: anywhere;
+    transition:
+      font-stretch 0.7s var(--ease-out-expo),
+      color 0.2s;
+  }
+  .project-row:hover .project-title {
+    font-stretch: 115%;
+    color: var(--color-accent);
+  }
+  .project-body {
+    grid-area: body;
+    margin-top: 0.75rem;
+    max-width: 34rem;
+  }
+  @media (min-width: 64rem) {
+    .project-body {
+      margin-top: 0.4rem;
+    }
+  }
+  .project-tile {
+    grid-area: tile;
+    align-self: start;
+    aspect-ratio: 1;
+    padding: 0.35rem;
+    background: var(--color-field);
+    color: var(--color-field-ink);
+    transition: transform 0.6s var(--ease-out-expo);
+  }
+  .project-row:hover .project-tile {
+    transform: rotate(-90deg);
+  }
+</style>

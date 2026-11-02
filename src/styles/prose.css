@@ -1,15 +1,79 @@
-/* Long-form typography for posts and case studies. Applied with the .prose-site class. */
-@layer components {
-  .prose-site {
+/* Long-form typography for posts and case studies. Applied with the .prose.prose-site class. Calm on purpose. */
+/* Utilities layer: the typography plugin emits .prose there, and these overrides must win. */
+@layer utilities {
+  .prose.prose-site {
     --tw-prose-body: var(--color-fg);
     --tw-prose-headings: var(--color-fg);
     --tw-prose-links: var(--color-accent);
     --tw-prose-bold: var(--color-fg);
-    --tw-prose-quotes: var(--color-muted);
+    --tw-prose-quotes: var(--color-fg);
+    --tw-prose-quote-borders: var(--color-field);
     --tw-prose-code: var(--color-fg);
     --tw-prose-hr: var(--color-border);
-    --tw-prose-bullets: var(--color-muted);
+    --tw-prose-bullets: var(--color-accent);
     --tw-prose-counters: var(--color-muted);
-    max-width: 65ch;
+    --tw-prose-captions: var(--color-muted);
+    --tw-prose-th-borders: var(--color-border);
+    --tw-prose-td-borders: var(--color-border);
+    max-width: var(--measure);
+    font-size: 1.0625rem;
+    line-height: 1.7;
+  }
+  @media (min-width: 48rem) {
+    .prose.prose-site {
+      font-size: 1.125rem;
+    }
+  }
+
+  .prose.prose-site :where(h2, h3) {
+    font-family: var(--font-display);
+    font-weight: 750;
+    font-stretch: 92%;
+    letter-spacing: -0.005em;
+    line-height: 1.1;
+  }
+  .prose.prose-site :where(h2) {
+    font-size: 1.6em;
+    margin-top: 2.4em;
+  }
+  .prose.prose-site :where(h3) {
+    font-size: 1.2em;
+  }
+  .prose.prose-site :where(a) {
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+    font-weight: 500;
+  }
+  .prose.prose-site :where(a):hover {
+    text-decoration-thickness: 2px;
+  }
+  .prose.prose-site :where(blockquote) {
+    font-style: normal;
+    font-weight: 500;
+    border-left-width: 3px;
+    padding-left: 1em;
+  }
+  .prose.prose-site :where(blockquote p)::before,
+  .prose.prose-site :where(blockquote p)::after {
+    content: none;
+  }
+  .prose.prose-site :where(:not(pre) > code) {
+    font-family: var(--font-mono);
+    font-size: 0.8em;
+    font-weight: 450;
+    padding: 0.15em 0.35em;
+    background: var(--color-surface);
+  }
+  .prose.prose-site :where(:not(pre) > code)::before,
+  .prose.prose-site :where(:not(pre) > code)::after {
+    content: none;
+  }
+  .prose.prose-site :where(.katex-display) {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-block: 0.5em;
+  }
+  .prose.prose-site :where(.expressive-code) {
+    margin-block: 2em;
   }
 }

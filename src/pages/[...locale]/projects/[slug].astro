@@ -1,7 +1,8 @@
 ---
 import { render } from "astro:content";
 
-import { DEFAULT_LOCALE, LOCALES, type Locale } from "@/i18n";
+import FieldBanner from "@/components/ui/FieldBanner.astro";
+import { DEFAULT_LOCALE, LOCALES, useTranslations, type Locale } from "@/i18n";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { getProjects, type Project } from "@/lib/content";
 
@@ -16,32 +17,59 @@ export async function getStaticPaths() {
 }
 
 const { locale, project } = Astro.props as { locale: Locale; project: Project };
+const t = useTranslations(locale);
 const { Content } = await render(project);
 const { title, summary, stack, repo, url, year } = project.data;
 ---
 
 <BaseLayout locale={locale} title={title} description={summary} canonicalPath={`/projects/${project.id}`}>
-  <article class="mt-12">
-    <header class="mb-10">
-      <h1 class="text-3xl font-semibold">{title}</h1>
-      <p class="mt-3 text-muted">{summary}</p>
-      <p class="mt-4 flex flex-wrap gap-x-4 font-mono text-xs text-muted">
-        <span>{year}</span>
-        <span>{stack.join(" · ")}</span>
-        {repo && (
-          <a href={repo} class="hover:text-fg">
-            Source ↗
-          </a>
-        )}
-        {url && (
-          <a href={url} class="hover:text-fg">
-            Live ↗
-          </a>
-        )}
-      </p>
+  <article>
+    <FieldBanner seed={project.id} locale={locale} />
+    <header class="frame pt-10 pb-10 md:pt-16 md:pb-14">
+      <div class="lg:ml-[11rem]">
+        <h1 class="project-heading">{title}</h1>
+        <p class="mt-5 max-w-2xl text-xl leading-snug md:text-2xl">{summary}</p>
+        <dl class="label mt-8 grid grid-cols-2 gap-4 border-t border-border pt-4 text-muted uppercase sm:flex sm:gap-10">
+          <div>
+            <dt class="opacity-70">{t("project.year")}</dt>
+            <dd class="text-fg">{year}</dd>
+          </div>
+          <div>
+            <dt class="opacity-70">{t("project.stack")}</dt>
+            <dd class="text-fg">{stack.join(" / ")}</dd>
+          </div>
+          {(repo || url) && (
+            <div class="col-span-2 flex gap-6">
+              {repo && (
+                <a href={repo} class="inline-flex min-h-11 items-center text-accent hover:underline">
+                  Source ↗
+                </a>
+              )}
+              {url && (
+                <a href={url} class="inline-flex min-h-11 items-center text-accent hover:underline">
+                  Live ↗
+                </a>
+              )}
+            </div>
+          )}
+        </dl>
+      </div>
     </header>
-    <div class="prose-site prose" lang="en">
-      <Content />
+    <div class="frame">
+      <div class="prose-site prose lg:ml-[11rem]" lang="en">
+        <Content />
+      </div>
     </div>
   </article>
 </BaseLayout>
+
+<style>
+  .project-heading {
+    font-family: var(--font-display);
+    font-size: clamp(3.5rem, 20vw, 10rem);
+    font-weight: 800;
+    font-stretch: 80%;
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+  }
+</style>

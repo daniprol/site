@@ -1,4 +1,5 @@
 ---
+import FieldGlyph from "@/components/field/FieldGlyph.astro";
 import { localePath, type Locale } from "@/i18n";
 import type { Post } from "@/lib/content";
 
@@ -11,18 +12,85 @@ interface Props {
 const { items, locale } = Astro.props;
 ---
 
-<ul class="divide-y divide-border">
+<ul class="border-b border-border">
   {items.map(({ post, slug }) => (
-    <li>
-      <a
-        href={localePath(locale, `/writing/${slug}`)}
-        class="group flex flex-col gap-1 py-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6"
-      >
-        <span class="group-hover:text-accent" transition:name={`post-title-${slug}`}>
-          {post.data.title}
+    <li class="border-t border-border">
+      <a href={localePath(locale, `/writing/${slug}`)} class="post-row group">
+        <span class="post-tile">
+          <FieldGlyph seed={slug} variant="tile" />
         </span>
-        <DateTime date={post.data.date} locale={locale} format="short" class="shrink-0 text-sm text-muted" />
+        <span class="post-main">
+          <span class="post-title" transition:name={`post-title-${slug}`}>
+            {post.data.title}
+          </span>
+          <span class="mt-2 hidden max-w-xl text-muted md:block">{post.data.description}</span>
+        </span>
+        <DateTime date={post.data.date} locale={locale} format="short" class="post-date label text-muted" />
       </a>
     </li>
   ))}
 </ul>
+
+<style>
+  .post-row {
+    display: grid;
+    grid-template-columns: 3.5rem 1fr;
+    grid-template-areas: "tile title" "tile date";
+    column-gap: 1rem;
+    row-gap: 0.4rem;
+    padding-block: 1.25rem;
+  }
+  @media (min-width: 48rem) {
+    .post-row {
+      grid-template-columns: 9rem 1fr 6.5rem;
+      grid-template-areas: "date title tile";
+      column-gap: 2rem;
+      padding-block: 1.75rem;
+    }
+  }
+  .post-tile {
+    grid-area: tile;
+    align-self: start;
+    aspect-ratio: 1;
+    padding: 0.35rem;
+    background: var(--color-field);
+    color: var(--color-field-ink);
+    transition: transform 0.6s var(--ease-out-expo);
+  }
+  .post-row:hover .post-tile {
+    transform: rotate(90deg);
+  }
+  .post-main {
+    grid-area: title;
+    min-width: 0;
+  }
+  .post-title {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 700;
+    font-stretch: 88%;
+    line-height: 1.1;
+    text-wrap: balance;
+    transition:
+      font-stretch 0.5s var(--ease-out-expo),
+      color 0.2s;
+  }
+  @media (min-width: 48rem) {
+    .post-title {
+      font-size: 2rem;
+    }
+  }
+  .post-row:hover .post-title {
+    color: var(--color-accent);
+    font-stretch: 100%;
+  }
+  .post-date {
+    grid-area: date;
+  }
+  @media (min-width: 48rem) {
+    .post-date {
+      padding-top: 0.6rem;
+    }
+  }
+</style>

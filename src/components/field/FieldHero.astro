@@ -1,0 +1,145 @@
+---
+/**
+ * Home hero: a full-bleed field where the name assembles out of moving particles.
+ * Without JS (or before it runs) the same name is set in type, so nothing is lost.
+ */
+interface Props {
+  name: string;
+  caption: string;
+  hint: string;
+}
+const { name, caption, hint } = Astro.props;
+---
+
+<section class="hero" data-field data-name={name} data-seed="daniel-prol" aria-label={name}>
+  <canvas class="hero__canvas" aria-hidden="true"></canvas>
+  <div class="hero__type" aria-hidden="true">
+    {name.split(" ").map((word) => (
+      <span>{word}</span>
+    ))}
+  </div>
+  <div class="hero__foot">
+    <slot />
+    <p class="hero__caption">
+      <span>{caption}</span>
+      <span class="hero__hint">{hint}</span>
+      <span class="hero__readout" data-field-readout aria-hidden="true"></span>
+    </p>
+  </div>
+</section>
+
+<script>
+  import { mountField } from "./engine";
+
+  let unmount: (() => void) | undefined;
+  const start = () => {
+    unmount?.();
+    const root = document.querySelector<HTMLElement>("[data-field]");
+    unmount = root ? mountField(root) : undefined;
+  };
+  document.addEventListener("astro:page-load", start);
+  document.addEventListener("astro:before-swap", () => {
+    unmount?.();
+    unmount = undefined;
+  });
+</script>
+
+<style>
+  .hero {
+    position: relative;
+    isolation: isolate;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    min-height: max(34rem, 86svh);
+    background: var(--color-field);
+    color: var(--color-on-field);
+    overflow: hidden;
+    touch-action: pan-y;
+  }
+  @media (min-width: 64rem) {
+    .hero {
+      min-height: max(40rem, 100svh);
+    }
+  }
+  .hero__canvas {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Static fallback: the name set in type, roughly where the particles will land. */
+  .hero__type {
+    align-self: center;
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: 0.25em;
+    padding-inline: var(--gutter);
+    font-family: var(--font-display);
+    font-size: clamp(5rem, 27vw, 15rem);
+    font-weight: 800;
+    font-stretch: 112%;
+    line-height: 0.86;
+    text-transform: uppercase;
+    color: var(--color-field-ink);
+  }
+  .hero__type span {
+    width: 100%;
+  }
+  @media (min-width: 45rem) {
+    .hero__type {
+      font-size: clamp(5rem, 15vw, 17rem);
+      font-stretch: 125%;
+    }
+    .hero__type span {
+      width: auto;
+    }
+  }
+  :global(.hero.is-live) .hero__type {
+    visibility: hidden;
+  }
+
+  .hero__foot {
+    display: grid;
+    gap: 1.25rem;
+    padding: 0 var(--gutter) 1.25rem;
+  }
+  .hero__caption {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.25rem 1.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid color-mix(in oklab, var(--color-on-field) 35%, transparent);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.02em;
+  }
+  .hero__hint,
+  .hero__readout {
+    opacity: 0.8;
+  }
+  /* Nothing to disturb until the field is running. */
+  .hero:not(:global(.is-live)) .hero__hint {
+    display: none;
+  }
+  .hero__readout {
+    font-variant-numeric: tabular-nums;
+    white-space: pre;
+  }
+  .hero__readout:empty {
+    display: none;
+  }
+  @media (hover: none) {
+    .hero__readout {
+      display: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero__hint,
+    .hero__readout {
+      display: none;
+    }
+  }
+</style>

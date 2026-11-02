@@ -1,4 +1,5 @@
 ---
+import FieldGlyph from "@/components/field/FieldGlyph.astro";
 import { DEFAULT_LOCALE, useTranslations } from "@/i18n";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 
@@ -6,11 +7,19 @@ const t = useTranslations(DEFAULT_LOCALE);
 ---
 
 <BaseLayout locale={DEFAULT_LOCALE} title={t("notFound.title")} description={t("notFound.body")}>
-  <h1 class="mt-24 text-2xl font-semibold">{t("notFound.title")}</h1>
-  <p class="mt-2 text-muted">{t("notFound.body")}</p>
-  <p class="mt-8">
-    <a href="/" class="text-accent">
-      ← {t("nav.home")}
-    </a>
-  </p>
+  <div class="frame grid gap-10 pt-16 md:grid-cols-[1fr_20rem] md:items-end md:pt-28">
+    <div>
+      <p class="label text-accent uppercase">404</p>
+      <h1 class="display mt-4 text-[clamp(3rem,13vw,9rem)]">{t("notFound.title")}</h1>
+      <p class="mt-6 text-lg text-muted">{t("notFound.body")}</p>
+      <p class="mt-8">
+        <a href="/" class="link label inline-flex min-h-11 items-center uppercase">
+          ← {t("nav.home")}
+        </a>
+      </p>
+    </div>
+    <div class="aspect-square w-40 bg-(--color-field) p-3 text-(--color-field-ink) md:w-full">
+      <FieldGlyph seed="404-lost" variant="tile" />
+    </div>
+  </div>
 </BaseLayout>

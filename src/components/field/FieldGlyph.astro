@@ -1,0 +1,83 @@
+---
+/**
+ * Static generative art, drawn at build time from a seed (usually a slug): streamlines
+ * through the site's vector field, spiralling into one attractor. No client JS.
+ * - banner: post and project headers
+ * - tile: list thumbnails
+ * - rule: a section divider
+ */
+import { hash, streamlines } from "./field";
+
+interface Props {
+  seed: string;
+  variant?: "banner" | "tile" | "rule";
+  class?: string;
+}
+const { seed, variant = "tile", class: className } = Astro.props;
+
+const PRESETS = {
+  banner: { w: 1200, h: 400, lines: 96, steps: 34, step: 0.022, pull: 0.8, precision: 0 },
+  tile: { w: 100, h: 100, lines: 44, steps: 30, step: 0.03, pull: 0.9, precision: 1 },
+  rule: { w: 1200, h: 40, lines: 160, steps: 40, step: 0.05, pull: 0, precision: 0 },
+} as const;
+const p = PRESETS[variant];
+const scale = p.h;
+const n = hash(seed);
+const { lines, sink } = streamlines(n, {
+  aspect: p.w / p.h,
+  lines: p.lines,
+  steps: p.steps,
+  step: p.step,
+  pull: p.pull,
+});
+
+// Relative path commands keep the markup small; three groups give the lines depth.
+const f = 10 ** p.precision;
+const round = (x: number) => Math.round(x * scale * f) / f;
+const groups: string[] = ["", "", ""];
+lines.forEach(([first = [0, 0], ...rest], i) => {
+  let [px, py] = [round(first[0]), round(first[1])];
+  let d = `M${px} ${py}`;
+  for (const [u, v] of rest) {
+    const [x, y] = [round(u), round(v)];
+    d += `l${Math.round((x - px) * f) / f} ${Math.round((y - py) * f) / f}`;
+    [px, py] = [x, y];
+  }
+  groups[i % 3] += d;
+});
+const [sx, sy] = [round(sink[0]), round(sink[1])];
+const dot = variant === "tile" ? 5 : 7;
+---
+
+<svg
+  viewBox={`0 0 ${p.w} ${p.h}`}
+  preserveAspectRatio={variant === "tile" ? "xMidYMid meet" : "xMidYMid slice"}
+  class:list={["field-glyph", `field-glyph--${variant}`, className]}
+  aria-hidden="true"
+  focusable="false"
+>
+  <g fill="none" stroke="currentColor" stroke-linecap="round" vector-effect="non-scaling-stroke">
+    {groups.map((d, i) => (
+      <path d={d} stroke-width={[1, 1.4, 0.7][i]} opacity={[0.9, 0.55, 0.35][i]} vector-effect="non-scaling-stroke" />
+    ))}
+  </g>
+  {variant !== "rule" && (
+    <g class="field-glyph__sink">
+      <circle cx={sx} cy={sy} r={dot * 2.4} fill="none" stroke="currentColor" vector-effect="non-scaling-stroke" />
+      <circle cx={sx} cy={sy} r={dot} />
+    </g>
+  )}
+</svg>
+
+<style>
+  .field-glyph {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+  .field-glyph__sink {
+    fill: var(--color-flare);
+    stroke: var(--color-flare);
+  }
+</style>
