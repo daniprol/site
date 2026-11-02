@@ -1,0 +1,35 @@
+---
+/** The title of an index page, written straight onto the mat. */
+interface Props {
+  title: string;
+  description?: string;
+}
+const { title, description } = Astro.props;
+---
+
+<header class="head">
+  <h1>{title}</h1>
+  {description && <p>{description}</p>}
+</header>
+
+<style>
+  .head {
+    max-width: 64rem;
+    margin: 1.5rem auto 2rem;
+    padding-inline: 0.5rem;
+    color: var(--color-mat-ink);
+  }
+  h1 {
+    font-size: clamp(3.5rem, 17vw, 8rem);
+    font-weight: 800;
+    font-stretch: 75%;
+    line-height: 0.85;
+    letter-spacing: -0.045em;
+  }
+  p {
+    max-width: 34rem;
+    margin-top: 0.9rem;
+    font-size: 1.0625rem;
+    color: var(--color-mat-ink-soft);
+  }
+</style>

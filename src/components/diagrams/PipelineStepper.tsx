@@ -1,5 +1,6 @@
 /**
  * Example interactive diagram: a pipeline the reader steps through.
+ * Stages are paper tiles on a strip; the active one is a lifted sticky note.
  * Rendered to HTML at build time; React hydrates only when it scrolls into view (client:visible).
  */
 import { useState } from "react";
@@ -11,55 +12,65 @@ const STAGES = [
   { id: "return", label: "Return", detail: "Hits cross the PyO3 boundary as plain Python objects." },
 ] as const;
 
+const TONES = [
+  "var(--color-sticky-yellow)",
+  "var(--color-sticky-pink)",
+  "var(--color-sticky-sky)",
+  "var(--color-sticky-orange)",
+];
+
+const button =
+  "inline-flex min-h-11 cursor-pointer items-center px-4 font-mono text-[0.6875rem] font-medium tracking-wide uppercase shadow-[var(--shadow-paper)] disabled:cursor-default disabled:opacity-40";
+
 export default function PipelineStepper() {
   const [active, setActive] = useState(0);
   const stage = STAGES[active] ?? STAGES[0];
 
   return (
-    <div className="rounded-lg border border-border p-4 sm:p-6">
-      <svg viewBox="0 0 400 60" className="w-full" role="img" aria-label="Pipeline stages">
+    <div className="bg-paper-2 p-4 sm:p-6">
+      <ol className="grid grid-cols-4 gap-2" aria-label="Pipeline stages">
         {STAGES.map((s, i) => (
-          <g key={s.id} transform={`translate(${i * 100 + 10}, 10)`}>
-            <rect
-              width="80"
-              height="40"
-              rx="6"
-              className="transition-colors duration-300"
-              fill={i === active ? "var(--color-accent)" : "transparent"}
-              stroke={i <= active ? "var(--color-accent)" : "var(--color-border)"}
-            />
-            <text
-              x="40"
-              y="25"
-              textAnchor="middle"
-              fontSize="12"
-              fill={i === active ? "var(--color-bg)" : "var(--color-fg)"}
+          <li key={s.id}>
+            <button
+              type="button"
+              onClick={() => setActive(i)}
+              aria-current={i === active ? "step" : undefined}
+              className="flex aspect-square w-full cursor-pointer flex-col justify-between p-2 text-left transition-[rotate,translate,box-shadow] duration-300 ease-[var(--ease-out-soft)] sm:p-3"
+              style={{
+                background: i === active ? TONES[i] : i < active ? "var(--color-paper)" : "transparent",
+                color: i === active ? "var(--color-sticky-ink)" : "var(--color-ink)",
+                outline: i > active ? "1px dashed var(--color-ink-soft)" : undefined,
+                outlineOffset: "-1px",
+                boxShadow: i === active ? "var(--shadow-lifted)" : i < active ? "var(--shadow-paper)" : "none",
+                rotate: i === active ? `${i % 2 ? 2 : -2}deg` : "0deg",
+                translate: i === active ? "0 -4px" : "0 0",
+              }}
             >
-              {s.label}
-            </text>
-            {i < STAGES.length - 1 && <line x1="82" y1="20" x2="98" y2="20" stroke="var(--color-border)" />}
-          </g>
+              <span className="font-mono text-[0.625rem]">0{i + 1}</span>
+              <span className="font-display text-sm font-bold sm:text-lg">{s.label}</span>
+            </button>
+          </li>
         ))}
-      </svg>
-      <p className="mt-4 min-h-12 text-sm" aria-live="polite">
+      </ol>
+      <p className="mt-5 min-h-12 text-base" aria-live="polite">
         {stage.detail}
       </p>
       <div className="mt-4 flex gap-2">
         <button
           type="button"
-          className="rounded border border-border px-3 py-1 text-sm disabled:opacity-40"
+          className={`${button} bg-paper text-ink`}
           disabled={active === 0}
           onClick={() => setActive((i) => i - 1)}
         >
-          Back
+          ← Back
         </button>
         <button
           type="button"
-          className="rounded border border-border px-3 py-1 text-sm disabled:opacity-40"
+          className={`${button} bg-ink text-paper`}
           disabled={active === STAGES.length - 1}
           onClick={() => setActive((i) => i + 1)}
         >
-          Next step
+          Next step →
         </button>
       </div>
     </div>

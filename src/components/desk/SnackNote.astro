@@ -1,0 +1,95 @@
+---
+/** A snack as a sticky note, with a rubber-stamped verdict. */
+import { render } from "astro:content";
+
+import DateTime from "@/components/ui/DateTime.astro";
+import Stamp from "@/components/ui/Stamp.astro";
+import { localePath, type Locale } from "@/i18n";
+import type { Snack } from "@/lib/content";
+
+interface Props {
+  snack: Snack;
+  index: number;
+  locale: Locale;
+}
+const { snack, index, locale } = Astro.props;
+const { Content } = await render(snack);
+const tones = ["yellow", "pink", "sky", "orange", "yellow"];
+---
+
+<article class="note sticky" data-tone={tones[index % tones.length]}>
+  <p class="meta label">
+    <span>{snack.data.kind}</span>
+    <DateTime date={snack.data.date} locale={locale} format="short" />
+  </p>
+  <h3 class="title">
+    <a href={`${localePath(locale, "/snacks")}#${snack.id}`} class="stretched">
+      {snack.data.title}
+    </a>
+  </h3>
+  <div class="text">
+    <Content />
+  </div>
+  <p class="verdict">
+    <Stamp verdict={snack.data.verdict} locale={locale} />
+  </p>
+</article>
+
+<style>
+  .note {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 11.5rem;
+    padding: 0.8rem 0.85rem 0.9rem;
+  }
+  .meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.5rem;
+    color: var(--color-sticky-ink-soft);
+    font-size: 0.5625rem;
+  }
+  .title {
+    margin-top: 0.5rem;
+    font-size: 1.3rem;
+    font-weight: 700;
+    font-stretch: 88%;
+    line-height: 1;
+  }
+  .title a {
+    color: inherit;
+    text-decoration: none;
+  }
+  .note:hover .title a {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 3px;
+  }
+  .text {
+    margin-top: 0.4rem;
+    font-size: 0.8125rem;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .verdict {
+    margin-top: auto;
+    padding-top: 0.6rem;
+    text-align: right;
+  }
+  @media (min-width: 64rem) {
+    .note {
+      aspect-ratio: 1;
+      padding: 1rem 1.05rem 1rem;
+    }
+    .title {
+      font-size: 1.5rem;
+    }
+    .text {
+      font-size: 0.875rem;
+    }
+  }
+</style>

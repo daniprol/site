@@ -1,4 +1,5 @@
 ---
+import Sheet from "@/components/ui/Sheet.astro";
 import { localeParams, useTranslations } from "@/i18n";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { education, experience, site } from "@/site.config";
@@ -10,52 +11,118 @@ const t = useTranslations(locale);
 ---
 
 <BaseLayout locale={locale} title={t("about.title")} description={`${site.name}, ${site.role}.`}>
-  <h1 class="mt-12 text-2xl font-semibold">{t("about.title")}</h1>
-  <div class="prose-site prose mt-6">
-    <p>
-      I'm a software and AI engineer based in {site.location}. I studied mathematics and economics, then spent the last
-      few years building full-stack products and AI systems. TODO: write this in your own words, and translate it in a
-      per-locale file if you want.
-    </p>
-  </div>
+  <Sheet>
+    <p class="dymo role">{site.role}</p>
+    <h1>{t("about.title")}</h1>
+    <div class="prose-site intro prose">
+      <p>
+        I'm a software and AI engineer based in {site.location}. I studied mathematics and economics, then spent the
+        last few years building full-stack products and AI systems. TODO: write this in your own words, and translate it
+        in a per-locale file if you want.
+      </p>
+    </div>
 
-  <section class="mt-14">
-    <h2 class="mb-4 text-sm font-medium text-muted">{t("about.experience")}</h2>
-    <ul class="divide-y divide-border">
-      {experience.map((job) => (
-        <li class="grid gap-1 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
-          <span class="font-mono text-xs text-muted sm:pt-1">{job.period}</span>
-          <div>
-            <p class="font-medium">
-              {job.role} · {job.company}
+    <section>
+      <h2>{t("about.experience")}</h2>
+      <ul>
+        {experience.map((job) => (
+          <li>
+            <span class="period label">{job.period}</span>
+            <div>
+              <p class="what">
+                {job.role} · {job.company}
+              </p>
+              <p class="detail">{job.summary}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section>
+      <h2>{t("about.education")}</h2>
+      <ul>
+        {education.map((item) => (
+          <li>
+            <span class="period label">{item.period}</span>
+            <p class="what">
+              {item.degree} · <span class="detail">{item.school}</span>
             </p>
-            <p class="mt-1 text-muted">{job.summary}</p>
-          </div>
-        </li>
-      ))}
-    </ul>
-  </section>
+          </li>
+        ))}
+      </ul>
+    </section>
 
-  <section class="mt-14">
-    <h2 class="mb-4 text-sm font-medium text-muted">{t("about.education")}</h2>
-    <ul class="divide-y divide-border">
-      {education.map((item) => (
-        <li class="grid gap-1 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
-          <span class="font-mono text-xs text-muted sm:pt-1">{item.period}</span>
-          <p>
-            {item.degree} · <span class="text-muted">{item.school}</span>
-          </p>
-        </li>
-      ))}
-    </ul>
-  </section>
-
-  <section class="mt-14">
-    <h2 class="mb-4 text-sm font-medium text-muted">{t("about.contact")}</h2>
-    <p>
-      <a href={`mailto:${site.email}`} class="text-accent">
-        {site.email}
-      </a>
-    </p>
-  </section>
+    <section>
+      <h2>{t("about.contact")}</h2>
+      <p>
+        <a href={`mailto:${site.email}`} class="email">
+          {site.email}
+        </a>
+      </p>
+    </section>
+  </Sheet>
 </BaseLayout>
+
+<style>
+  .role {
+    font-size: 0.6875rem;
+    rotate: -1.5deg;
+  }
+  h1 {
+    margin-top: 1.25rem;
+    font-size: clamp(3.5rem, 16vw, 7rem);
+    font-weight: 800;
+    font-stretch: 75%;
+    line-height: 0.85;
+    letter-spacing: -0.045em;
+  }
+  .intro {
+    margin-top: 1.5rem;
+  }
+  section {
+    margin-top: 3rem;
+  }
+  h2 {
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--color-ink);
+    font-size: 1.5rem;
+    font-weight: 750;
+    font-stretch: 85%;
+  }
+  li {
+    display: grid;
+    gap: 0.25rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--color-paper-edge);
+  }
+  .period {
+    color: var(--color-ink-soft);
+  }
+  .what {
+    font-weight: 600;
+  }
+  .detail {
+    color: var(--color-ink-soft);
+    font-weight: 400;
+  }
+  .email {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    margin-top: 0.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.875rem;
+    color: var(--color-link);
+    overflow-wrap: anywhere;
+  }
+  @media (min-width: 48rem) {
+    li {
+      grid-template-columns: 10rem 1fr;
+      gap: 1.5rem;
+    }
+    .period {
+      padding-top: 0.3rem;
+    }
+  }
+</style>

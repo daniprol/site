@@ -1,0 +1,85 @@
+---
+/**
+ * A cut-paper composition standing in for a screenshot. Generated from a seed (the
+ * project slug), so every project gets its own picture and it never changes.
+ */
+interface Props {
+  seed: string;
+}
+const { seed } = Astro.props;
+
+// FNV-1a, then a small LCG for a deterministic stream of numbers.
+let h = 2166136261;
+for (const ch of seed) h = Math.imul(h ^ ch.charCodeAt(0), 16777619) >>> 0;
+const rand = () => (h = (Math.imul(h, 1664525) + 1013904223) >>> 0) / 2 ** 32;
+function pick<T>(xs: readonly T[]): T {
+  return xs[Math.floor(rand() * xs.length)] as T;
+}
+
+const INKS = [
+  "var(--color-sticky-yellow)",
+  "var(--color-sticky-pink)",
+  "var(--color-sticky-orange)",
+  "var(--color-cobalt)",
+  "var(--color-stamp)",
+  "var(--color-mat)",
+] as const;
+// Grounds are sticky colours, so the pictures stay bright on dark paper too.
+const GROUNDS = [
+  "var(--color-sticky-sky)",
+  "var(--color-sticky-yellow)",
+  "var(--color-sticky-pink)",
+  "var(--color-sticky-orange)",
+] as const;
+const ground = pick(GROUNDS);
+const C = 40; // cell size; the picture is 4 x 3 cells
+
+/** One shape filling a square of side s at (x, y). */
+function shape(kind: number, x: number, y: number, s: number): string {
+  const r = s / 2;
+  switch (kind) {
+    case 0:
+      return `M${x + r} ${y}a${r} ${r} 0 1 1 0 ${s}a${r} ${r} 0 1 1 0-${s}Z`; // circle
+    case 1:
+      return `M${x} ${y}h${s}v${s}a${s} ${s} 0 0 1-${s}-${s}Z`; // quarter
+    case 2:
+      return `M${x} ${y + s}a${r} ${r} 0 0 1 ${s} 0Z`; // half
+    case 3:
+      return `M${x} ${y + s}L${x + r} ${y}L${x + s} ${y + s}Z`; // triangle
+    default:
+      return `M${x} ${y}h${s}v${s}h-${s}Z`; // square
+  }
+}
+
+const cells = Array.from({ length: 12 }, (_, i) => i).sort(() => rand() - 0.5);
+const big = { x: Math.floor(rand() * 3) * C, y: Math.floor(rand() * 2) * C };
+const shapes = [
+  { d: shape(Math.floor(rand() * 4), big.x, big.y, C * 2), fill: pick(INKS) },
+  ...cells.slice(0, 4).map((i) => ({
+    d: shape(Math.floor(rand() * 5), (i % 4) * C, Math.floor(i / 4) * C, C),
+    fill: pick(INKS),
+  })),
+].map((s) => ({ ...s, fill: s.fill === ground ? "var(--color-dymo)" : s.fill }));
+---
+
+<svg class="art" viewBox="0 0 160 120" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+  <rect width="160" height="120" fill={ground}></rect>
+  {shapes.map(({ d, fill }) => (
+    <path d={d} fill={fill} />
+  ))}
+</svg>
+
+<style>
+  .art {
+    display: block;
+    width: 100%;
+    height: auto;
+    filter: drop-shadow(0 0.6px 0.4px oklch(0 0 0 / 0.25));
+  }
+  path {
+    mix-blend-mode: multiply;
+  }
+  :global([data-theme="dark"]) path {
+    mix-blend-mode: normal;
+  }
+</style>

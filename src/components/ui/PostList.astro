@@ -11,18 +11,69 @@ interface Props {
 const { items, locale } = Astro.props;
 ---
 
-<ul class="divide-y divide-border">
+<ul class="posts">
   {items.map(({ post, slug }) => (
     <li>
-      <a
-        href={localePath(locale, `/writing/${slug}`)}
-        class="group flex flex-col gap-1 py-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6"
-      >
-        <span class="group-hover:text-accent" transition:name={`post-title-${slug}`}>
+      <a href={localePath(locale, `/writing/${slug}`)} class="row">
+        <DateTime date={post.data.date} locale={locale} format="short" class="date label" />
+        <span class="title" transition:name={`post-title-${slug}`}>
           {post.data.title}
         </span>
-        <DateTime date={post.data.date} locale={locale} format="short" class="shrink-0 text-sm text-muted" />
+        <span class="desc">{post.data.description}</span>
       </a>
     </li>
   ))}
 </ul>
+
+<style>
+  .posts {
+    border-top: 2px solid var(--color-ink);
+  }
+  li {
+    border-bottom: 1px solid var(--color-paper-edge);
+  }
+  .row {
+    display: grid;
+    gap: 0.35rem;
+    padding: 1.1rem 0 1.2rem;
+    color: inherit;
+    text-decoration: none;
+  }
+  .date {
+    color: var(--color-ink-soft);
+  }
+  .title {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 700;
+    font-stretch: 88%;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    text-wrap: balance;
+  }
+  .desc {
+    color: var(--color-ink-soft);
+    font-size: 0.9375rem;
+  }
+  .row:hover .title {
+    text-decoration: underline;
+    text-decoration-thickness: 3px;
+    text-underline-offset: 4px;
+    text-decoration-color: var(--color-stamp);
+  }
+  @media (min-width: 48rem) {
+    .row {
+      grid-template-columns: 7.5rem 1fr;
+      column-gap: 1.5rem;
+    }
+    .date {
+      padding-top: 0.45rem;
+    }
+    .desc {
+      grid-column: 2;
+    }
+    .title {
+      font-size: 1.85rem;
+    }
+  }
+</style>

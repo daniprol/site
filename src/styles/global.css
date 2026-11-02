@@ -4,6 +4,7 @@
  */
 @import "tailwindcss";
 @import "./tokens.css";
+@import "./materials.css";
 @import "./prose.css";
 
 @plugin "@tailwindcss/typography";
@@ -14,10 +15,11 @@
 @layer base {
   html {
     color-scheme: light dark;
-    background: var(--color-bg);
-    color: var(--color-fg);
+    background: var(--color-mat);
+    color: var(--color-ink);
     -webkit-text-size-adjust: 100%;
     text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
   }
   html[data-theme="light"] {
     color-scheme: light;
@@ -28,12 +30,29 @@
 
   body {
     font-family: var(--font-sans);
+    font-size: 1.0625rem;
+    line-height: 1.55;
     min-height: 100dvh;
+    background: var(--mat-grid), var(--color-mat);
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    letter-spacing: -0.02em;
+    line-height: 1.02;
+  }
+
+  ::selection {
+    background: var(--color-sticky-yellow);
+    color: var(--color-sticky-ink);
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
+    outline: 3px solid var(--color-focus);
+    outline-offset: 3px;
   }
 
   @media (prefers-reduced-motion: reduce) {

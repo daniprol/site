@@ -1,0 +1,36 @@
+---
+/** Positions one thing on the desk. The thing itself is the slot. */
+import { PLACEMENTS, type PlacementId } from "./layout";
+
+interface Props {
+  id: PlacementId;
+  /** Decorative objects are hidden from assistive tech and from the tidy view. */
+  decor?: boolean;
+  /** Only shown on the desktop canvas (e.g. "drag me" hints). */
+  deskOnly?: boolean;
+}
+const { id, decor = false, deskOnly = false } = Astro.props;
+const p = PLACEMENTS[id];
+const style = [
+  `--x:${p.x}px`,
+  `--y:${p.y}px`,
+  `--w:${p.w}px`,
+  `--r:${p.r}deg`,
+  `--mc:${p.mc}`,
+  `--mr:${p.mr}deg`,
+  `--mt:${p.mt ?? 0}px`,
+  `--tc:${p.tc || 12}`,
+  `view-transition-name:desk-${id}`,
+].join(";");
+---
+
+<div
+  class="obj"
+  data-obj={id}
+  data-decor={decor || p.tc === 0 ? "" : undefined}
+  data-desk-only={deskOnly ? "" : undefined}
+  aria-hidden={decor ? "true" : undefined}
+  style={style}
+>
+  <slot />
+</div>

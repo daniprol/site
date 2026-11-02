@@ -1,15 +1,94 @@
 /*
- * Design tokens. Each theme owns this file.
+ * Design tokens for "Canvas": a cutting mat, paper, stickies and inks.
  * Colours use light-dark() so each token is defined once for both modes.
+ * Font variables (--ff-*) come from Astro's Fonts API (see astro.config.ts).
  */
 @theme {
-  --font-sans: ui-sans-serif, system-ui, sans-serif;
-  --font-serif: ui-serif, Georgia, serif;
-  --font-mono: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-sans: var(--ff-body), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--ff-display), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--ff-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-hand: var(--ff-hand), "Segoe Print", cursive;
 
-  --color-bg: light-dark(oklch(0.99 0 0), oklch(0.17 0 0));
-  --color-fg: light-dark(oklch(0.2 0 0), oklch(0.93 0 0));
-  --color-muted: light-dark(oklch(0.5 0 0), oklch(0.65 0 0));
-  --color-border: light-dark(oklch(0.9 0 0), oklch(0.3 0 0));
-  --color-accent: light-dark(oklch(0.5 0.15 250), oklch(0.75 0.12 250));
+  /* The mat: the surface everything sits on. */
+  --color-mat: light-dark(oklch(0.52 0.115 160), oklch(0.235 0.04 165));
+  --color-mat-line: light-dark(oklch(0.585 0.11 160), oklch(0.285 0.045 165));
+  --color-mat-line-strong: light-dark(oklch(0.65 0.1 160), oklch(0.34 0.05 165));
+  --color-mat-ink: light-dark(oklch(0.98 0.02 150), oklch(0.88 0.05 155));
+  --color-mat-ink-soft: light-dark(oklch(0.9 0.05 155), oklch(0.72 0.05 160));
+
+  /* Paper stocks. */
+  --color-paper: light-dark(oklch(0.988 0.006 100), oklch(0.275 0.012 160));
+  --color-paper-2: light-dark(oklch(0.95 0.025 230), oklch(0.3 0.025 235));
+  --color-kraft: light-dark(oklch(0.8 0.065 72), oklch(0.43 0.05 65));
+  --color-paper-edge: light-dark(oklch(0.89 0.012 120), oklch(0.36 0.015 160));
+  --color-paper-rule: light-dark(oklch(0.86 0.04 230), oklch(0.38 0.03 235));
+  --color-margin-rule: light-dark(oklch(0.72 0.13 20), oklch(0.55 0.12 20));
+
+  /* Ink on paper. */
+  --color-ink: light-dark(oklch(0.21 0.015 160), oklch(0.94 0.01 100));
+  --color-ink-soft: light-dark(oklch(0.44 0.015 160), oklch(0.76 0.015 140));
+  --color-link: light-dark(oklch(0.44 0.12 160), oklch(0.82 0.12 158));
+
+  /* Stickies: always dark ink on top, so their colours stay bright in both modes. */
+  --color-sticky-ink: oklch(0.2 0.02 80);
+  --color-sticky-ink-soft: oklch(0.36 0.03 80);
+  --color-sticky-yellow: light-dark(oklch(0.92 0.15 100), oklch(0.84 0.13 100));
+  --color-sticky-pink: light-dark(oklch(0.84 0.11 5), oklch(0.76 0.11 5));
+  --color-sticky-orange: light-dark(oklch(0.81 0.14 62), oklch(0.74 0.13 62));
+  --color-sticky-sky: light-dark(oklch(0.86 0.075 230), oklch(0.76 0.08 230));
+
+  /* Rubber-stamp inks (they only land on stickies and light tape, so they are fixed). */
+  --color-stamp-keep: oklch(0.43 0.13 155);
+  --color-stamp-maybe: oklch(0.44 0.15 262);
+  --color-stamp-drop: oklch(0.5 0.2 28);
+  --color-stamp: light-dark(oklch(0.55 0.2 28), oklch(0.7 0.17 30));
+  --color-cobalt: light-dark(oklch(0.5 0.17 262), oklch(0.62 0.15 262));
+
+  /* Dymo label tape. */
+  --color-dymo: oklch(0.24 0.02 260);
+  --color-dymo-ink: oklch(0.97 0.005 100);
+
+  /* Washi tape, translucent. */
+  --color-tape: oklch(0.93 0.07 100 / 0.72);
+  --color-tape-pink: oklch(0.82 0.1 5 / 0.75);
+  --color-tape-sky: oklch(0.85 0.07 230 / 0.75);
+
+  --color-shadow: light-dark(oklch(0.2 0.07 160 / 0.4), oklch(0 0 0 / 0.65));
+
+  --color-focus: light-dark(oklch(0.6 0.21 35), oklch(0.85 0.15 95));
+
+  /* Kept for components that still speak the generic vocabulary. */
+  --color-bg: var(--color-paper);
+  --color-fg: var(--color-ink);
+  --color-muted: var(--color-ink-soft);
+  --color-border: var(--color-paper-edge);
+  --color-accent: var(--color-link);
+
+  /* Paper resting on the mat: a contact shadow plus a soft ambient one, tinted by the mat. */
+  --shadow-paper:
+    0 1px 1px light-dark(oklch(0.25 0.06 160 / 0.22), oklch(0 0 0 / 0.5)),
+    0 3px 6px -2px light-dark(oklch(0.25 0.06 160 / 0.22), oklch(0 0 0 / 0.45)),
+    0 16px 28px -14px light-dark(oklch(0.2 0.07 160 / 0.5), oklch(0 0 0 / 0.7));
+  --shadow-lifted:
+    0 2px 3px light-dark(oklch(0.25 0.06 160 / 0.18), oklch(0 0 0 / 0.45)),
+    0 18px 30px -8px light-dark(oklch(0.2 0.07 160 / 0.38), oklch(0 0 0 / 0.6)),
+    0 40px 60px -20px light-dark(oklch(0.2 0.07 160 / 0.45), oklch(0 0 0 / 0.7));
+
+  --shadow-sticky: 0 1px 1px oklch(0.2 0.05 160 / 0.2), 0 12px 18px -12px oklch(0.15 0.06 160 / 0.6);
+
+  --ease-out-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+:root {
+  /* Fine paper tooth: a tiny tiled noise, blended over paper surfaces. */
+  --tex-noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  /* Mat grid: a fine 1cm-ish grid with a stronger line every 5 cells. */
+  --mat-cell: 24px;
+  --mat-grid:
+    linear-gradient(var(--color-mat-line-strong) 1px, transparent 1px) 0 0 / calc(var(--mat-cell) * 5)
+      calc(var(--mat-cell) * 5),
+    linear-gradient(90deg, var(--color-mat-line-strong) 1px, transparent 1px) 0 0 / calc(var(--mat-cell) * 5)
+      calc(var(--mat-cell) * 5),
+    linear-gradient(var(--color-mat-line) 1px, transparent 1px) 0 0 / var(--mat-cell) var(--mat-cell),
+    linear-gradient(90deg, var(--color-mat-line) 1px, transparent 1px) 0 0 / var(--mat-cell) var(--mat-cell);
 }

@@ -1,15 +1,77 @@
-/* Long-form typography for posts and case studies. Applied with the .prose-site class. */
-@layer components {
-  .prose-site {
-    --tw-prose-body: var(--color-fg);
-    --tw-prose-headings: var(--color-fg);
-    --tw-prose-links: var(--color-accent);
-    --tw-prose-bold: var(--color-fg);
-    --tw-prose-quotes: var(--color-muted);
-    --tw-prose-code: var(--color-fg);
-    --tw-prose-hr: var(--color-border);
-    --tw-prose-bullets: var(--color-muted);
-    --tw-prose-counters: var(--color-muted);
-    max-width: 65ch;
-  }
+/*
+ * Long-form typography for posts and case studies. Applied with the .prose-site class.
+ * Unlayered on purpose: it must win over the typography plugin, which lives in the utilities layer.
+ */
+.prose-site.prose {
+  --tw-prose-body: var(--color-ink);
+  --tw-prose-headings: var(--color-ink);
+  --tw-prose-links: var(--color-link);
+  --tw-prose-bold: var(--color-ink);
+  --tw-prose-quotes: var(--color-ink-soft);
+  --tw-prose-quote-borders: var(--color-sticky-yellow);
+  --tw-prose-code: var(--color-ink);
+  --tw-prose-hr: var(--color-paper-edge);
+  --tw-prose-bullets: var(--color-stamp);
+  --tw-prose-counters: var(--color-ink-soft);
+  --tw-prose-th-borders: var(--color-paper-edge);
+  --tw-prose-td-borders: var(--color-paper-edge);
+  max-width: 65ch;
+  font-size: 1.125rem;
+  line-height: 1.68;
+}
+
+.prose-site.prose :where(h2, h3) {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-stretch: 92%;
+}
+.prose-site.prose :where(h2) {
+  font-size: 1.75em;
+  margin-top: 2.2em;
+  line-height: 1.05;
+}
+
+.prose-site.prose :where(a) {
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+  text-decoration-color: color-mix(in oklch, var(--color-link) 40%, transparent);
+}
+.prose-site.prose :where(a):hover {
+  text-decoration-color: currentColor;
+}
+
+/* Blockquotes look like a sticky note stuck into the text. */
+.prose-site.prose :where(blockquote) {
+  border: 0;
+  padding: 0.9em 1.1em;
+  background: var(--color-sticky-yellow);
+  color: var(--color-sticky-ink);
+  font-style: normal;
+  rotate: -0.6deg;
+  box-shadow: var(--shadow-sticky);
+}
+.prose-site.prose :where(blockquote p:first-of-type)::before,
+.prose-site.prose :where(blockquote p:last-of-type)::after {
+  content: none;
+}
+
+/* Inline code: a strip of highlighter. */
+.prose-site.prose :where(:not(pre) > code) {
+  font-family: var(--font-mono);
+  font-size: 0.8em;
+  font-weight: 500;
+  padding: 0.1em 0.35em;
+  background: color-mix(in oklch, var(--color-sticky-yellow) 55%, transparent);
+  border-radius: 2px;
+}
+.prose-site.prose :where(:not(pre) > code)::before,
+.prose-site.prose :where(:not(pre) > code)::after {
+  content: none;
+}
+
+.prose-site.prose .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-block: 0.5em;
 }

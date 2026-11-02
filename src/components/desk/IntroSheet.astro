@@ -1,0 +1,104 @@
+---
+/** The printed sheet in the middle of the desk: name, role, place. */
+import { site } from "@/site.config";
+---
+
+<section class="intro paper tape" aria-labelledby="intro-name">
+  <p class="role dymo">{site.role}</p>
+  <span class="dot" aria-hidden="true"></span>
+  <span class="half" aria-hidden="true"></span>
+  <h1 id="intro-name" class="name">
+    {site.name.split(" ").map((word) => (
+      <span>{word}</span>
+    ))}
+  </h1>
+  <p class="place label">
+    <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+      <circle cx="6" cy="6" r="5"></circle>
+    </svg>
+    {site.location}
+  </p>
+</section>
+
+<style>
+  .intro {
+    --tape-x: 66%;
+    --tape-r: 6deg;
+    position: relative;
+    overflow: visible;
+    padding: 3.25rem 1.25rem 1.25rem;
+    isolation: isolate;
+  }
+  .role {
+    position: absolute;
+    top: 0.9rem;
+    left: 0.9rem;
+    font-size: 0.625rem;
+    rotate: -2deg;
+  }
+  .name {
+    display: flex;
+    flex-direction: column;
+    font-size: clamp(4.5rem, 24vw, 7.5rem);
+    font-weight: 800;
+    font-stretch: 75%;
+    line-height: 0.82;
+    letter-spacing: -0.045em;
+    margin-top: 0.5rem;
+  }
+  .name span:last-child {
+    align-self: flex-end;
+    margin-right: 0.2em;
+  }
+  /* Cut-paper shapes behind the type. */
+  .dot,
+  .half {
+    position: absolute;
+    z-index: -1;
+  }
+  .dot {
+    right: 1rem;
+    top: 2.6rem;
+    width: 38%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--color-sticky-orange);
+  }
+  .half {
+    left: 1.25rem;
+    bottom: 3.6rem;
+    width: 28%;
+    aspect-ratio: 2 / 1;
+    border-radius: 999px 999px 0 0;
+    background: var(--color-cobalt);
+    rotate: 180deg;
+    opacity: 0.9;
+  }
+  .place {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    color: var(--color-ink-soft);
+  }
+  .place circle {
+    fill: var(--color-stamp);
+  }
+  @media (min-width: 64rem) {
+    .intro {
+      padding: 4rem 2.25rem 1.75rem;
+    }
+    .role {
+      top: 1.25rem;
+      left: 1.5rem;
+      font-size: 0.75rem;
+    }
+    .name {
+      font-size: 9.25rem;
+    }
+    .half {
+      bottom: 4rem;
+      left: 2.25rem;
+    }
+  }
+</style>

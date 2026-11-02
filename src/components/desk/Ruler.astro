@@ -1,0 +1,76 @@
+---
+/** Cutting-mat ruler along the top and left edges of the board (desktop only). */
+interface Props {
+  width: number;
+  height: number;
+}
+const { width, height } = Astro.props;
+const STEP = 120; // five mat cells
+const xs = Array.from({ length: Math.floor(width / STEP) }, (_, i) => i + 1);
+const ys = Array.from({ length: Math.floor(height / STEP) }, (_, i) => i + 1);
+---
+
+<div class="ruler ruler-x" aria-hidden="true" style={`width:${width}px`}>
+  {xs.map((n) => (
+    <span style={`left:${n * STEP}px`}>{n}</span>
+  ))}
+</div>
+<div class="ruler ruler-y" aria-hidden="true" style={`height:${height}px`}>
+  {ys.map((n) => (
+    <span style={`top:${n * STEP}px`}>{n}</span>
+  ))}
+</div>
+<svg class="angles" aria-hidden="true" width={width} height={height}>
+  <line x1="0" y1={height} x2={height} y2="0"></line>
+  <line x1={width - height} y1={height} x2={width} y2="0"></line>
+  <line x1={width / 2} y1={height} x2={width / 2 + height * 0.577} y2="0"></line>
+</svg>
+
+<style>
+  .ruler,
+  .angles {
+    display: none;
+  }
+  @media (min-width: 64rem) {
+    :global(.board:not(.is-tidy)) .ruler,
+    :global(.board:not(.is-tidy)) .angles {
+      display: block;
+      position: absolute;
+      left: 0;
+      top: 0;
+      pointer-events: none;
+      color: var(--color-mat-ink-soft);
+    }
+    .angles line {
+      stroke: var(--color-mat-line-strong);
+      stroke-width: 1;
+      stroke-dasharray: 2 6;
+    }
+    .ruler-x {
+      height: 1.75rem;
+      background:
+        repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 120px) 0 0 / 100% 100% no-repeat,
+        repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 24px) 0 0 / 100% 40% no-repeat;
+    }
+    .ruler-y {
+      width: 1.75rem;
+      background:
+        repeating-linear-gradient(currentColor 0 1px, transparent 1px 120px) 0 0 / 100% 100% no-repeat,
+        repeating-linear-gradient(currentColor 0 1px, transparent 1px 24px) 0 0 / 40% 100% no-repeat;
+    }
+    span {
+      position: absolute;
+      font-family: var(--font-mono);
+      font-size: 0.625rem;
+      font-weight: 500;
+    }
+    .ruler-x span {
+      top: 0.8rem;
+      translate: 0.3rem 0;
+    }
+    .ruler-y span {
+      left: 0.8rem;
+      translate: 0 0.15rem;
+    }
+  }
+</style>

@@ -1,8 +1,16 @@
 ---
-import PostList from "@/components/ui/PostList.astro";
-import ProjectList from "@/components/ui/ProjectList.astro";
-import Section from "@/components/ui/Section.astro";
-import SnackList from "@/components/ui/SnackList.astro";
+import BusinessCard from "@/components/desk/BusinessCard.astro";
+import Desk from "@/components/desk/Desk.astro";
+import DeskLabel from "@/components/desk/DeskLabel.astro";
+import DeskObject from "@/components/desk/DeskObject.astro";
+import IntroSheet from "@/components/desk/IntroSheet.astro";
+import type { PlacementId } from "@/components/desk/layout";
+import NowNote from "@/components/desk/NowNote.astro";
+import PostCard from "@/components/desk/PostCard.astro";
+import ProjectSpecimen from "@/components/desk/ProjectSpecimen.astro";
+import Receipt from "@/components/desk/Receipt.astro";
+import SnackNote from "@/components/desk/SnackNote.astro";
+import Swatches from "@/components/desk/Swatches.astro";
 import { localeParams, localePath, useTranslations } from "@/i18n";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { getPosts, getProjects, getSnacks } from "@/lib/content";
@@ -15,28 +23,62 @@ const t = useTranslations(locale);
 const posts = (await getPosts(locale)).slice(0, 3);
 const snacks = (await getSnacks()).slice(0, 5);
 const projects = (await getProjects()).filter((p) => p.data.featured).slice(0, 3);
+// Source order is the phone collage order (and tab order); desk positions live in layout.ts.
+const slot = (prefix: "project" | "snack" | "post", i: number) => `${prefix}${i}` as PlacementId;
 ---
 
-<BaseLayout locale={locale} description={`${site.name}, ${site.role}.`}>
-  <section class="mt-12">
-    <h1 class="text-2xl font-semibold">{site.name}</h1>
-    <p class="mt-2 text-muted">
-      {site.role} · {site.location}
-    </p>
-    <p class="mt-6 max-w-prose">
-      <span class="text-muted">{t("home.now")}:</span> {site.now}
-    </p>
-  </section>
+<BaseLayout locale={locale} description={`${site.name}, ${site.role}.`} layout="desk">
+  <Desk locale={locale}>
+    <DeskObject id="hint" deskOnly decor>
+      <DeskLabel text={t("desk.hint")} arrow="down-right" />
+    </DeskObject>
+    <DeskObject id="intro">
+      <IntroSheet />
+    </DeskObject>
+    <DeskObject id="now">
+      <NowNote locale={locale} />
+    </DeskObject>
 
-  <Section title={t("home.latestWriting")} href={localePath(locale, "/writing")} linkLabel={t("home.viewAll")}>
-    <PostList items={posts} locale={locale} />
-  </Section>
+    <DeskObject id="projectsLabel">
+      <DeskLabel
+        text={t("home.selectedProjects")}
+        href={localePath(locale, "/projects")}
+        more={t("home.viewAll")}
+        arrow="down-left"
+      />
+    </DeskObject>
+    {projects.map((project, i) => (
+      <DeskObject id={slot("project", i)}>
+        <ProjectSpecimen project={project} index={i} locale={locale} />
+      </DeskObject>
+    ))}
 
-  <Section title={t("home.latestSnacks")} href={localePath(locale, "/snacks")} linkLabel={t("home.viewAll")}>
-    <SnackList items={snacks} locale={locale} />
-  </Section>
+    <DeskObject id="snacksLabel">
+      <DeskLabel text={t("home.latestSnacks")} href={localePath(locale, "/snacks")} more={t("home.viewAll")} />
+    </DeskObject>
+    {snacks.map((snack, i) => (
+      <DeskObject id={slot("snack", i)}>
+        <SnackNote snack={snack} index={i} locale={locale} />
+      </DeskObject>
+    ))}
 
-  <Section title={t("home.selectedProjects")} href={localePath(locale, "/projects")} linkLabel={t("home.viewAll")}>
-    <ProjectList items={projects} locale={locale} />
-  </Section>
+    <DeskObject id="writingLabel">
+      <DeskLabel text={t("home.latestWriting")} href={localePath(locale, "/writing")} more={t("home.viewAll")} />
+    </DeskObject>
+    {posts.map(({ post, slug }, i) => (
+      <DeskObject id={slot("post", i)}>
+        <PostCard post={post} slug={slug} index={i} locale={locale} />
+      </DeskObject>
+    ))}
+
+    <DeskObject id="receipt">
+      <Receipt locale={locale} />
+    </DeskObject>
+    <DeskObject id="card">
+      <BusinessCard locale={locale} />
+    </DeskObject>
+    <DeskObject id="swatches" decor>
+      <Swatches />
+    </DeskObject>
+  </Desk>
 </BaseLayout>

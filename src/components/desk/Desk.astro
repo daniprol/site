@@ -1,0 +1,246 @@
+---
+/**
+ * The home page canvas. On desktop: a large board inside a native scroll container,
+ * so wheel, trackpad, arrow keys, focus and no-JS all pan it. desk.ts adds dragging,
+ * the minimap and "Tidy up" (which is also the plain list view).
+ * On phones the same objects flow into a composed 6-column collage.
+ */
+import { useTranslations, type Locale } from "@/i18n";
+
+import { BOARD } from "./layout";
+import Ruler from "./Ruler.astro";
+
+interface Props {
+  locale: Locale;
+}
+const t = useTranslations(Astro.props.locale);
+---
+
+<div class="desk" data-desk>
+  {/* The stage is a scroll container: it must be focusable so arrow keys pan it. */}
+  {/* eslint-disable-next-line astro/jsx-a11y/no-noninteractive-tabindex */}
+  <div class="stage" data-stage tabindex="0" role="region" aria-label={t("desk.region")}>
+    <div
+      class="board"
+      data-board
+      data-cx={BOARD.cx}
+      data-cy={BOARD.cy}
+      style={`--bw:${BOARD.width}px;--bh:${BOARD.height}px`}
+    >
+      <Ruler width={BOARD.width} height={BOARD.height} />
+      <slot />
+    </div>
+  </div>
+  {/* Open centred, and in tidy mode if the visitor left it that way, before first paint. */}
+  <script is:inline>
+    (() => {
+      const stage = [...document.querySelectorAll("[data-stage]")].pop();
+      const board = stage?.querySelector("[data-board]");
+      if (!stage || !board) return;
+      try {
+        if (JSON.parse(localStorage.getItem("desk:v1") || "{}").tidy) {
+          board.classList.add("is-tidy");
+          stage.parentElement.classList.add("is-tidy");
+        }
+      } catch {
+        // No storage: start untidy.
+      }
+      stage.scrollTo(board.dataset.cx - stage.clientWidth / 2, board.dataset.cy - stage.clientHeight / 2);
+    })();
+  </script>
+
+  <div class="controls">
+    <button type="button" class="control" data-tidy aria-pressed="false">
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+        <path d="M1 1h6v6H1zM9 1h6v6H9zM1 9h6v6H1zM9 9h6v6H9z" fill="currentColor"></path>
+      </svg>
+      <span>{t("desk.tidy")}</span>
+    </button>
+    <button type="button" class="control" data-reset>
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+        <path
+          d="M3 8a5 5 0 1 0 1.5-3.6M3 2v3h3"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        ></path>
+      </svg>
+      <span>{t("desk.reset")}</span>
+    </button>
+  </div>
+  <div class="minimap" data-minimap aria-hidden="true">
+    <span class="mm-view" data-view></span>
+  </div>
+</div>
+
+<script>
+  import { initDesk } from "./desk";
+
+  const boot = () => document.querySelectorAll<HTMLElement>("[data-desk]").forEach(initDesk);
+  document.addEventListener("astro:page-load", boot);
+</script>
+
+<style>
+  /* ---------- Phone: a composed vertical collage. ---------- */
+  .board {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    column-gap: 0.625rem;
+    row-gap: 0.875rem;
+    align-items: start;
+    padding: 0.5rem 1rem 2.5rem;
+  }
+  .board :global(.obj) {
+    position: relative;
+    min-width: 0;
+    grid-column: var(--mc);
+    rotate: var(--mr);
+    margin-top: var(--mt);
+  }
+  .board :global([data-desk-only]),
+  .controls,
+  .minimap {
+    display: none;
+  }
+  .stage:focus-visible {
+    outline-offset: -6px;
+  }
+
+  /* ---------- Desktop: the board. ---------- */
+  @media (min-width: 64rem) {
+    :global(body[data-layout="desk"]) {
+      overflow: hidden;
+      height: 100dvh;
+    }
+    .stage {
+      position: fixed;
+      inset: 0;
+      overflow: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: none;
+    }
+    .stage::-webkit-scrollbar {
+      display: none;
+    }
+
+    .board:not(:global(.is-tidy)) {
+      display: block;
+      position: relative;
+      width: var(--bw);
+      height: var(--bh);
+      padding: 0;
+      background: var(--mat-grid), var(--color-mat);
+      cursor: grab;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .board:not(:global(.is-tidy)) :global(.obj) {
+      position: absolute;
+      left: var(--x);
+      top: var(--y);
+      width: var(--w);
+      margin: 0;
+      rotate: var(--r);
+      translate: var(--dx, 0px) var(--dy, 0px);
+      transition:
+        scale 0.2s var(--ease-out-soft),
+        rotate 0.3s var(--ease-out-soft);
+    }
+    .board :global([data-desk-only]) {
+      display: block;
+    }
+    .board :global(.obj.is-lifted) {
+      scale: 1.035;
+      rotate: calc(var(--r) * 0.4);
+      cursor: grabbing;
+    }
+    .board :global(.obj.is-lifted > *) {
+      box-shadow: var(--shadow-lifted);
+    }
+    :global(.desk.is-panning) .board {
+      cursor: grabbing;
+    }
+
+    /* Tidy: the plain, readable list view of everything on the desk. */
+    .board:global(.is-tidy) {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      gap: 2rem 1.75rem;
+      max-width: 78rem;
+      margin-inline: auto;
+      padding: 7rem 2rem 6rem;
+    }
+    .board:global(.is-tidy) :global(.obj) {
+      grid-column: span var(--tc);
+      rotate: 0deg;
+      margin: 0;
+    }
+    .board:global(.is-tidy) :global([data-decor]) {
+      display: none;
+    }
+
+    .controls {
+      position: fixed;
+      left: 1.5rem;
+      bottom: 1.5rem;
+      z-index: 30;
+      display: flex;
+      gap: 0.5rem;
+    }
+    .control {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-height: 2.75rem;
+      padding: 0 1rem;
+      background: var(--color-paper);
+      color: var(--color-ink);
+      box-shadow: var(--shadow-paper);
+      border-radius: 2px;
+      font-family: var(--font-mono);
+      font-size: 0.6875rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+    }
+    .control:hover {
+      background: var(--color-paper-2);
+    }
+    .control[aria-pressed="true"] {
+      background: var(--color-ink);
+      color: var(--color-paper);
+    }
+
+    .minimap {
+      position: fixed;
+      right: 1.5rem;
+      bottom: 1.5rem;
+      z-index: 30;
+      display: block;
+      width: 12rem;
+      aspect-ratio: var(--bw-ratio, 5 / 3);
+      background: color-mix(in oklch, var(--color-mat) 70%, var(--color-ink));
+      box-shadow: var(--shadow-paper);
+      border-radius: 2px;
+      cursor: pointer;
+      overflow: hidden;
+    }
+    :global(.desk.is-tidy) .minimap,
+    :global(.desk.is-tidy) [data-reset] {
+      display: none;
+    }
+    .minimap :global(.mm-obj) {
+      position: absolute;
+      background: var(--color-paper);
+      opacity: 0.85;
+    }
+    .mm-view {
+      position: absolute;
+      z-index: 1;
+      outline: 2px solid var(--color-sticky-yellow);
+      background: color-mix(in oklch, var(--color-sticky-yellow) 18%, transparent);
+    }
+  }
+</style>

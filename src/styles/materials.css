@@ -1,0 +1,142 @@
+/*
+ * Materials: the physical things on the desk. Paper, tape, stickies, labels.
+ * Components combine these; colours always come from tokens.css.
+ */
+@layer components {
+  /* A sheet of paper resting on the mat. */
+  .paper {
+    background-color: var(--color-paper);
+    background-image: var(--tex-noise);
+    color: var(--color-ink);
+    box-shadow: var(--shadow-paper);
+  }
+  .paper-blue {
+    background-color: var(--color-paper-2);
+  }
+  .paper-kraft {
+    background-color: var(--color-kraft);
+  }
+  /* Index-card ruling: a header rule and faint lines. */
+  .paper-ruled {
+    background-image:
+      var(--tex-noise),
+      linear-gradient(transparent calc(2.75rem - 1px), var(--color-margin-rule) 0, transparent calc(2.75rem + 1px)),
+      repeating-linear-gradient(transparent 0 calc(1.6rem - 1px), var(--color-paper-rule) 0 1.6rem);
+    background-position:
+      0 0,
+      0 0,
+      0 1.15rem;
+  }
+  .paper-grid {
+    background-image:
+      var(--tex-noise), linear-gradient(var(--color-paper-rule) 1px, transparent 1px),
+      linear-gradient(90deg, var(--color-paper-rule) 1px, transparent 1px);
+    background-size:
+      auto,
+      14px 14px,
+      14px 14px;
+  }
+
+  /* A sticky note: flat colour, a slight curl shadow at the bottom edge. */
+  .sticky {
+    --sticky: var(--color-sticky-yellow);
+    background: linear-gradient(to bottom, transparent 70%, oklch(0 0 0 / 0.05)), var(--tex-noise), var(--sticky);
+    color: var(--color-sticky-ink);
+    box-shadow: var(--shadow-sticky);
+  }
+  .sticky[data-tone="pink"] {
+    --sticky: var(--color-sticky-pink);
+  }
+  .sticky[data-tone="orange"] {
+    --sticky: var(--color-sticky-orange);
+  }
+  .sticky[data-tone="sky"] {
+    --sticky: var(--color-sticky-sky);
+  }
+
+  /* Washi tape: translucent, torn ends. Place with --tape-x / --tape-r. */
+  .tape {
+    position: relative;
+  }
+  .tape::before {
+    content: "";
+    position: absolute;
+    z-index: 2;
+    top: -0.85rem;
+    left: var(--tape-x, 50%);
+    width: var(--tape-w, 6.5rem);
+    height: 1.7rem;
+    translate: -50% 0;
+    rotate: var(--tape-r, -3deg);
+    background: var(--tape-color, var(--color-tape));
+    background-image: repeating-linear-gradient(90deg, oklch(1 0 0 / 0.18) 0 6px, transparent 6px 12px);
+    clip-path: polygon(
+      0 8%,
+      4% 0,
+      3% 30%,
+      6% 55%,
+      2% 80%,
+      5% 100%,
+      96% 100%,
+      100% 85%,
+      97% 60%,
+      100% 35%,
+      96% 12%,
+      100% 0
+    );
+    box-shadow: 0 1px 1px oklch(0 0 0 / 0.08);
+    pointer-events: none;
+  }
+  .tape-pink {
+    --tape-color: var(--color-tape-pink);
+  }
+  .tape-sky {
+    --tape-color: var(--color-tape-sky);
+  }
+
+  /* Dymo embossed label tape. */
+  .dymo {
+    display: inline-block;
+    padding: 0.32em 0.8em 0.28em;
+    background:
+      linear-gradient(to bottom, oklch(1 0 0 / 0.14), transparent 40%, oklch(0 0 0 / 0.25)), var(--color-dymo);
+    color: var(--color-dymo-ink);
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-stretch: 112%;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    text-shadow:
+      0 1px 0 oklch(0 0 0 / 0.6),
+      0 -1px 0 oklch(1 0 0 / 0.25);
+    border-radius: 2px;
+    box-shadow:
+      0 1px 1px oklch(0 0 0 / 0.35),
+      0 4px 8px -4px oklch(0 0 0 / 0.4);
+    clip-path: polygon(0 0, 100% 0, 99% 50%, 100% 100%, 0 100%, 1% 50%);
+  }
+
+  /* Handwriting on the mat. */
+  .hand {
+    font-family: var(--font-hand);
+    font-weight: 600;
+    line-height: 1;
+    color: var(--color-mat-ink);
+  }
+
+  /* Small mono label. */
+  .label {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  /* Makes a whole card clickable through its main link. */
+  .stretched::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+}

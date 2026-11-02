@@ -1,5 +1,7 @@
 ---
+import PageHead from "@/components/ui/PageHead.astro";
 import PostList from "@/components/ui/PostList.astro";
+import Sheet from "@/components/ui/Sheet.astro";
 import { localeParams, useTranslations } from "@/i18n";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { getPosts } from "@/lib/content";
@@ -13,12 +15,25 @@ const years = Map.groupBy(posts, ({ post }) => post.data.date.getFullYear());
 ---
 
 <BaseLayout locale={locale} title={t("writing.title")} description={t("writing.description")}>
-  <h1 class="mt-12 text-2xl font-semibold">{t("writing.title")}</h1>
-  <p class="mt-2 text-muted">{t("writing.description")}</p>
-  {[...years].map(([year, items]) => (
-    <section class="mt-12">
-      <h2 class="mb-2 font-mono text-sm text-muted">{year}</h2>
-      <PostList items={items} locale={locale} />
-    </section>
-  ))}
+  <PageHead title={t("writing.title")} description={t("writing.description")} />
+  <Sheet>
+    {[...years].map(([year, items]) => (
+      <section class="year">
+        <h2 class="dymo">{year}</h2>
+        <PostList items={items} locale={locale} />
+      </section>
+    ))}
+  </Sheet>
 </BaseLayout>
+
+<style>
+  .year + .year {
+    margin-top: 3rem;
+  }
+  h2 {
+    margin-bottom: 1rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+    rotate: -1.5deg;
+  }
+</style>

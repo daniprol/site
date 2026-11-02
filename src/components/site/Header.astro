@@ -1,8 +1,13 @@
 ---
+/**
+ * Site header. On phones the nav becomes a bottom dock (four big tabs) and the
+ * name label and toggles stay at the top. On desktop it is one row of desk tools.
+ */
 import { localePath, stripLocale, useTranslations, type Locale } from "@/i18n";
 import { site } from "@/site.config";
 
 import LanguagePicker from "./LanguagePicker.astro";
+import NavGlyph from "./NavGlyph.astro";
 import ThemeToggle from "./ThemeToggle.astro";
 
 interface Props {
@@ -13,23 +18,126 @@ const t = useTranslations(locale);
 const current = stripLocale(Astro.url.pathname);
 ---
 
-<header class="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-4 px-5 py-6">
-  <a href={localePath(locale)} class="font-semibold">
-    {site.name}
+<header class="site-header">
+  <a href={localePath(locale)} class="brand dymo" aria-label={`${site.name}, ${t("nav.home")}`}>
+    {site.shortName}
   </a>
-  <nav aria-label="Main" class="flex flex-wrap gap-4 text-sm">
-    {site.nav.map(({ key, href }) => (
-      <a
-        href={localePath(locale, href)}
-        aria-current={current.startsWith(href) ? "page" : undefined}
-        class:list={["hover:text-fg", current.startsWith(href) ? "text-fg" : "text-muted"]}
-      >
-        {t(key)}
-      </a>
-    ))}
+  <nav aria-label="Main" class="dock">
+    {site.nav.map(({ key, href }, i) => {
+      const active = current.startsWith(href);
+      return (
+        <a href={localePath(locale, href)} aria-current={active ? "page" : undefined} class="dock-item">
+          <NavGlyph index={i} />
+          <span>{t(key)}</span>
+        </a>
+      );
+    })}
   </nav>
-  <div class="flex items-center gap-4">
+  <div class="tools">
     <LanguagePicker locale={locale} />
     <ThemeToggle locale={locale} />
   </div>
 </header>
+
+<style>
+  .site-header {
+    position: relative;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.875rem 0.75rem 0.5rem;
+  }
+  .brand {
+    font-size: 0.8125rem;
+    rotate: -1.5deg;
+    min-height: 2.75rem;
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+    transition: rotate 0.25s var(--ease-out-soft);
+  }
+  .brand:hover {
+    rotate: 0deg;
+  }
+  .tools {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+  }
+
+  /* Phone: a paper dock along the bottom edge. */
+  .dock {
+    position: fixed;
+    inset: auto 0.5rem calc(0.5rem + env(safe-area-inset-bottom)) 0.5rem;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    background: var(--color-paper);
+    background-image: var(--tex-noise);
+    box-shadow: var(--shadow-lifted);
+    border-radius: 3px;
+    padding: 0.25rem;
+  }
+  .dock-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    min-height: 3.5rem;
+    color: var(--color-ink-soft);
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border-radius: 2px;
+  }
+  .dock-item[aria-current="page"] {
+    color: var(--color-sticky-ink);
+    background: var(--color-sticky-yellow);
+  }
+
+  @media (min-width: 64rem) {
+    .site-header {
+      padding: 1.25rem 1.5rem;
+    }
+    .brand {
+      font-size: 0.9375rem;
+    }
+    .dock {
+      position: static;
+      display: flex;
+      gap: 0.25rem;
+      padding: 0.3rem;
+      box-shadow: var(--shadow-paper);
+      rotate: 0.4deg;
+    }
+    .dock-item {
+      flex-direction: row;
+      gap: 0.5rem;
+      min-height: 2.75rem;
+      padding-inline: 0.9rem;
+      font-size: 0.6875rem;
+    }
+    .dock-item:hover {
+      color: var(--color-ink);
+      background: var(--color-paper-2);
+    }
+    .dock-item[aria-current="page"]:hover {
+      background: var(--color-sticky-yellow);
+    }
+
+    /* On the desk the header floats over the canvas; only its pieces take clicks. */
+    :global([data-layout="desk"]) .site-header {
+      position: fixed;
+      inset: 0 0 auto;
+      pointer-events: none;
+    }
+    :global([data-layout="desk"]) .site-header > * {
+      pointer-events: auto;
+    }
+  }
+</style>

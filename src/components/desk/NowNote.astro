@@ -1,0 +1,30 @@
+---
+/** "Now": a sticky note half stuck onto the intro sheet. */
+import { useTranslations, type Locale } from "@/i18n";
+import { site } from "@/site.config";
+
+interface Props {
+  locale: Locale;
+}
+const t = useTranslations(Astro.props.locale);
+---
+
+<aside class="now sticky" aria-label={t("home.now")}>
+  <p class="hand">{t("home.now")}:</p>
+  <p class="body">{site.now}</p>
+</aside>
+
+<style>
+  .now {
+    padding: 0.9rem 1rem 1.1rem;
+  }
+  .hand {
+    color: var(--color-stamp-drop);
+    font-size: 1.75rem;
+  }
+  .body {
+    margin-top: 0.25rem;
+    font-size: 0.9375rem;
+    line-height: 1.4;
+  }
+</style>

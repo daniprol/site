@@ -2,6 +2,7 @@
 // KaTeX styles only load on pages that can contain math.
 import "katex/dist/katex.min.css";
 import DateTime from "@/components/ui/DateTime.astro";
+import Sheet from "@/components/ui/Sheet.astro";
 import { localePath, useTranslations, type Locale } from "@/i18n";
 import { getSeries, postSlug, readingTime, type Post } from "@/lib/content";
 
@@ -17,7 +18,7 @@ interface Props {
 
 const { locale, post, slug, isFallback, canonicalPath } = Astro.props;
 const t = useTranslations(locale);
-const { title, description, date, series } = post.data;
+const { title, description, date, series, tags } = post.data;
 const parts = series ? await getSeries(series) : [];
 const index = parts.findIndex((p) => postSlug(p) === slug);
 const previous = index > 0 ? parts[index - 1] : undefined;
@@ -25,18 +26,26 @@ const next = index >= 0 ? parts[index + 1] : undefined;
 ---
 
 <BaseLayout locale={locale} title={title} description={description} canonicalPath={canonicalPath}>
-  <article class="mt-12">
-    <header class="mb-10">
-      <h1 class="text-3xl font-semibold text-balance" transition:name={`post-title-${slug}`}>
-        {title}
-      </h1>
-      <p class="mt-3 flex flex-wrap gap-x-3 text-sm text-muted">
+  <Sheet as="article" margin>
+    <header class="post-head">
+      <p class="meta label">
         <DateTime date={date} locale={locale} />
         <span>{t("post.readingTime", { n: readingTime(post.body) })}</span>
-        {series && <span>{t("post.series", { n: index + 1 })}</span>}
+        {series && <span class="series">{t("post.series", { n: index + 1 })}</span>}
       </p>
+      <h1 class="title" transition:name={`post-title-${slug}`}>
+        {title}
+      </h1>
+      <p class="standfirst">{description}</p>
+      {tags.length > 0 && (
+        <ul class="tags">
+          {tags.map((tag) => (
+            <li class="label">#{tag}</li>
+          ))}
+        </ul>
+      )}
       {isFallback && (
-        <p class="mt-4 text-sm text-muted" lang={locale}>
+        <p class="fallback sticky" lang={locale}>
           {t("post.onlyInEnglish")}
         </p>
       )}
@@ -44,15 +53,111 @@ const next = index >= 0 ? parts[index + 1] : undefined;
     <div class="prose-site prose" lang={post.data.lang}>
       <slot />
     </div>
-    {(previous || next) && (
-      <nav class="mt-16 flex justify-between gap-4 border-t border-border pt-6 text-sm">
-        {previous ? (
-          <a href={localePath(locale, `/writing/${postSlug(previous)}`)}>← {previous.data.title}</a>
-        ) : (
-          <span />
-        )}
-        {next && <a href={localePath(locale, `/writing/${postSlug(next)}`)}>{next.data.title} →</a>}
-      </nav>
-    )}
-  </article>
+  </Sheet>
+  {(previous || next) && (
+    <nav class="series-nav" aria-label={t("post.series", { n: index + 1 })}>
+      {previous && (
+        <a href={localePath(locale, `/writing/${postSlug(previous)}`)} class="paper prev">
+          <span class="label">← {t("post.previous")}</span>
+          <span class="name">{previous.data.title}</span>
+        </a>
+      )}
+      {next && (
+        <a href={localePath(locale, `/writing/${postSlug(next)}`)} class="paper next">
+          <span class="label">{t("post.next")} →</span>
+          <span class="name">{next.data.title}</span>
+        </a>
+      )}
+    </nav>
+  )}
 </BaseLayout>
+
+<style>
+  .post-head {
+    margin-bottom: 2.5rem;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.25rem;
+    color: var(--color-ink-soft);
+  }
+  .series {
+    color: var(--color-stamp);
+  }
+  .title {
+    margin-top: 1rem;
+    font-size: clamp(2.5rem, 10vw, 4.5rem);
+    font-weight: 800;
+    font-stretch: 80%;
+    line-height: 0.92;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
+  }
+  .standfirst {
+    max-width: 36rem;
+    margin-top: 1.25rem;
+    font-size: 1.1875rem;
+    line-height: 1.5;
+    color: var(--color-ink-soft);
+  }
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 1.25rem;
+  }
+  .tags li {
+    padding: 0.25rem 0.5rem;
+    background: var(--color-paper-2);
+    color: var(--color-ink-soft);
+  }
+  .fallback {
+    display: inline-block;
+    margin-top: 1.25rem;
+    padding: 0.6rem 0.9rem;
+    font-size: 0.9375rem;
+    rotate: -1deg;
+  }
+  .series-nav {
+    display: grid;
+    gap: 1rem;
+    max-width: 52rem;
+    margin: 2rem auto 0;
+  }
+  .series-nav a {
+    display: grid;
+    gap: 0.3rem;
+    padding: 1rem 1.2rem;
+    color: inherit;
+    text-decoration: none;
+  }
+  .prev {
+    rotate: -0.8deg;
+  }
+  .next {
+    rotate: 0.8deg;
+    text-align: right;
+  }
+  .series-nav .label {
+    color: var(--color-ink-soft);
+  }
+  .name {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 700;
+    line-height: 1.1;
+  }
+  .series-nav a:hover .name {
+    text-decoration: underline;
+    text-decoration-color: var(--color-stamp);
+  }
+  @media (min-width: 48rem) {
+    .series-nav {
+      grid-template-columns: 1fr 1fr;
+    }
+    .next {
+      grid-column: 2;
+    }
+  }
+</style>

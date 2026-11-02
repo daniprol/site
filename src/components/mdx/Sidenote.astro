@@ -1,7 +1,7 @@
 ---
 /**
- * A margin note. On wide screens it floats into the right margin; on narrow screens
- * it collapses to a numbered note the reader can toggle. Pure CSS, no JS.
+ * A margin note. On wide screens it is pencilled into the sheet's margin; on narrow
+ * screens it collapses to a numbered sticker the reader can tap open. Pure CSS, no JS.
  * Usage in MDX: text<Sidenote>the note</Sidenote>
  */
 const id = `sn-${Math.random().toString(36).slice(2, 8)}`;
@@ -23,29 +23,48 @@ const id = `sn-${Math.random().toString(36).slice(2, 8)}`;
   }
   .sidenote-ref::after {
     content: counter(sidenote);
-    font-size: 0.7em;
-    vertical-align: super;
-    color: var(--color-accent);
-    padding-inline: 0.1em;
+    display: inline-grid;
+    place-items: center;
+    width: 1.3rem;
+    height: 1.3rem;
+    margin-inline: 0.15em;
+    vertical-align: 0.35em;
+    border-radius: 50%;
+    background: var(--color-stamp);
+    color: var(--color-paper);
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    font-weight: 700;
   }
   .sidenote-toggle {
-    display: none;
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .sidenote-toggle:focus-visible + .sidenote,
+  .sidenote-ref:has(+ .sidenote-toggle:focus-visible)::after {
+    outline: 3px solid var(--color-focus);
   }
   .sidenote {
     display: none;
-    font-size: 0.85rem;
-    line-height: 1.5;
-    color: var(--color-muted);
+    font-size: 0.95rem;
+    line-height: 1.45;
   }
   .sidenote::before {
-    content: counter(sidenote) " ";
-    color: var(--color-accent);
+    content: counter(sidenote) "  ";
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--color-stamp);
   }
   .sidenote-toggle:checked + .sidenote {
     display: block;
     margin: 0.75rem 0;
-    padding-left: 1rem;
-    border-left: 1px solid var(--color-border);
+    padding: 0.75rem 0.9rem;
+    background: var(--color-sticky-yellow);
+    color: var(--color-sticky-ink);
+    box-shadow: var(--shadow-sticky);
+    rotate: -0.5deg;
   }
   @media (min-width: 72rem) {
     .sidenote-ref {
@@ -56,10 +75,16 @@ const id = `sn-${Math.random().toString(36).slice(2, 8)}`;
       display: block;
       float: right;
       clear: right;
-      width: 14rem;
-      margin: 0.25rem -17rem 1rem 0;
+      width: 15rem;
+      margin: 0.25rem -18rem 1rem 0;
       padding: 0;
-      border: 0;
+      background: none;
+      box-shadow: none;
+      rotate: 0deg;
+      color: var(--color-ink-soft);
+      font-family: var(--font-hand);
+      font-size: 1.3rem;
+      line-height: 1.15;
     }
   }
 </style>

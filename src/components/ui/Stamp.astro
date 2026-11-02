@@ -1,0 +1,49 @@
+---
+/** A rubber-stamp verdict: keep, maybe or drop. */
+import { useTranslations, type Locale } from "@/i18n";
+
+interface Props {
+  verdict: "keep" | "maybe" | "drop";
+  locale: Locale;
+}
+const { verdict, locale } = Astro.props;
+const t = useTranslations(locale);
+---
+
+<span class="stamp" data-verdict={verdict}>
+  {t(`verdict.${verdict}`)}
+</span>
+
+<style>
+  .stamp {
+    --ink: var(--color-stamp-keep);
+    display: inline-block;
+    padding: 0.3em 0.55em 0.25em;
+    border: 2px solid var(--ink);
+    outline: 1px solid var(--ink);
+    outline-offset: 2px;
+    border-radius: 3px;
+    color: var(--ink);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 800;
+    font-stretch: 112%;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    line-height: 1;
+    rotate: -8deg;
+    /* Uneven ink: a little noise knocked out of the stamp. */
+    mask:
+      var(--tex-noise) 0 0 / 60px,
+      linear-gradient(oklch(0 0 0 / 0.86), oklch(0 0 0 / 0.86));
+    mix-blend-mode: multiply;
+  }
+  .stamp[data-verdict="maybe"] {
+    --ink: var(--color-stamp-maybe);
+    rotate: 5deg;
+  }
+  .stamp[data-verdict="drop"] {
+    --ink: var(--color-stamp-drop);
+    rotate: -14deg;
+  }
+</style>

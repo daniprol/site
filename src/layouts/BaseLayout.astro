@@ -1,6 +1,7 @@
 ---
 /** The page shell every route uses: <head>, header, main, footer. */
 import "@/styles/global.css";
+import { Font } from "astro:assets";
 import { ClientRouter } from "astro:transitions";
 
 import Footer from "@/components/site/Footer.astro";
@@ -14,29 +15,67 @@ interface Props {
   title?: string;
   description: string;
   canonicalPath?: string;
+  /** "desk" is the home page's full-bleed canvas; "page" puts content on a sheet. */
+  layout?: "desk" | "page";
 }
 
-const { locale, ...seo } = Astro.props;
+const { locale, layout = "page", ...seo } = Astro.props;
 ---
 
 <!doctype html>
 <html lang={locale}>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <Font cssVariable="--ff-display" preload />
+    <Font cssVariable="--ff-body" preload={[{ style: "normal" }]} />
+    <Font cssVariable="--ff-mono" />
+    <Font cssVariable="--ff-hand" />
     <Seo locale={locale} {...seo} />
     <ThemeScript />
     <ClientRouter />
   </head>
-  <body>
-    <a href="#main" class="sr-only focus:not-sr-only">
+  <body data-layout={layout}>
+    <a href="#main" class="skip">
       Skip to content
     </a>
     <Header locale={locale} />
-    <main id="main" class="mx-auto max-w-3xl px-5" data-pagefind-body>
+    <main id="main" data-pagefind-body>
       <slot />
     </main>
-    <Footer locale={locale} />
+    {layout === "page" && <Footer locale={locale} />}
   </body>
 </html>
+
+<style>
+  .skip {
+    position: absolute;
+    left: 1rem;
+    top: -4rem;
+    z-index: 100;
+    padding: 0.75rem 1rem;
+    background: var(--color-paper);
+    color: var(--color-ink);
+  }
+  .skip:focus {
+    top: 1rem;
+  }
+  body {
+    /* Room for the bottom dock on phones. */
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+  }
+  @media (min-width: 64rem) {
+    body {
+      padding-bottom: 0;
+    }
+  }
+  [data-layout="page"] main {
+    padding-inline: 0.625rem;
+  }
+  @media (min-width: 48rem) {
+    [data-layout="page"] main {
+      padding-inline: 1.5rem;
+    }
+  }
+</style>

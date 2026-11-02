@@ -1,0 +1,50 @@
+---
+/**
+ * A sheet of paper taped to the mat: the reading surface for every inner page.
+ * `margin` widens it with a ruled margin column for sidenotes on wide screens.
+ */
+interface Props {
+  margin?: boolean;
+  as?: "article" | "div" | "section";
+  class?: string;
+}
+const { margin = false, as: Tag = "div", class: className } = Astro.props;
+---
+
+<Tag class:list={["sheet paper tape", { "has-margin": margin }, className]}>
+  <slot />
+</Tag>
+
+<style>
+  .sheet {
+    --tape-x: 50%;
+    --tape-w: 8rem;
+    --tape-r: -2deg;
+    position: relative;
+    max-width: 52rem;
+    margin: 1.25rem auto 0;
+    padding: 2.25rem 1.25rem 2.75rem;
+  }
+  @media (min-width: 48rem) {
+    .sheet {
+      padding: 3.5rem 3.5rem 4rem 4.5rem;
+    }
+    /* The red margin rule of a legal pad. */
+    .sheet::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 3rem;
+      width: 1px;
+      background: var(--color-margin-rule);
+      opacity: 0.6;
+    }
+  }
+  @media (min-width: 72rem) {
+    .has-margin {
+      max-width: 68rem;
+      padding-right: 20rem;
+    }
+  }
+</style>

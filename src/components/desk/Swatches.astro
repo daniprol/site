@@ -1,0 +1,51 @@
+---
+/** A fan of colour chips: the palette of the desk itself. Decorative. */
+const chips = [
+  { name: "Pink", code: "005", color: "var(--color-sticky-pink)" },
+  { name: "Note", code: "100", color: "var(--color-sticky-yellow)" },
+  { name: "Stamp", code: "028", color: "var(--color-stamp)" },
+  { name: "Cobalt", code: "262", color: "var(--color-cobalt)" },
+];
+---
+
+<div class="swatches">
+  {chips.map(({ name, code, color }, i) => (
+    <div class="chip paper" style={`--c:${color};--i:${i}`}>
+      <span class="swatch"></span>
+      <span class="label">{name}</span>
+      <span class="label code">{code} C</span>
+    </div>
+  ))}
+</div>
+
+<style>
+  .swatches {
+    position: relative;
+    height: 13rem;
+  }
+  .chip {
+    position: absolute;
+    left: calc(var(--i) * 14%);
+    top: calc(var(--i) * 0.4rem);
+    width: 46%;
+    padding: 0.4rem 0.4rem 0.6rem;
+    rotate: calc(var(--i) * 9deg - 10deg);
+    transform-origin: bottom left;
+  }
+  .swatch {
+    display: block;
+    aspect-ratio: 1 / 1.1;
+    background: var(--c);
+    margin-bottom: 0.4rem;
+  }
+  .label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.5625rem;
+    color: var(--color-ink);
+  }
+  .code {
+    color: var(--color-ink-soft);
+    font-weight: 400;
+  }
+</style>

@@ -6,24 +6,60 @@ interface Props {
   locale: Locale;
 }
 const t = useTranslations(Astro.props.locale);
+const links = [
+  { label: "GitHub", href: site.socials.github },
+  { label: "LinkedIn", href: site.socials.linkedin },
+  { label: "Email", href: `mailto:${site.email}` },
+  { label: t("footer.rss"), href: "/rss.xml" },
+];
 ---
 
-<footer class="mx-auto mt-24 flex max-w-3xl flex-wrap justify-between gap-4 px-5 py-8 text-sm text-muted">
-  <p>
+<footer class="footer">
+  <p class="hand">
     © {new Date().getFullYear()} {site.name}
   </p>
-  <nav aria-label="Elsewhere" class="flex gap-4">
-    <a href={site.socials.github} class="hover:text-fg">
-      GitHub
-    </a>
-    <a href={site.socials.linkedin} class="hover:text-fg">
-      LinkedIn
-    </a>
-    <a href={`mailto:${site.email}`} class="hover:text-fg">
-      Email
-    </a>
-    <a href="/rss.xml" class="hover:text-fg">
-      {t("footer.rss")}
-    </a>
+  <nav aria-label="Elsewhere">
+    {links.map(({ label, href }) => (
+      <a href={href}>{label}</a>
+    ))}
   </nav>
 </footer>
+
+<style>
+  .footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem 1.5rem;
+    max-width: 64rem;
+    margin: 5rem auto 0;
+    padding: 1.5rem 1rem 2rem;
+    color: var(--color-mat-ink);
+  }
+  .hand {
+    font-size: 1.5rem;
+  }
+  nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 0.25rem;
+  }
+  a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding-inline: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-mat-ink);
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 4px;
+  }
+  a:hover {
+    text-decoration-color: currentColor;
+  }
+</style>

@@ -1,5 +1,6 @@
 ---
-import { localePath, type Locale } from "@/i18n";
+import ProjectSpecimen from "@/components/desk/ProjectSpecimen.astro";
+import type { Locale } from "@/i18n";
 import type { Project } from "@/lib/content";
 
 interface Props {
@@ -9,14 +10,31 @@ interface Props {
 const { items, locale } = Astro.props;
 ---
 
-<ul class="grid gap-6 sm:grid-cols-2">
-  {items.map((project) => (
-    <li>
-      <a href={localePath(locale, `/projects/${project.id}`)} class="group block">
-        <p class="font-medium group-hover:text-accent">{project.data.title}</p>
-        <p class="mt-1 text-sm text-muted">{project.data.summary}</p>
-        <p class="mt-2 font-mono text-xs text-muted">{project.data.stack.join(" · ")}</p>
-      </a>
+<ul class="projects">
+  {items.map((project, i) => (
+    <li style={`--r:${[-1.4, 1.2, -0.6, 1.8][i % 4]}deg`}>
+      <ProjectSpecimen project={project} index={i} locale={locale} />
     </li>
   ))}
 </ul>
+
+<style>
+  .projects {
+    display: grid;
+    gap: 2rem 1.5rem;
+    max-width: 64rem;
+    margin-inline: auto;
+    padding: 0.5rem 0.5rem 0;
+  }
+  li {
+    rotate: var(--r);
+  }
+  @media (min-width: 40rem) {
+    .projects {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    li:nth-child(even) {
+      margin-top: 2.5rem;
+    }
+  }
+</style>

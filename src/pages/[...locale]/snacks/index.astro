@@ -1,4 +1,5 @@
 ---
+import PageHead from "@/components/ui/PageHead.astro";
 import SnackList from "@/components/ui/SnackList.astro";
 import { localeParams, useTranslations } from "@/i18n";
 import BaseLayout from "@/layouts/BaseLayout.astro";
@@ -12,9 +13,6 @@ const snacks = await getSnacks();
 ---
 
 <BaseLayout locale={locale} title={t("snacks.title")} description={t("snacks.description")}>
-  <h1 class="mt-12 text-2xl font-semibold">{t("snacks.title")}</h1>
-  <p class="mt-2 text-muted">{t("snacks.description")}</p>
-  <div class="mt-10">
-    <SnackList items={snacks} locale={locale} />
-  </div>
+  <PageHead title={t("snacks.title")} description={t("snacks.description")} />
+  <SnackList items={snacks} locale={locale} />
 </BaseLayout>
