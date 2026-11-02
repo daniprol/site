@@ -1,0 +1,103 @@
+---
+/**
+ * A broadcast ticker. Decorative (the same items are listed on the page), so it is hidden
+ * from assistive tech. Pauses on hover and when offscreen; static under reduced motion.
+ */
+interface Props {
+  items: { text: string; tag?: string }[];
+  label?: string;
+}
+const { items, label } = Astro.props;
+const seconds = Math.max(20, items.reduce((n, item) => n + item.text.length, 0) * 0.35);
+---
+
+<div class="ticker tone-band" aria-hidden="true" data-ticker style={`--duration:${seconds}s`}>
+  {label && <span class="ticker-label label">{label}</span>}
+  <div class="ticker-track">
+    {[0, 1].map(() => (
+      <ul class="ticker-run">
+        {items.map((item) => (
+          <li>
+            <span>{item.text}</span>
+            {item.tag && <span class="ticker-tag label">{item.tag}</span>}
+          </li>
+        ))}
+      </ul>
+    ))}
+  </div>
+</div>
+
+<style>
+  .ticker {
+    position: relative;
+    display: flex;
+    overflow: clip;
+    border-block: 1px solid var(--color-border);
+  }
+  .ticker-label {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    padding-inline: var(--spacing-gutter) 1rem;
+    background: var(--color-invert);
+    color: var(--color-invert-fg);
+  }
+  .ticker-track {
+    display: flex;
+    width: max-content;
+    animation: run var(--duration) linear infinite;
+  }
+  .ticker:hover .ticker-track,
+  .ticker[data-paused] .ticker-track {
+    animation-play-state: paused;
+  }
+  .ticker-run {
+    display: flex;
+    flex-shrink: 0;
+  }
+  .ticker-run li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem 1.5rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-stretch: 115%;
+    font-size: 1.0625rem;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .ticker-run li::after {
+    content: "";
+    width: 0.4rem;
+    height: 0.4rem;
+    margin-inline-start: 1.5rem;
+    background: currentColor;
+  }
+  .ticker-tag {
+    padding: 0.2rem 0.4rem;
+    border: 1px solid currentColor;
+  }
+  @keyframes run {
+    to {
+      translate: -50% 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ticker-track {
+      animation: none;
+    }
+  }
+</style>
+
+<script>
+  // Stop the animation when the ticker is offscreen.
+  const observer = new IntersectionObserver((entries) => {
+    for (const entry of entries) entry.target.toggleAttribute("data-paused", !entry.isIntersecting);
+  });
+  document.addEventListener("astro:page-load", () => {
+    observer.disconnect();
+    document.querySelectorAll("[data-ticker]").forEach((el) => observer.observe(el));
+  });
+</script>

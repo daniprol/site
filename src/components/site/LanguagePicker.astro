@@ -11,7 +11,7 @@ const t = useTranslations(locale);
 const path = stripLocale(Astro.url.pathname);
 ---
 
-<nav aria-label={t("language")} class="flex gap-3 font-mono text-xs uppercase">
+<nav aria-label={t("language")} class="flex">
   {LOCALES.map((l) => (
     <a
       href={getRelativeLocaleUrl(l, path)}
@@ -19,7 +19,7 @@ const path = stripLocale(Astro.url.pathname);
       lang={l}
       title={LOCALE_NAMES[l]}
       aria-current={l === locale ? "true" : undefined}
-      class:list={["hover:text-fg", l === locale ? "text-fg" : "text-muted"]}
+      class="label inv flex size-11 items-center justify-center"
     >
       {l}
     </a>

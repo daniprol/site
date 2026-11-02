@@ -1,13 +1,15 @@
 ---
 /** The page shell every route uses: <head>, header, main, footer. */
 import "@/styles/global.css";
+import { Font } from "astro:assets";
 import { ClientRouter } from "astro:transitions";
 
+import CursorLabel from "@/components/site/CursorLabel.astro";
 import Footer from "@/components/site/Footer.astro";
 import Header from "@/components/site/Header.astro";
 import Seo from "@/components/site/Seo.astro";
 import ThemeScript from "@/components/site/ThemeScript.astro";
-import type { Locale } from "@/i18n";
+import { useTranslations, type Locale } from "@/i18n";
 
 interface Props {
   locale: Locale;
@@ -17,6 +19,7 @@ interface Props {
 }
 
 const { locale, ...seo } = Astro.props;
+const t = useTranslations(locale);
 ---
 
 <!doctype html>
@@ -24,19 +27,29 @@ const { locale, ...seo } = Astro.props;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Browser chrome tint; mirrors --color-vermilion and --color-oxblood in tokens.css. -->
+    <meta name="theme-color" content="#ff4f2e" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#3f0f0c" media="(prefers-color-scheme: dark)" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <Font cssVariable="--font-anybody" preload />
+    <Font cssVariable="--font-hanken" preload={[{ style: "normal" }]} />
+    <Font cssVariable="--font-martian" />
     <Seo locale={locale} {...seo} />
     <ThemeScript />
     <ClientRouter />
   </head>
   <body>
-    <a href="#main" class="sr-only focus:not-sr-only">
-      Skip to content
+    <a
+      href="#main"
+      class="label sr-only z-50 bg-ink p-4 text-paper focus:not-sr-only focus:fixed focus:top-2 focus:left-2"
+    >
+      {t("skip")}
     </a>
     <Header locale={locale} />
-    <main id="main" class="mx-auto max-w-3xl px-5" data-pagefind-body>
+    <main id="main" data-pagefind-body>
       <slot />
     </main>
     <Footer locale={locale} />
+    <CursorLabel />
   </body>
 </html>

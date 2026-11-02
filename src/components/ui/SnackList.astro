@@ -1,42 +1,73 @@
 ---
 import { render } from "astro:content";
 
-import { useTranslations, type Locale } from "@/i18n";
+import type { Locale } from "@/i18n";
 import type { Snack } from "@/lib/content";
 
 import DateTime from "./DateTime.astro";
+import VerdictStamp from "./VerdictStamp.astro";
 
 interface Props {
   items: Snack[];
   locale: Locale;
 }
 const { items, locale } = Astro.props;
-const t = useTranslations(locale);
 const entries = await Promise.all(items.map(async (snack) => ({ snack, Content: (await render(snack)).Content })));
 ---
 
-<ol class="divide-y divide-border">
+<ol>
   {entries.map(({ snack, Content }) => (
-    <li id={snack.id} class="grid gap-1 py-4 sm:grid-cols-[7rem_1fr] sm:gap-6">
-      <DateTime date={snack.data.date} locale={locale} format="iso" class="font-mono text-xs text-muted sm:pt-1" />
-      <div>
-        <p class="flex flex-wrap items-baseline gap-x-3">
+    <li id={snack.id} class="border-t border-border">
+      <div class="wrap grid grid-cols-[1fr_auto] gap-x-4 gap-y-2 py-5 sm:grid-cols-[8rem_minmax(0,16rem)_1fr_auto] sm:gap-x-8 sm:py-6">
+        <p class="label col-span-2 flex gap-3 sm:col-span-1 sm:flex-col sm:gap-1 sm:pt-1">
+          <DateTime date={snack.data.date} locale={locale} format="iso" />
+          <span>{snack.data.kind}</span>
+        </p>
+        <h3 class="snack-title">
           {snack.data.url ? (
-            <a href={snack.data.url} class="font-medium hover:text-accent">
+            <a href={snack.data.url} class="snack-link">
               {snack.data.title}
+              <span aria-hidden="true">↗</span>
             </a>
           ) : (
-            <span class="font-medium">{snack.data.title}</span>
+            snack.data.title
           )}
-          <span class="font-mono text-xs text-muted">{snack.data.kind}</span>
-          <span class="font-mono text-xs" data-verdict={snack.data.verdict}>
-            {t(`verdict.${snack.data.verdict}`)}
-          </span>
-        </p>
-        <div class="mt-1 text-muted">
+        </h3>
+        <div class="snack-body col-span-2 max-w-[60ch] sm:order-none sm:col-span-1">
           <Content />
         </div>
+        <span class="col-start-2 row-start-2 justify-self-end sm:col-start-4 sm:row-start-1 sm:pt-0.5">
+          <VerdictStamp verdict={snack.data.verdict} locale={locale} />
+        </span>
       </div>
     </li>
   ))}
 </ol>
+
+<style>
+  .snack-title {
+    font-family: var(--font-display);
+    font-weight: 750;
+    font-stretch: 105%;
+    font-size: 1.375rem;
+    line-height: 1.05;
+    text-transform: uppercase;
+  }
+  .snack-link {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.18em;
+  }
+  @media (hover: hover) {
+    .snack-link:hover {
+      background: var(--color-invert);
+      color: var(--color-invert-fg);
+      text-decoration: none;
+    }
+  }
+  .snack-body {
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--color-muted);
+  }
+</style>

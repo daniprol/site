@@ -1,0 +1,107 @@
+---
+/**
+ * Reading mode, shared by posts and case studies. The title sits on the page colour and stays
+ * put while a calm sheet slides up over it; a thin progress bar rides the top of the sheet.
+ */
+import type { Locale } from "@/i18n";
+
+import BaseLayout from "./BaseLayout.astro";
+
+interface Props {
+  locale: Locale;
+  title: string;
+  description: string;
+  canonicalPath?: string | undefined;
+  back: { href: string; label: string };
+  transitionName?: string;
+  lang?: string;
+}
+
+const { locale, title, description, canonicalPath, back, transitionName, lang } = Astro.props;
+---
+
+<BaseLayout locale={locale} title={title} description={description} canonicalPath={canonicalPath}>
+  <article class="reading">
+    <header class="reading-head">
+      <div class="wrap flex min-h-full flex-col pt-5 pb-14 sm:pb-20">
+        <a href={back.href} class="label inv -ml-2 self-start px-2 py-3">
+          ← {back.label}
+        </a>
+        <div class="mt-auto pt-16">
+          <p class="label mb-5 flex flex-wrap gap-x-4 gap-y-1">
+            <slot name="meta" />
+          </p>
+          <h1 class="reading-title text-balance" transition:name={transitionName}>
+            {title}
+          </h1>
+          <div class="mt-5">
+            <slot name="notice" />
+          </div>
+        </div>
+      </div>
+    </header>
+    <div class="sheet">
+      <div class="progress" aria-hidden="true"></div>
+      <div class="wrap pt-12 pb-20 sm:pt-16">
+        <div class="prose-site prose" lang={lang}>
+          <slot />
+        </div>
+      </div>
+      <slot name="after" />
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .reading-head {
+    container-type: inline-size;
+    min-height: min(64svh, 40rem);
+    display: flex;
+    flex-direction: column;
+  }
+  .reading-head > div {
+    flex: 1;
+  }
+  @media (min-height: 36rem) {
+    .reading-head {
+      position: sticky;
+      top: 0;
+    }
+  }
+  .reading-title {
+    max-width: 18ch;
+    font-family: var(--font-display);
+    font-weight: 850;
+    font-stretch: 84%;
+    font-size: clamp(2.5rem, 8.4cqi, 7rem);
+    line-height: 0.9;
+    letter-spacing: -0.025em;
+    color: var(--color-signal);
+  }
+  .sheet {
+    position: relative;
+    z-index: 1;
+    background: var(--color-sheet);
+    color: var(--color-sheet-fg);
+  }
+  .progress {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    height: 4px;
+    background: var(--color-mark);
+    transform-origin: 0 50%;
+    scale: 0 1;
+  }
+  @supports (animation-timeline: scroll()) {
+    .progress {
+      animation: progress linear both;
+      animation-timeline: scroll(root);
+    }
+  }
+  @keyframes progress {
+    to {
+      scale: 1 1;
+    }
+  }
+</style>

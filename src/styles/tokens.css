@@ -1,15 +1,52 @@
 /*
- * Design tokens. Each theme owns this file.
+ * Design tokens for "Signal".
+ * The page itself is the colour: vermilion in light mode, oxblood in dark mode.
+ * Long-form reading happens on a calm "sheet" that slides over the page.
  * Colours use light-dark() so each token is defined once for both modes.
  */
-@theme {
-  --font-sans: ui-sans-serif, system-ui, sans-serif;
-  --font-serif: ui-serif, Georgia, serif;
-  --font-mono: ui-monospace, "SFMono-Regular", Menlo, monospace;
+@theme static {
+  /* Type. Anybody (variable width 50–150%) is the voice; Hanken reads; Martian labels. */
+  --font-display: var(--font-anybody), "Arial Narrow", sans-serif;
+  --font-sans: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-martian), ui-monospace, monospace;
 
-  --color-bg: light-dark(oklch(0.99 0 0), oklch(0.17 0 0));
-  --color-fg: light-dark(oklch(0.2 0 0), oklch(0.93 0 0));
-  --color-muted: light-dark(oklch(0.5 0 0), oklch(0.65 0 0));
-  --color-border: light-dark(oklch(0.9 0 0), oklch(0.3 0 0));
-  --color-accent: light-dark(oklch(0.5 0.15 250), oklch(0.75 0.12 250));
+  /* Raw palette. Components use the semantic tokens below, never these directly. */
+  --color-vermilion: oklch(0.68 0.2 33);
+  --color-vermilion-deep: oklch(0.52 0.2 30);
+  --color-vermilion-hot: oklch(0.72 0.175 36);
+  --color-oxblood: oklch(0.26 0.085 27);
+  --color-ink: oklch(0.16 0.015 30);
+  --color-paper: oklch(0.985 0.004 30);
+
+  /* The page. */
+  --color-bg: light-dark(var(--color-vermilion), var(--color-oxblood));
+  --color-fg: light-dark(var(--color-ink), oklch(0.95 0.02 35));
+  --color-muted: light-dark(oklch(0.24 0.05 30), oklch(0.8 0.06 32));
+  --color-border: light-dark(var(--color-ink), oklch(0.95 0.02 35 / 0.35));
+  /* Display type: ink on vermilion, vermilion on oxblood. */
+  --color-signal: light-dark(var(--color-ink), var(--color-vermilion-hot));
+
+  /* Bands and hover inversions. */
+  --color-band: var(--color-ink);
+  --color-band-fg: var(--color-vermilion-hot);
+  --color-invert: light-dark(var(--color-ink), var(--color-vermilion-hot));
+  --color-invert-fg: light-dark(var(--color-vermilion), var(--color-ink));
+
+  /* Reading sheet: posts and case studies. */
+  --color-sheet: light-dark(var(--color-paper), oklch(0.17 0.012 30));
+  --color-sheet-fg: light-dark(oklch(0.2 0.015 30), oklch(0.9 0.012 40));
+  --color-sheet-muted: light-dark(oklch(0.45 0.02 30), oklch(0.68 0.02 35));
+  --color-rule: light-dark(oklch(0.9 0.01 30), oklch(0.28 0.015 30));
+  --color-accent: light-dark(var(--color-vermilion-deep), oklch(0.72 0.17 35));
+  --color-mark: light-dark(var(--color-vermilion), var(--color-vermilion-hot));
+  --color-code-bg: light-dark(oklch(0.955 0.01 30), oklch(0.13 0.01 30));
+  --color-code-bar: light-dark(oklch(0.92 0.015 30), oklch(0.2 0.012 30));
+
+  /* Layout. */
+  --spacing-gutter: clamp(1rem, 4vw, 3rem);
+  --spacing-header: 3.5rem;
+  --breakpoint-wide: 90rem;
+
+  /* Motion: sharp, no bounce. */
+  --ease-snap: cubic-bezier(0.2, 0, 0, 1);
 }

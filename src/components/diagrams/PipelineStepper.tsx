@@ -1,6 +1,7 @@
 /**
  * Example interactive diagram: a pipeline the reader steps through.
  * Rendered to HTML at build time; React hydrates only when it scrolls into view (client:visible).
+ * Each stage is a tappable cell; the active one turns vermilion, like the rest of the site.
  */
 import { useState } from "react";
 
@@ -11,55 +12,59 @@ const STAGES = [
   { id: "return", label: "Return", detail: "Hits cross the PyO3 boundary as plain Python objects." },
 ] as const;
 
+const button =
+  "flex h-11 items-center px-4 font-mono text-[0.6875rem] font-semibold uppercase tracking-wide transition-colors " +
+  "enabled:cursor-pointer enabled:hover:bg-sheet-fg enabled:hover:text-sheet enabled:active:bg-mark enabled:active:text-ink disabled:opacity-35";
+
 export default function PipelineStepper() {
   const [active, setActive] = useState(0);
   const stage = STAGES[active] ?? STAGES[0];
 
   return (
-    <div className="rounded-lg border border-border p-4 sm:p-6">
-      <svg viewBox="0 0 400 60" className="w-full" role="img" aria-label="Pipeline stages">
+    <div className="bg-code-bg text-sheet-fg">
+      <ol className="grid grid-cols-4 border-b border-rule" aria-label="Pipeline stages">
         {STAGES.map((s, i) => (
-          <g key={s.id} transform={`translate(${i * 100 + 10}, 10)`}>
-            <rect
-              width="80"
-              height="40"
-              rx="6"
-              className="transition-colors duration-300"
-              fill={i === active ? "var(--color-accent)" : "transparent"}
-              stroke={i <= active ? "var(--color-accent)" : "var(--color-border)"}
-            />
-            <text
-              x="40"
-              y="25"
-              textAnchor="middle"
-              fontSize="12"
-              fill={i === active ? "var(--color-bg)" : "var(--color-fg)"}
+          <li key={s.id} className="border-r border-rule last:border-r-0">
+            <button
+              type="button"
+              aria-current={i === active ? "step" : undefined}
+              onClick={() => setActive(i)}
+              className={`flex min-h-20 w-full cursor-pointer flex-col justify-between p-2.5 text-left transition-colors sm:min-h-24 sm:p-3.5 ${
+                i === active
+                  ? "bg-mark text-ink"
+                  : i < active
+                    ? "text-sheet-fg"
+                    : "text-sheet-muted hover:text-sheet-fg"
+              }`}
             >
-              {s.label}
-            </text>
-            {i < STAGES.length - 1 && <line x1="82" y1="20" x2="98" y2="20" stroke="var(--color-border)" />}
-          </g>
+              <span className="font-mono text-[0.625rem] font-semibold">{String(i + 1).padStart(2, "0")}</span>
+              <span className="font-display text-[0.95rem] leading-none font-extrabold uppercase [font-stretch:85%] sm:text-lg">
+                {s.label}
+              </span>
+            </button>
+          </li>
         ))}
-      </svg>
-      <p className="mt-4 min-h-12 text-sm" aria-live="polite">
+      </ol>
+      <div className="h-1 bg-rule" aria-hidden="true">
+        <div
+          className="h-full origin-left bg-sheet-fg transition-transform duration-300 ease-snap"
+          style={{ transform: `scaleX(${(active + 1) / STAGES.length})` }}
+        />
+      </div>
+      <p className="min-h-20 px-4 pt-4 pb-2 text-base leading-snug sm:px-5" aria-live="polite">
         {stage.detail}
       </p>
-      <div className="mt-4 flex gap-2">
-        <button
-          type="button"
-          className="rounded border border-border px-3 py-1 text-sm disabled:opacity-40"
-          disabled={active === 0}
-          onClick={() => setActive((i) => i - 1)}
-        >
-          Back
+      <div className="flex justify-between px-1 pb-1">
+        <button type="button" className={button} disabled={active === 0} onClick={() => setActive((i) => i - 1)}>
+          ← Back
         </button>
         <button
           type="button"
-          className="rounded border border-border px-3 py-1 text-sm disabled:opacity-40"
+          className={button}
           disabled={active === STAGES.length - 1}
           onClick={() => setActive((i) => i + 1)}
         >
-          Next step
+          Next step →
         </button>
       </div>
     </div>

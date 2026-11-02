@@ -38,6 +38,11 @@ const en = {
   "footer.rss": "RSS",
   "notFound.title": "Page not found",
   "notFound.body": "Nothing lives at this address.",
+  "menu.open": "Menu",
+  "menu.close": "Close",
+  "cursor.read": "Read",
+  "cursor.open": "Open",
+  skip: "Skip to content",
 };
 
 export type UIKey = keyof typeof en;
@@ -78,6 +83,11 @@ export const ui: Record<Locale, Record<UIKey, string>> = {
     "footer.rss": "RSS",
     "notFound.title": "Página no encontrada",
     "notFound.body": "No hay nada en esta dirección.",
+    "menu.open": "Menú",
+    "menu.close": "Cerrar",
+    "cursor.read": "Leer",
+    "cursor.open": "Abrir",
+    skip: "Saltar al contenido",
   },
   gl: {
     "nav.home": "Inicio",
@@ -113,5 +123,10 @@ export const ui: Record<Locale, Record<UIKey, string>> = {
     "footer.rss": "RSS",
     "notFound.title": "Páxina non atopada",
     "notFound.body": "Non hai nada neste enderezo.",
+    "menu.open": "Menú",
+    "menu.close": "Pechar",
+    "cursor.read": "Ler",
+    "cursor.open": "Abrir",
+    skip: "Ir ao contido",
   },
 };

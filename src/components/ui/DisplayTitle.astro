@@ -1,0 +1,60 @@
+---
+/**
+ * Oversized single-line word that fills its container and bleeds slightly past the edges.
+ * Size comes from the character count; with `stretch`, its width axis (Anybody wdth 50–150%)
+ * is tied to scroll position so the word widens as it passes through the viewport.
+ */
+interface Props {
+  text: string;
+  as?: "h1" | "h2" | "p";
+  stretch?: boolean;
+  class?: string;
+}
+const { text, as: Tag = "h1", stretch = true, class: className } = Astro.props;
+// Uppercase Anybody Black averages ~0.7em per glyph; the factor below bleeds it a touch at 100% width.
+const chars = Math.max(text.length, 3);
+---
+
+<div class:list={["display-fit-box", className]}>
+  <Tag class="display-fit" style={`--chars:${chars}`} data-stretch={stretch ? "" : undefined}>
+    {text}
+  </Tag>
+</div>
+
+<style>
+  .display-fit-box {
+    container-type: inline-size;
+    overflow: clip;
+  }
+  .display-fit {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-stretch: 100%;
+    font-size: calc(100cqi / var(--chars) * 1.46);
+    line-height: 0.78;
+    letter-spacing: -0.03em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--color-signal);
+    margin-inline-start: -0.05em;
+    /* Room for accents (Í, Ó) above the tight line box. */
+    padding-block: 0.16em 0.02em;
+  }
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .display-fit[data-stretch] {
+        animation: display-widen linear both;
+        animation-timeline: view();
+        animation-range: entry 20% cover 60%;
+      }
+    }
+  }
+  @keyframes display-widen {
+    from {
+      font-stretch: 72%;
+    }
+    to {
+      font-stretch: 125%;
+    }
+  }
+</style>

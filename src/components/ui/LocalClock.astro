@@ -1,0 +1,25 @@
+---
+/** Local time in Santiago (Europe/Madrid), ticking per minute. Coordinates render without JS. */
+---
+
+<span class="tabular-nums">
+  42.88°N 8.54°W<span data-clock></span>
+</span>
+
+<script>
+  const format = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Europe/Madrid",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZoneName: "short",
+  });
+  let timer = 0;
+  const tick = () => {
+    document.querySelectorAll("[data-clock]").forEach((el) => (el.textContent = ` · ${format.format(new Date())}`));
+  };
+  document.addEventListener("astro:page-load", () => {
+    tick();
+    clearInterval(timer);
+    timer = window.setInterval(tick, 30_000);
+  });
+</script>

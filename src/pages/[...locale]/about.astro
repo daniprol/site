@@ -1,4 +1,5 @@
 ---
+import PageHead from "@/components/ui/PageHead.astro";
 import { localeParams, useTranslations } from "@/i18n";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { education, experience, site } from "@/site.config";
@@ -7,55 +8,74 @@ export const getStaticPaths = localeParams;
 
 const { locale } = Astro.props;
 const t = useTranslations(locale);
+const blocks = [
+  {
+    title: t("about.experience"),
+    rows: experience.map((job) => ({
+      period: job.period,
+      head: job.role,
+      sub: job.company,
+      body: job.summary as string | undefined,
+    })),
+  },
+  {
+    title: t("about.education"),
+    rows: education.map((item) => ({ period: item.period, head: item.degree, sub: item.school, body: undefined })),
+  },
+];
 ---
 
 <BaseLayout locale={locale} title={t("about.title")} description={`${site.name}, ${site.role}.`}>
-  <h1 class="mt-12 text-2xl font-semibold">{t("about.title")}</h1>
-  <div class="prose-site prose mt-6">
-    <p>
+  <PageHead title={t("about.title")} index="04">
+    <span slot="aside">{site.location}</span>
+  </PageHead>
+
+  <div class="wrap grid gap-8 pb-16 md:grid-cols-[1fr_2fr] md:pb-24">
+    <p class="label">{site.role}</p>
+    <p class="about-lede text-balance">
       I'm a software and AI engineer based in {site.location}. I studied mathematics and economics, then spent the last
       few years building full-stack products and AI systems. TODO: write this in your own words, and translate it in a
       per-locale file if you want.
     </p>
   </div>
 
-  <section class="mt-14">
-    <h2 class="mb-4 text-sm font-medium text-muted">{t("about.experience")}</h2>
-    <ul class="divide-y divide-border">
-      {experience.map((job) => (
-        <li class="grid gap-1 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
-          <span class="font-mono text-xs text-muted sm:pt-1">{job.period}</span>
-          <div>
-            <p class="font-medium">
-              {job.role} · {job.company}
-            </p>
-            <p class="mt-1 text-muted">{job.summary}</p>
-          </div>
-        </li>
-      ))}
-    </ul>
-  </section>
-
-  <section class="mt-14">
-    <h2 class="mb-4 text-sm font-medium text-muted">{t("about.education")}</h2>
-    <ul class="divide-y divide-border">
-      {education.map((item) => (
-        <li class="grid gap-1 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
-          <span class="font-mono text-xs text-muted sm:pt-1">{item.period}</span>
-          <p>
-            {item.degree} · <span class="text-muted">{item.school}</span>
-          </p>
-        </li>
-      ))}
-    </ul>
-  </section>
-
-  <section class="mt-14">
-    <h2 class="mb-4 text-sm font-medium text-muted">{t("about.contact")}</h2>
-    <p>
-      <a href={`mailto:${site.email}`} class="text-accent">
-        {site.email}
-      </a>
-    </p>
-  </section>
+  {blocks.map((block, b) => (
+    <section class="border-t border-border">
+      <div class="wrap grid gap-x-8 md:grid-cols-[1fr_2fr]">
+        <h2 class="label pt-4 pb-2 md:pb-10">
+          {String(b + 1).padStart(2, "0")} — {block.title}
+        </h2>
+        <ul>
+          {block.rows.map((row, i) => (
+            <li class:list={["grid gap-1 py-4 sm:grid-cols-[9rem_1fr] sm:gap-6", i > 0 && "border-t border-border"]}>
+              <span class="label sm:pt-1.5">{row.period}</span>
+              <div>
+                <p class="about-role">{row.head}</p>
+                <p class="label mt-1.5">{row.sub}</p>
+                {row.body && <p class="mt-3 max-w-[50ch]">{row.body}</p>}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  ))}
 </BaseLayout>
+
+<style>
+  .about-lede {
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-stretch: 92%;
+    font-size: clamp(1.5rem, 3.6vw, 2.75rem);
+    line-height: 1.08;
+    letter-spacing: -0.015em;
+  }
+  .about-role {
+    font-family: var(--font-display);
+    font-weight: 750;
+    font-stretch: 95%;
+    font-size: 1.5rem;
+    line-height: 1.05;
+  }
+</style>

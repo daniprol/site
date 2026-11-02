@@ -1,4 +1,5 @@
 ---
+import PageHead from "@/components/ui/PageHead.astro";
 import ProjectList from "@/components/ui/ProjectList.astro";
 import { localeParams, useTranslations } from "@/i18n";
 import BaseLayout from "@/layouts/BaseLayout.astro";
@@ -12,9 +13,10 @@ const projects = await getProjects();
 ---
 
 <BaseLayout locale={locale} title={t("projects.title")} description={t("projects.description")}>
-  <h1 class="mt-12 text-2xl font-semibold">{t("projects.title")}</h1>
-  <p class="mt-2 text-muted">{t("projects.description")}</p>
-  <div class="mt-10">
+  <PageHead title={t("projects.title")} description={t("projects.description")} index="02">
+    <span slot="aside">{projects.length}</span>
+  </PageHead>
+  <div class="tone-band">
     <ProjectList items={projects} locale={locale} />
   </div>
 </BaseLayout>

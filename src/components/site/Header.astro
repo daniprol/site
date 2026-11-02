@@ -1,8 +1,13 @@
 ---
+/**
+ * Site header. Desktop: inline nav with hover inversions. Phones: name + a Menu button
+ * that opens a full-screen index (SiteMenu). Slides away on scroll down, back on scroll up.
+ */
 import { localePath, stripLocale, useTranslations, type Locale } from "@/i18n";
 import { site } from "@/site.config";
 
 import LanguagePicker from "./LanguagePicker.astro";
+import SiteMenu from "./SiteMenu.astro";
 import ThemeToggle from "./ThemeToggle.astro";
 
 interface Props {
@@ -13,23 +18,81 @@ const t = useTranslations(locale);
 const current = stripLocale(Astro.url.pathname);
 ---
 
-<header class="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-4 px-5 py-6">
-  <a href={localePath(locale)} class="font-semibold">
-    {site.name}
-  </a>
-  <nav aria-label="Main" class="flex flex-wrap gap-4 text-sm">
-    {site.nav.map(({ key, href }) => (
-      <a
-        href={localePath(locale, href)}
-        aria-current={current.startsWith(href) ? "page" : undefined}
-        class:list={["hover:text-fg", current.startsWith(href) ? "text-fg" : "text-muted"]}
-      >
-        {t(key)}
-      </a>
-    ))}
-  </nav>
-  <div class="flex items-center gap-4">
-    <LanguagePicker locale={locale} />
-    <ThemeToggle locale={locale} />
+<header class="site-header" data-site-header>
+  <div class="wrap flex h-(--spacing-header) items-center justify-between gap-4">
+    <a href={localePath(locale)} class="brand inv -ml-2 flex h-11 items-center gap-2 px-2">
+      <span class="brand-dot" aria-hidden="true"></span>
+      <span class="brand-name">{site.name}</span>
+    </a>
+    <nav aria-label="Main" class="hidden lg:flex">
+      {site.nav.map(({ key, href }) => (
+        <a
+          href={localePath(locale, href)}
+          aria-current={current.startsWith(href) ? "page" : undefined}
+          class="label inv flex h-11 items-center px-4 text-xs"
+        >
+          {t(key)}
+        </a>
+      ))}
+    </nav>
+    <div class="hidden items-center gap-1 lg:flex">
+      <LanguagePicker locale={locale} />
+      <ThemeToggle locale={locale} />
+    </div>
+    <SiteMenu locale={locale} />
   </div>
 </header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: var(--color-bg);
+    color: var(--color-fg);
+    border-bottom: 1px solid var(--color-border);
+    transition: translate 260ms var(--ease-snap);
+  }
+  .site-header[data-hidden]:not(:focus-within) {
+    translate: 0 -100%;
+  }
+  .brand-name {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-stretch: 125%;
+    font-size: 0.9375rem;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  /* The "on air" dot. Blinks hard, like a recording light. */
+  .brand-dot {
+    width: 0.625rem;
+    height: 0.625rem;
+    background: currentColor;
+    animation: blink 2.4s steps(1) infinite;
+  }
+  @keyframes blink {
+    50% {
+      opacity: 0;
+    }
+  }
+</style>
+
+<script>
+  // Hide on scroll down, show on scroll up. One passive listener, rAF-throttled.
+  let lastY = 0;
+  let ticking = false;
+  const onScroll = () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => {
+      const header = document.querySelector<HTMLElement>("[data-site-header]");
+      const y = window.scrollY;
+      if (header) header.toggleAttribute("data-hidden", y > 120 && y > lastY);
+      lastY = y;
+      ticking = false;
+    });
+  };
+  window.addEventListener("scroll", onScroll, { passive: true });
+</script>

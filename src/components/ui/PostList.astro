@@ -1,5 +1,5 @@
 ---
-import { localePath, type Locale } from "@/i18n";
+import { localePath, useTranslations, type Locale } from "@/i18n";
 import type { Post } from "@/lib/content";
 
 import DateTime from "./DateTime.astro";
@@ -7,22 +7,41 @@ import DateTime from "./DateTime.astro";
 interface Props {
   items: { post: Post; slug: string }[];
   locale: Locale;
+  /** Number rows from this value (01, 02…). */
+  start?: number;
 }
-const { items, locale } = Astro.props;
+const { items, locale, start = 1 } = Astro.props;
+const t = useTranslations(locale);
 ---
 
-<ul class="divide-y divide-border">
-  {items.map(({ post, slug }) => (
-    <li>
-      <a
-        href={localePath(locale, `/writing/${slug}`)}
-        class="group flex flex-col gap-1 py-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6"
-      >
-        <span class="group-hover:text-accent" transition:name={`post-title-${slug}`}>
-          {post.data.title}
+<ul>
+  {items.map(({ post, slug }, i) => (
+    <li class="border-t border-border">
+      <a href={localePath(locale, `/writing/${slug}`)} class="post-row inv block" data-cursor={t("cursor.read")}>
+        <span class="wrap grid grid-cols-[2.25rem_1fr] gap-x-3 gap-y-3 py-6 sm:grid-cols-[4rem_1fr_9rem] sm:py-8">
+          <span class="label pt-1.5">{String(start + i).padStart(2, "0")}</span>
+          <span class="post-title text-balance" transition:name={`post-title-${slug}`}>
+            {post.data.title}
+          </span>
+          <DateTime
+            date={post.data.date}
+            locale={locale}
+            format="short"
+            class="label col-start-2 sm:col-start-3 sm:pt-1.5 sm:text-right"
+          />
         </span>
-        <DateTime date={post.data.date} locale={locale} format="short" class="shrink-0 text-sm text-muted" />
       </a>
     </li>
   ))}
 </ul>
+
+<style>
+  .post-title {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-stretch: 88%;
+    font-size: clamp(1.625rem, 3.6vw, 3rem);
+    line-height: 1;
+    letter-spacing: -0.015em;
+  }
+</style>

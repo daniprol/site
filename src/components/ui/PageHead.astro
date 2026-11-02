@@ -1,0 +1,26 @@
+---
+/** Index-page opener: a giant cropped title and a one-line description. */
+import DisplayTitle from "./DisplayTitle.astro";
+
+interface Props {
+  title: string;
+  description?: string;
+  index?: string;
+}
+const { title, description, index } = Astro.props;
+---
+
+<header class="pt-5 pb-10 sm:pb-14">
+  <div class="wrap label flex justify-between pb-10 sm:pb-16">
+    <span>{index}</span>
+    <slot name="aside" />
+  </div>
+  <div class="wrap">
+    <DisplayTitle text={title} stretch={false} />
+  </div>
+  {description && (
+    <div class="wrap">
+      <p class="mt-6 max-w-[40rem] text-lg leading-snug text-balance sm:mt-8 sm:text-xl">{description}</p>
+    </div>
+  )}
+</header>

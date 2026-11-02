@@ -1,0 +1,35 @@
+---
+/** keep = solid block, maybe = outline, drop = struck through. */
+import { useTranslations, type Locale } from "@/i18n";
+
+interface Props {
+  verdict: "keep" | "maybe" | "drop";
+  locale: Locale;
+}
+const { verdict, locale } = Astro.props;
+const t = useTranslations(locale);
+---
+
+<span class="stamp label" data-verdict={verdict}>
+  {t(`verdict.${verdict}`)}
+</span>
+
+<style>
+  .stamp {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.3rem 0.5rem;
+    border: 1px solid var(--color-fg);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .stamp[data-verdict="keep"] {
+    background: var(--color-fg);
+    color: var(--color-bg);
+  }
+  .stamp[data-verdict="drop"] {
+    border-style: dashed;
+    text-decoration: line-through;
+    text-decoration-thickness: 1.5px;
+  }
+</style>

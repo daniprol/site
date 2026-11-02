@@ -1,21 +1,60 @@
 ---
-/** A titled block on an index page, with an optional "view all" link. */
+/**
+ * A titled block on an index page. The title is a giant cropped word that sticks while
+ * the content slides over it; an optional "view all" link closes the block as a full-width row.
+ */
+import DisplayTitle from "./DisplayTitle.astro";
+
 interface Props {
   title: string;
+  index?: string;
   href?: string;
   linkLabel?: string;
+  tone?: "page" | "band";
 }
-const { title, href, linkLabel } = Astro.props;
+const { title, index, href, linkLabel, tone = "page" } = Astro.props;
 ---
 
-<section class="mt-16">
-  <div class="mb-4 flex items-baseline justify-between">
-    <h2 class="text-sm font-medium text-muted">{title}</h2>
+<section class:list={["section", tone === "band" && "tone-band"]}>
+  <div class="section-head">
+    <div class="wrap flex items-center justify-between pt-5 pb-3">
+      <span class="label">{index}</span>
+      <span class="label" aria-hidden="true">
+        {title}
+      </span>
+    </div>
+    <div class="wrap">
+      <DisplayTitle text={title} as="h2" />
+    </div>
+  </div>
+  <div class="section-body">
+    <slot />
     {href && (
-      <a href={href} class="text-sm text-muted hover:text-fg">
-        {linkLabel} →
+      <a href={href} class="label inv block border-t border-border">
+        <span class="wrap flex h-16 items-center justify-between text-xs">
+          <span>{linkLabel}</span>
+          <span aria-hidden="true">→</span>
+        </span>
       </a>
     )}
   </div>
-  <slot />
 </section>
+
+<style>
+  .section {
+    position: relative;
+    background: var(--color-bg);
+    color: var(--color-fg);
+  }
+  .section-head {
+    position: sticky;
+    top: 0;
+    z-index: 0;
+    padding-bottom: 1.5rem;
+  }
+  .section-body {
+    position: relative;
+    z-index: 1;
+    background: var(--color-bg);
+  }
+</style>

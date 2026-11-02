@@ -1,0 +1,81 @@
+---
+/**
+ * Desktop-only label that trails the pointer over anything with data-cursor="Label".
+ * Skipped entirely on touch, coarse pointers and reduced motion. The rAF loop only runs while visible.
+ */
+---
+
+<div class="cursor-label" data-cursor-label aria-hidden="true"></div>
+
+<style>
+  .cursor-label {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 60;
+    pointer-events: none;
+    padding: 0.5rem 0.625rem;
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    opacity: 0;
+    scale: 0.6;
+    transition:
+      opacity 120ms var(--ease-snap),
+      scale 180ms var(--ease-snap);
+  }
+  .cursor-label[data-on] {
+    opacity: 1;
+    scale: 1;
+  }
+</style>
+
+<script>
+  const fine = matchMedia("(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)");
+  let x = 0;
+  let y = 0;
+  let cx = 0;
+  let cy = 0;
+  let raf = 0;
+  let label: HTMLElement | null = null;
+
+  const loop = () => {
+    cx += (x - cx) * 0.22;
+    cy += (y - cy) * 0.22;
+    if (label) label.style.transform = `translate3d(${cx + 18}px, ${cy + 18}px, 0)`;
+    raf = Math.abs(x - cx) + Math.abs(y - cy) > 0.3 ? requestAnimationFrame(loop) : 0;
+  };
+
+  const onMove = (event: PointerEvent) => {
+    if (!label) return;
+    x = event.clientX;
+    y = event.clientY;
+    const target = (event.target as Element | null)?.closest<HTMLElement>("[data-cursor]");
+    if (target) {
+      if (!label.hasAttribute("data-on")) {
+        // Jump to the pointer when appearing, then ease.
+        cx = x;
+        cy = y;
+      }
+      label.textContent = target.dataset.cursor ?? "";
+      label.setAttribute("data-on", "");
+      if (!raf) raf = requestAnimationFrame(loop);
+    } else {
+      label.removeAttribute("data-on");
+    }
+  };
+
+  const bind = () => {
+    label = document.querySelector<HTMLElement>("[data-cursor-label]");
+  };
+
+  if (fine.matches) {
+    document.addEventListener("pointermove", onMove, { passive: true });
+    document.addEventListener("astro:page-load", bind);
+  }
+</script>

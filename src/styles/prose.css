@@ -1,15 +1,120 @@
-/* Long-form typography for posts and case studies. Applied with the .prose-site class. */
-@layer components {
-  .prose-site {
-    --tw-prose-body: var(--color-fg);
-    --tw-prose-headings: var(--color-fg);
-    --tw-prose-links: var(--color-accent);
-    --tw-prose-bold: var(--color-fg);
-    --tw-prose-quotes: var(--color-muted);
-    --tw-prose-code: var(--color-fg);
-    --tw-prose-hr: var(--color-border);
-    --tw-prose-bullets: var(--color-muted);
-    --tw-prose-counters: var(--color-muted);
-    max-width: 65ch;
+/*
+ * Reading mode: long-form typography for posts and case studies, applied with .prose-site.
+ * Calm on purpose. The identity survives in the headings, the link inversion and the vermilion marks.
+ * Unlayered on purpose: it must override the typography plugin, which lives in the utilities layer.
+ */
+.prose-site.prose {
+  --tw-prose-body: var(--color-sheet-fg);
+  --tw-prose-headings: var(--color-sheet-fg);
+  --tw-prose-lead: var(--color-sheet-muted);
+  --tw-prose-links: var(--color-sheet-fg);
+  --tw-prose-bold: var(--color-sheet-fg);
+  --tw-prose-counters: var(--color-sheet-muted);
+  --tw-prose-bullets: var(--color-mark);
+  --tw-prose-hr: var(--color-rule);
+  --tw-prose-quotes: var(--color-sheet-fg);
+  --tw-prose-quote-borders: var(--color-mark);
+  --tw-prose-captions: var(--color-sheet-muted);
+  --tw-prose-code: var(--color-sheet-fg);
+  --tw-prose-th-borders: var(--color-sheet-fg);
+  --tw-prose-td-borders: var(--color-rule);
+  max-width: 40rem;
+  font-size: 1.125rem;
+  line-height: 1.7;
+  counter-reset: heading;
+}
+/* Leave the right margin free for sidenotes on wide screens. */
+@media (min-width: 72rem) {
+  .prose-site.prose {
+    margin-inline-start: max(0rem, calc(50% - 30rem));
   }
+}
+
+.prose-site.prose :where(h2, h3) {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-stretch: 90%;
+  letter-spacing: -0.015em;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+.prose-site.prose :where(h2) {
+  counter-increment: heading;
+  font-size: 1.875rem;
+  margin-top: 2.6em;
+}
+.prose-site.prose :where(h2)::before {
+  content: counter(heading, decimal-leading-zero);
+  display: block;
+  margin-bottom: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--color-accent);
+}
+.prose-site.prose :where(h3) {
+  font-size: 1.375rem;
+}
+
+.prose-site.prose :where(a):not(:where(.not-prose *)) {
+  text-decoration: underline;
+  text-decoration-color: var(--color-mark);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.2em;
+  font-weight: 500;
+}
+@media (hover: hover) {
+  .prose-site.prose :where(a):not(:where(.not-prose *)):hover {
+    background: var(--color-mark);
+    color: var(--color-ink);
+    text-decoration-color: transparent;
+  }
+}
+
+.prose-site.prose :where(blockquote) {
+  border-inline-start-width: 3px;
+  font-style: normal;
+  font-weight: 500;
+  padding-inline-start: 1.25rem;
+}
+.prose-site.prose :where(blockquote p)::before,
+.prose-site.prose :where(blockquote p)::after {
+  content: none;
+}
+
+.prose-site.prose :where(code):not(:where(pre code, .expressive-code *)) {
+  font-size: 0.82em;
+  font-weight: 500;
+  padding: 0.15em 0.35em;
+  background: var(--color-code-bg);
+}
+.prose-site.prose :where(code):not(:where(pre code, .expressive-code *))::before,
+.prose-site.prose :where(code):not(:where(pre code, .expressive-code *))::after {
+  content: none;
+}
+
+.prose-site.prose .expressive-code {
+  margin-block: 2rem;
+}
+/* Code and figures bleed to the screen edge on phones. */
+@media (max-width: 40rem) {
+  .prose-site.prose .expressive-code,
+  .prose-site.prose .figure {
+    margin-inline: calc(var(--spacing-gutter) * -1);
+  }
+  .prose-site.prose .figure figcaption {
+    padding-inline: var(--spacing-gutter);
+  }
+}
+
+.prose-site.prose .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-block: 0.5rem;
+}
+
+.prose-site.prose ::selection {
+  background: var(--color-mark);
+  color: var(--color-ink);
 }
