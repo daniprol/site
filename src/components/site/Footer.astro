@@ -1,0 +1,29 @@
+---
+import { useTranslations, type Locale } from "@/i18n";
+import { site } from "@/site.config";
+
+interface Props {
+  locale: Locale;
+}
+const t = useTranslations(Astro.props.locale);
+---
+
+<footer class="mx-auto mt-24 flex max-w-3xl flex-wrap justify-between gap-4 px-5 py-8 text-sm text-muted">
+  <p>
+    © {new Date().getFullYear()} {site.name}
+  </p>
+  <nav aria-label="Elsewhere" class="flex gap-4">
+    <a href={site.socials.github} class="hover:text-fg">
+      GitHub
+    </a>
+    <a href={site.socials.linkedin} class="hover:text-fg">
+      LinkedIn
+    </a>
+    <a href={`mailto:${site.email}`} class="hover:text-fg">
+      Email
+    </a>
+    <a href="/rss.xml" class="hover:text-fg">
+      {t("footer.rss")}
+    </a>
+  </nav>
+</footer>

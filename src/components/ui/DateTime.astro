@@ -1,0 +1,16 @@
+---
+import type { Locale } from "@/i18n";
+import { formatDate, isoDate } from "@/lib/format";
+
+interface Props {
+  date: Date;
+  locale: Locale;
+  format?: "long" | "short" | "iso";
+  class?: string;
+}
+const { date, locale, format = "long", class: className } = Astro.props;
+---
+
+<time datetime={isoDate(date)} class:list={["tabular-nums", className]}>
+  {format === "iso" ? isoDate(date) : formatDate(date, locale, format)}
+</time>

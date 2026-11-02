@@ -1,0 +1,23 @@
+---
+/**
+ * Runs before paint to set data-theme on <html> and avoid a flash of the wrong theme.
+ * Stored preference wins; otherwise follow the OS.
+ */
+---
+
+<script is:inline>
+  (() => {
+    const apply = () => {
+      let stored = null;
+      try {
+        stored = localStorage.getItem("theme");
+      } catch {
+        // Storage can be blocked (private mode); fall back to the OS preference.
+      }
+      const prefersDark = matchMedia("(prefers-color-scheme: dark)").matches;
+      document.documentElement.dataset.theme = stored ?? (prefersDark ? "dark" : "light");
+    };
+    apply();
+    document.addEventListener("astro:after-swap", apply);
+  })();
+</script>

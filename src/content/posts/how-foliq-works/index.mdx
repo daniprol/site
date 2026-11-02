@@ -1,0 +1,47 @@
+---
+title: How foliq searches your documents without a server
+description: A walk through the pipeline behind foliq, a local-first document search engine for AI agents, from file to ranked result.
+date: 2026-10-20
+tags: [rust, search, agents]
+series: building-foliq
+---
+
+import Sidenote from "@/components/mdx/Sidenote.astro";
+import Figure from "@/components/mdx/Figure.astro";
+import PipelineStepper from "@/components/diagrams/PipelineStepper.tsx";
+
+> Sample post. Replace this text with the real write-up.
+
+Agents need to read documents, but most retrieval stacks assume a vector database, an embedding API and a network.<Sidenote>foliq needs none of these. Everything runs in-process, so an agent can search a folder the moment it opens it.</Sidenote> foliq takes the opposite position: the index is a file next to your documents, and the engine is a Rust library you call from Python.
+
+## The pipeline
+
+A query goes through four stages. Step through them below.
+
+<Figure caption="The foliq query pipeline. Each stage is a pure function over the index.">
+  <PipelineStepper client:visible />
+</Figure>
+
+## Ranking
+
+Scores combine a lexical term and a semantic term. For a query $q$ and document $d$:
+
+$$
+\text{score}(q, d) = \alpha \cdot \text{BM25}(q, d) + (1 - \alpha) \cdot \cos(\mathbf{e}_q, \mathbf{e}_d)
+$$
+
+The weight $\alpha$ is tuned per corpus; a value around $0.6$ works well for code and prose alike.
+
+## The Python surface
+
+The Python API stays small on purpose:
+
+```python title="search.py"
+from foliq import Index
+
+index = Index.open("./docs")
+for hit in index.search("how are snapshots stored?", k=5):
+    print(hit.path, hit.score)
+```
+
+Under the hood, `Index.open` memory-maps the index file, so opening a 2 GB corpus takes milliseconds.

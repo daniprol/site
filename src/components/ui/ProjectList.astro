@@ -1,0 +1,22 @@
+---
+import { localePath, type Locale } from "@/i18n";
+import type { Project } from "@/lib/content";
+
+interface Props {
+  items: Project[];
+  locale: Locale;
+}
+const { items, locale } = Astro.props;
+---
+
+<ul class="grid gap-6 sm:grid-cols-2">
+  {items.map((project) => (
+    <li>
+      <a href={localePath(locale, `/projects/${project.id}`)} class="group block">
+        <p class="font-medium group-hover:text-accent">{project.data.title}</p>
+        <p class="mt-1 text-sm text-muted">{project.data.summary}</p>
+        <p class="mt-2 font-mono text-xs text-muted">{project.data.stack.join(" · ")}</p>
+      </a>
+    </li>
+  ))}
+</ul>

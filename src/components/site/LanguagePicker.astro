@@ -1,0 +1,27 @@
+---
+import { getRelativeLocaleUrl } from "astro:i18n";
+
+import { LOCALE_NAMES, LOCALES, stripLocale, useTranslations, type Locale } from "@/i18n";
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const path = stripLocale(Astro.url.pathname);
+---
+
+<nav aria-label={t("language")} class="flex gap-3 font-mono text-xs uppercase">
+  {LOCALES.map((l) => (
+    <a
+      href={getRelativeLocaleUrl(l, path)}
+      hreflang={l}
+      lang={l}
+      title={LOCALE_NAMES[l]}
+      aria-current={l === locale ? "true" : undefined}
+      class:list={["hover:text-fg", l === locale ? "text-fg" : "text-muted"]}
+    >
+      {l}
+    </a>
+  ))}
+</nav>

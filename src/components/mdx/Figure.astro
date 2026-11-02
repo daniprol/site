@@ -1,0 +1,26 @@
+---
+/** Numbered figure with a caption. Numbers come from a CSS counter on the article. */
+interface Props {
+  caption?: string;
+}
+const { caption } = Astro.props;
+---
+
+<figure class="figure not-prose my-10">
+  <slot />
+  {caption && <figcaption class="mt-3 text-sm text-muted">{caption}</figcaption>}
+</figure>
+
+<style>
+  :global(article) {
+    counter-reset: figure;
+  }
+  .figure {
+    counter-increment: figure;
+  }
+  figcaption::before {
+    content: "Fig. " counter(figure) " — ";
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+  }
+</style>

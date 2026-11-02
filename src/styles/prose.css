@@ -1,0 +1,15 @@
+/* Long-form typography for posts and case studies. Applied with the .prose-site class. */
+@layer components {
+  .prose-site {
+    --tw-prose-body: var(--color-fg);
+    --tw-prose-headings: var(--color-fg);
+    --tw-prose-links: var(--color-accent);
+    --tw-prose-bold: var(--color-fg);
+    --tw-prose-quotes: var(--color-muted);
+    --tw-prose-code: var(--color-fg);
+    --tw-prose-hr: var(--color-border);
+    --tw-prose-bullets: var(--color-muted);
+    --tw-prose-counters: var(--color-muted);
+    max-width: 65ch;
+  }
+}

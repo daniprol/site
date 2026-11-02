@@ -1,0 +1,24 @@
+---
+import PostList from "@/components/ui/PostList.astro";
+import { localeParams, useTranslations } from "@/i18n";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getPosts } from "@/lib/content";
+
+export const getStaticPaths = localeParams;
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const posts = await getPosts(locale);
+const years = Map.groupBy(posts, ({ post }) => post.data.date.getFullYear());
+---
+
+<BaseLayout locale={locale} title={t("writing.title")} description={t("writing.description")}>
+  <h1 class="mt-12 text-2xl font-semibold">{t("writing.title")}</h1>
+  <p class="mt-2 text-muted">{t("writing.description")}</p>
+  {[...years].map(([year, items]) => (
+    <section class="mt-12">
+      <h2 class="mb-2 font-mono text-sm text-muted">{year}</h2>
+      <PostList items={items} locale={locale} />
+    </section>
+  ))}
+</BaseLayout>

@@ -1,0 +1,10 @@
+// Cloudflare Workers config. The site is fully static: no Worker code, only assets from ./dist.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "site",
+  "compatibility_date": "2026-11-02",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page",
+  },
+}

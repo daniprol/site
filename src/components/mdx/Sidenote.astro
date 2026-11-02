@@ -1,0 +1,65 @@
+---
+/**
+ * A margin note. On wide screens it floats into the right margin; on narrow screens
+ * it collapses to a numbered note the reader can toggle. Pure CSS, no JS.
+ * Usage in MDX: text<Sidenote>the note</Sidenote>
+ */
+const id = `sn-${Math.random().toString(36).slice(2, 8)}`;
+---
+
+<label for={id} class="sidenote-ref" aria-label="Show note"></label>
+<input type="checkbox" id={id} class="sidenote-toggle" />
+<span class="sidenote" role="note">
+  <slot />
+</span>
+
+<style>
+  :global(.prose-site) {
+    counter-reset: sidenote;
+  }
+  .sidenote-ref {
+    counter-increment: sidenote;
+    cursor: pointer;
+  }
+  .sidenote-ref::after {
+    content: counter(sidenote);
+    font-size: 0.7em;
+    vertical-align: super;
+    color: var(--color-accent);
+    padding-inline: 0.1em;
+  }
+  .sidenote-toggle {
+    display: none;
+  }
+  .sidenote {
+    display: none;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--color-muted);
+  }
+  .sidenote::before {
+    content: counter(sidenote) " ";
+    color: var(--color-accent);
+  }
+  .sidenote-toggle:checked + .sidenote {
+    display: block;
+    margin: 0.75rem 0;
+    padding-left: 1rem;
+    border-left: 1px solid var(--color-border);
+  }
+  @media (min-width: 72rem) {
+    .sidenote-ref {
+      cursor: default;
+    }
+    .sidenote,
+    .sidenote-toggle:checked + .sidenote {
+      display: block;
+      float: right;
+      clear: right;
+      width: 14rem;
+      margin: 0.25rem -17rem 1rem 0;
+      padding: 0;
+      border: 0;
+    }
+  }
+</style>

@@ -1,0 +1,42 @@
+---
+import PostList from "@/components/ui/PostList.astro";
+import ProjectList from "@/components/ui/ProjectList.astro";
+import Section from "@/components/ui/Section.astro";
+import SnackList from "@/components/ui/SnackList.astro";
+import { localeParams, localePath, useTranslations } from "@/i18n";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getPosts, getProjects, getSnacks } from "@/lib/content";
+import { site } from "@/site.config";
+
+export const getStaticPaths = localeParams;
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const posts = (await getPosts(locale)).slice(0, 3);
+const snacks = (await getSnacks()).slice(0, 5);
+const projects = (await getProjects()).filter((p) => p.data.featured).slice(0, 3);
+---
+
+<BaseLayout locale={locale} description={`${site.name}, ${site.role}.`}>
+  <section class="mt-12">
+    <h1 class="text-2xl font-semibold">{site.name}</h1>
+    <p class="mt-2 text-muted">
+      {site.role} · {site.location}
+    </p>
+    <p class="mt-6 max-w-prose">
+      <span class="text-muted">{t("home.now")}:</span> {site.now}
+    </p>
+  </section>
+
+  <Section title={t("home.latestWriting")} href={localePath(locale, "/writing")} linkLabel={t("home.viewAll")}>
+    <PostList items={posts} locale={locale} />
+  </Section>
+
+  <Section title={t("home.latestSnacks")} href={localePath(locale, "/snacks")} linkLabel={t("home.viewAll")}>
+    <SnackList items={snacks} locale={locale} />
+  </Section>
+
+  <Section title={t("home.selectedProjects")} href={localePath(locale, "/projects")} linkLabel={t("home.viewAll")}>
+    <ProjectList items={projects} locale={locale} />
+  </Section>
+</BaseLayout>

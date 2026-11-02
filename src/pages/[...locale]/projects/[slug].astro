@@ -1,0 +1,47 @@
+---
+import { render } from "astro:content";
+
+import { DEFAULT_LOCALE, LOCALES, type Locale } from "@/i18n";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getProjects, type Project } from "@/lib/content";
+
+export async function getStaticPaths() {
+  const projects = await getProjects();
+  return LOCALES.flatMap((locale) =>
+    projects.map((project) => ({
+      params: { locale: locale === DEFAULT_LOCALE ? undefined : locale, slug: project.id },
+      props: { locale, project },
+    })),
+  );
+}
+
+const { locale, project } = Astro.props as { locale: Locale; project: Project };
+const { Content } = await render(project);
+const { title, summary, stack, repo, url, year } = project.data;
+---
+
+<BaseLayout locale={locale} title={title} description={summary} canonicalPath={`/projects/${project.id}`}>
+  <article class="mt-12">
+    <header class="mb-10">
+      <h1 class="text-3xl font-semibold">{title}</h1>
+      <p class="mt-3 text-muted">{summary}</p>
+      <p class="mt-4 flex flex-wrap gap-x-4 font-mono text-xs text-muted">
+        <span>{year}</span>
+        <span>{stack.join(" · ")}</span>
+        {repo && (
+          <a href={repo} class="hover:text-fg">
+            Source ↗
+          </a>
+        )}
+        {url && (
+          <a href={url} class="hover:text-fg">
+            Live ↗
+          </a>
+        )}
+      </p>
+    </header>
+    <div class="prose-site prose" lang="en">
+      <Content />
+    </div>
+  </article>
+</BaseLayout>

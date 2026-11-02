@@ -1,0 +1,42 @@
+---
+/** The page shell every route uses: <head>, header, main, footer. */
+import "@/styles/global.css";
+import { ClientRouter } from "astro:transitions";
+
+import Footer from "@/components/site/Footer.astro";
+import Header from "@/components/site/Header.astro";
+import Seo from "@/components/site/Seo.astro";
+import ThemeScript from "@/components/site/ThemeScript.astro";
+import type { Locale } from "@/i18n";
+
+interface Props {
+  locale: Locale;
+  title?: string;
+  description: string;
+  canonicalPath?: string;
+}
+
+const { locale, ...seo } = Astro.props;
+---
+
+<!doctype html>
+<html lang={locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <Seo locale={locale} {...seo} />
+    <ThemeScript />
+    <ClientRouter />
+  </head>
+  <body>
+    <a href="#main" class="sr-only focus:not-sr-only">
+      Skip to content
+    </a>
+    <Header locale={locale} />
+    <main id="main" class="mx-auto max-w-3xl px-5" data-pagefind-body>
+      <slot />
+    </main>
+    <Footer locale={locale} />
+  </body>
+</html>

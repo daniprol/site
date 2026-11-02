@@ -1,0 +1,34 @@
+---
+import { render } from "astro:content";
+
+import { LOCALES, DEFAULT_LOCALE, localePath, type Locale } from "@/i18n";
+import PostLayout from "@/layouts/PostLayout.astro";
+import { getPosts } from "@/lib/content";
+
+export async function getStaticPaths() {
+  const perLocale = await Promise.all(
+    LOCALES.map(async (locale) =>
+      (await getPosts(locale)).map(({ post, slug, isFallback }) => ({
+        params: { locale: locale === DEFAULT_LOCALE ? undefined : locale, slug },
+        props: { locale, post, slug, isFallback },
+      })),
+    ),
+  );
+  return perLocale.flat();
+}
+
+const { locale, post, slug, isFallback } = Astro.props as Awaited<
+  ReturnType<typeof getStaticPaths>
+>[number]["props"] & { locale: Locale };
+const { Content } = await render(post);
+---
+
+<PostLayout
+  locale={locale}
+  post={post}
+  slug={slug}
+  isFallback={isFallback}
+  canonicalPath={isFallback ? localePath(DEFAULT_LOCALE, `/writing/${slug}`) : undefined}
+>
+  <Content />
+</PostLayout>

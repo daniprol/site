@@ -1,0 +1,15 @@
+/*
+ * Design tokens. Each theme owns this file.
+ * Colours use light-dark() so each token is defined once for both modes.
+ */
+@theme {
+  --font-sans: ui-sans-serif, system-ui, sans-serif;
+  --font-serif: ui-serif, Georgia, serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  --color-bg: light-dark(oklch(0.99 0 0), oklch(0.17 0 0));
+  --color-fg: light-dark(oklch(0.2 0 0), oklch(0.93 0 0));
+  --color-muted: light-dark(oklch(0.5 0 0), oklch(0.65 0 0));
+  --color-border: light-dark(oklch(0.9 0 0), oklch(0.3 0 0));
+  --color-accent: light-dark(oklch(0.5 0.15 250), oklch(0.75 0.12 250));
+}

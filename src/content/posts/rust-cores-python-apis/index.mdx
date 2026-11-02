@@ -1,0 +1,28 @@
+---
+title: Rust cores, Python APIs
+description: Why I keep building libraries with a Rust engine and a thin Python surface, and what it costs.
+date: 2026-09-12
+tags: [rust, python, architecture]
+---
+
+import Sidenote from "@/components/mdx/Sidenote.astro";
+
+> Sample post. Replace this text with the real write-up.
+
+Three of my recent projects share one shape: the hot path is Rust, the interface is Python.<Sidenote>pyox-agents, foliq and djox. Different domains, the same split.</Sidenote> This post is about why that split keeps winning, and where it hurts.
+
+## What you gain
+
+- **Predictable latency.** No GIL in the core, no garbage collector pauses.
+- **One install.** Wheels ship the compiled engine; users run `pip install` and nothing else.
+- **A Python API that feels native,** because PyO3 lets the boundary speak Python types.
+
+## What it costs
+
+Build matrices, for one. Every release compiles for each platform and Python version you support.
+
+```toml title="pyproject.toml" ins={3}
+[build-system]
+requires = ["maturin>=1.9"]
+build-backend = "maturin"
+```

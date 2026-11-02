@@ -1,0 +1,16 @@
+---
+import { DEFAULT_LOCALE, useTranslations } from "@/i18n";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+
+const t = useTranslations(DEFAULT_LOCALE);
+---
+
+<BaseLayout locale={DEFAULT_LOCALE} title={t("notFound.title")} description={t("notFound.body")}>
+  <h1 class="mt-24 text-2xl font-semibold">{t("notFound.title")}</h1>
+  <p class="mt-2 text-muted">{t("notFound.body")}</p>
+  <p class="mt-8">
+    <a href="/" class="text-accent">
+      ← {t("nav.home")}
+    </a>
+  </p>
+</BaseLayout>

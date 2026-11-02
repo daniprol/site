@@ -1,0 +1,42 @@
+---
+import { render } from "astro:content";
+
+import { useTranslations, type Locale } from "@/i18n";
+import type { Snack } from "@/lib/content";
+
+import DateTime from "./DateTime.astro";
+
+interface Props {
+  items: Snack[];
+  locale: Locale;
+}
+const { items, locale } = Astro.props;
+const t = useTranslations(locale);
+const entries = await Promise.all(items.map(async (snack) => ({ snack, Content: (await render(snack)).Content })));
+---
+
+<ol class="divide-y divide-border">
+  {entries.map(({ snack, Content }) => (
+    <li id={snack.id} class="grid gap-1 py-4 sm:grid-cols-[7rem_1fr] sm:gap-6">
+      <DateTime date={snack.data.date} locale={locale} format="iso" class="font-mono text-xs text-muted sm:pt-1" />
+      <div>
+        <p class="flex flex-wrap items-baseline gap-x-3">
+          {snack.data.url ? (
+            <a href={snack.data.url} class="font-medium hover:text-accent">
+              {snack.data.title}
+            </a>
+          ) : (
+            <span class="font-medium">{snack.data.title}</span>
+          )}
+          <span class="font-mono text-xs text-muted">{snack.data.kind}</span>
+          <span class="font-mono text-xs" data-verdict={snack.data.verdict}>
+            {t(`verdict.${snack.data.verdict}`)}
+          </span>
+        </p>
+        <div class="mt-1 text-muted">
+          <Content />
+        </div>
+      </div>
+    </li>
+  ))}
+</ol>
