@@ -1,15 +1,96 @@
-/* Long-form typography for posts and case studies. Applied with the .prose-site class. */
-@layer components {
-  .prose-site {
-    --tw-prose-body: var(--color-fg);
-    --tw-prose-headings: var(--color-fg);
-    --tw-prose-links: var(--color-accent);
-    --tw-prose-bold: var(--color-fg);
-    --tw-prose-quotes: var(--color-muted);
-    --tw-prose-code: var(--color-fg);
-    --tw-prose-hr: var(--color-border);
-    --tw-prose-bullets: var(--color-muted);
-    --tw-prose-counters: var(--color-muted);
-    max-width: 65ch;
+/*
+ * Long-form typography for posts and case studies. Applied with the .prose-site class.
+ * Unlayered on purpose, so it overrides the typography plugin's defaults.
+ */
+.prose-site.prose {
+  --tw-prose-body: var(--color-fg);
+  --tw-prose-headings: var(--color-fg);
+  --tw-prose-links: var(--color-fg);
+  --tw-prose-bold: var(--color-fg);
+  --tw-prose-quotes: var(--color-fg);
+  --tw-prose-quote-borders: var(--color-ball);
+  --tw-prose-code: var(--color-fg);
+  --tw-prose-hr: var(--color-border);
+  --tw-prose-bullets: var(--color-ball);
+  --tw-prose-counters: var(--color-muted);
+  --tw-prose-captions: var(--color-muted);
+  --tw-prose-th-borders: var(--color-border);
+  --tw-prose-td-borders: var(--color-border);
+  max-width: 40rem;
+  font-size: 1.0625rem;
+  line-height: 1.72;
+
+  @media (min-width: 40rem) {
+    font-size: 1.125rem;
+  }
+
+  & :where(h2, h3, h4) {
+    font-family: var(--font-display);
+    font-weight: 650;
+    letter-spacing: -0.015em;
+  }
+  & :where(h2) {
+    font-size: 1.5em;
+    margin-top: 2.2em;
+    margin-bottom: 0.6em;
+  }
+  & :where(h3) {
+    font-size: 1.2em;
+  }
+
+  & :where(a):not(:where([class~="not-prose"] *)) {
+    font-weight: inherit;
+    text-decoration-line: underline;
+    text-decoration-color: color-mix(in oklch, var(--color-ball) 70%, transparent);
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.22em;
+    background-image: linear-gradient(var(--color-highlight), var(--color-highlight));
+    background-size: 0% 100%;
+    background-repeat: no-repeat;
+    border-radius: 2px;
+    transition:
+      background-size 0.35s var(--ease-out-soft),
+      text-decoration-color 0.2s;
+  }
+  & :where(a):hover {
+    background-size: 100% 100%;
+    text-decoration-color: var(--color-ball);
+  }
+
+  & :where(blockquote) {
+    font-style: normal;
+    font-weight: 450;
+    border-left-width: 3px;
+    padding-left: 1.1em;
+    color: var(--color-muted);
+  }
+  & :where(blockquote p:first-of-type)::before,
+  & :where(blockquote p:last-of-type)::after {
+    content: none;
+  }
+
+  /* Inline code: a soft chip, not a red string. */
+  & :where(:not(pre) > code) {
+    font-size: 0.86em;
+    font-weight: 500;
+    padding: 0.12em 0.36em;
+    border-radius: 0.35em;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+  }
+  & :where(:not(pre) > code)::before,
+  & :where(:not(pre) > code)::after {
+    content: none;
+  }
+
+  & :where(strong) {
+    font-weight: 650;
+  }
+
+  /* Display math scrolls on its own on phones instead of widening the page. */
+  & .katex-display {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-block: 0.25rem;
   }
 }

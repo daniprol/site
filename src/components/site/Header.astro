@@ -1,4 +1,5 @@
 ---
+import Ball from "@/components/ui/Ball.astro";
 import { localePath, stripLocale, useTranslations, type Locale } from "@/i18n";
 import { site } from "@/site.config";
 
@@ -13,23 +14,96 @@ const t = useTranslations(locale);
 const current = stripLocale(Astro.url.pathname);
 ---
 
-<header class="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-4 px-5 py-6">
-  <a href={localePath(locale)} class="font-semibold">
-    {site.name}
-  </a>
-  <nav aria-label="Main" class="flex flex-wrap gap-4 text-sm">
+<header id="top" class="mx-auto max-w-[44rem] px-5">
+  <div class="flex h-16 items-center justify-between gap-4 sm:h-20">
+    <a
+      href={localePath(locale)}
+      class="brand -ml-1 inline-flex min-h-11 items-center gap-2 px-1 text-[1.15rem] font-[720]"
+    >
+      <Ball size={18} />
+      <span style="font-family: var(--font-display)">{site.shortName}</span>
+    </a>
+    <div class="flex items-center gap-1">
+      <nav aria-label="Main" class="hidden items-center sm:flex">
+        {site.nav.map(({ key, href }) => (
+          <a
+            href={localePath(locale, href)}
+            aria-current={current.startsWith(href) ? "page" : undefined}
+            class="nav-link inline-flex min-h-11 items-center px-3 text-[0.95rem]"
+          >
+            {t(key)}
+          </a>
+        ))}
+      </nav>
+      <LanguagePicker locale={locale} class="mr-1 ml-2 hidden border-l border-border pl-2 sm:flex" />
+      <ThemeToggle locale={locale} />
+    </div>
+  </div>
+  <!-- Phones: the four sections get a full-width row of comfortable tabs. -->
+  <nav aria-label="Main" class="-mx-2 grid grid-cols-4 border-b border-border sm:hidden">
     {site.nav.map(({ key, href }) => (
       <a
         href={localePath(locale, href)}
         aria-current={current.startsWith(href) ? "page" : undefined}
-        class:list={["hover:text-fg", current.startsWith(href) ? "text-fg" : "text-muted"]}
+        class="nav-link inline-flex min-h-12 items-center justify-center text-[0.95rem]"
       >
         {t(key)}
       </a>
     ))}
   </nav>
-  <div class="flex items-center gap-4">
-    <LanguagePicker locale={locale} />
-    <ThemeToggle locale={locale} />
-  </div>
 </header>
+
+<style>
+  .nav-link {
+    position: relative;
+    color: var(--color-muted);
+    transition: color 0.2s;
+  }
+  .nav-link:hover {
+    color: var(--color-fg);
+  }
+  /* The current section is marked by a small ball resting under the label. */
+  .nav-link::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 0.3rem;
+    width: 5px;
+    height: 5px;
+    margin-left: -2.5px;
+    border-radius: 50%;
+    background: var(--color-ball);
+    transform: scale(0);
+    transition: transform 0.35s var(--ease-bounce);
+  }
+  .nav-link[aria-current="page"] {
+    color: var(--color-fg);
+    font-weight: 600;
+  }
+  .nav-link[aria-current="page"]::after {
+    transform: scale(1);
+  }
+
+  /* Easter egg: hover the brand and the ball takes a dribble. */
+  .brand :global(.ball) {
+    transform-origin: 50% 100%;
+  }
+  .brand:hover :global(.ball) {
+    animation: dribble 0.7s var(--ease-out-soft);
+  }
+  @keyframes dribble {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    35% {
+      transform: translateY(-7px) rotate(-40deg);
+    }
+    70% {
+      transform: translateY(0) scale(1.12, 0.86);
+    }
+    85% {
+      transform: translateY(-2px);
+    }
+  }
+</style>

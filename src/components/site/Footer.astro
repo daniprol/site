@@ -1,29 +1,91 @@
 ---
+import Ball from "@/components/ui/Ball.astro";
+import CourtDivider from "@/components/ui/CourtDivider.astro";
 import { useTranslations, type Locale } from "@/i18n";
 import { site } from "@/site.config";
+
+import LanguagePicker from "./LanguagePicker.astro";
 
 interface Props {
   locale: Locale;
 }
-const t = useTranslations(Astro.props.locale);
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const links = [
+  { label: "GitHub", href: site.socials.github },
+  { label: "LinkedIn", href: site.socials.linkedin },
+  { label: "Email", href: `mailto:${site.email}` },
+  { label: t("footer.rss"), href: "/rss.xml" },
+];
 ---
 
-<footer class="mx-auto mt-24 flex max-w-3xl flex-wrap justify-between gap-4 px-5 py-8 text-sm text-muted">
-  <p>
-    © {new Date().getFullYear()} {site.name}
-  </p>
-  <nav aria-label="Elsewhere" class="flex gap-4">
-    <a href={site.socials.github} class="hover:text-fg">
-      GitHub
+<footer class="mx-auto mt-24 max-w-[44rem] px-5 pb-8">
+  <CourtDivider />
+  <div class="mt-6 flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
+    <nav aria-label="Elsewhere" class="-ml-2 flex flex-wrap">
+      {links.map(({ label, href }) => (
+        <a href={href} class="inline-flex min-h-11 items-center px-2 text-[0.95rem] text-muted hover:text-fg">
+          {label}
+        </a>
+      ))}
+    </nav>
+    <a href="#top" class="to-top inline-flex min-h-11 items-center gap-2 text-[0.95rem] text-muted hover:text-fg">
+      <span class="to-top-ball">
+        <Ball size={16} />
+      </span>
+      {t("footer.top")}
     </a>
-    <a href={site.socials.linkedin} class="hover:text-fg">
-      LinkedIn
-    </a>
-    <a href={`mailto:${site.email}`} class="hover:text-fg">
-      Email
-    </a>
-    <a href="/rss.xml" class="hover:text-fg">
-      {t("footer.rss")}
-    </a>
-  </nav>
+  </div>
+  <div class="mt-2 flex flex-wrap items-center justify-between gap-2">
+    <p class="meta">
+      © {new Date().getFullYear()} {site.name} · {site.location}
+    </p>
+    <LanguagePicker locale={locale} class="-mr-2 sm:hidden" />
+  </div>
 </footer>
+
+<style>
+  .to-top-ball {
+    position: relative;
+    display: inline-flex;
+  }
+  /* A soft shadow on the "floor" that shrinks as the ball rises. */
+  .to-top-ball::after {
+    content: "";
+    position: absolute;
+    left: 15%;
+    right: 15%;
+    bottom: -4px;
+    height: 2px;
+    border-radius: 50%;
+    background: var(--color-fg);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .to-top:hover .to-top-ball :global(.ball) {
+    animation: bounce 0.8s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  }
+  .to-top:hover .to-top-ball::after {
+    opacity: 0.18;
+    animation: shadow 0.8s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  }
+  @keyframes bounce {
+    0%,
+    100% {
+      transform: translateY(0) scale(1.08, 0.9);
+    }
+    50% {
+      transform: translateY(-9px) scale(1);
+    }
+  }
+  @keyframes shadow {
+    0%,
+    100% {
+      transform: scaleX(1);
+    }
+    50% {
+      transform: scaleX(0.5);
+      opacity: 0.08;
+    }
+  }
+</style>

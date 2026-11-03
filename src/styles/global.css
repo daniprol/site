@@ -18,6 +18,8 @@
     color: var(--color-fg);
     -webkit-text-size-adjust: 100%;
     text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    scroll-behavior: smooth;
   }
   html[data-theme="light"] {
     color-scheme: light;
@@ -28,21 +30,77 @@
 
   body {
     font-family: var(--font-sans);
+    font-size: 1.0625rem;
+    line-height: 1.6;
     min-height: 100dvh;
+    background: var(--color-bg);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+
+  ::selection {
+    background: var(--color-highlight);
+    color: var(--color-fg);
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
+    outline: 2px solid var(--color-ball);
+    outline-offset: 3px;
+    border-radius: 4px;
   }
 
   @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
     *,
     *::before,
     *::after {
       animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
     }
+  }
+}
+
+@layer components {
+  /*
+   * The house link: a quiet orange underline that thickens into a highlighter swipe on hover.
+   * Used in prose and for inline links in pages.
+   */
+  .link {
+    color: var(--color-fg);
+    text-decoration-line: underline;
+    text-decoration-color: color-mix(in oklch, var(--color-ball) 70%, transparent);
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.22em;
+    background-image: linear-gradient(var(--color-highlight), var(--color-highlight));
+    background-size: 0% 100%;
+    background-repeat: no-repeat;
+    background-position: left;
+    border-radius: 2px;
+    transition:
+      background-size 0.35s var(--ease-out-soft),
+      text-decoration-color 0.2s;
+  }
+  .link:hover {
+    background-size: 100% 100%;
+    text-decoration-color: var(--color-ball);
+  }
+
+  /* Small mono label used for metadata: dates, kinds, stacks. */
+  .meta {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.01em;
+    color: var(--color-muted);
   }
 }

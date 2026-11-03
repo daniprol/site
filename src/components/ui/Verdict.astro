@@ -1,0 +1,65 @@
+---
+/** The snack verdict as a small, slightly crooked stamp: keep, maybe or drop. */
+import { useTranslations, type Locale } from "@/i18n";
+
+interface Props {
+  verdict: "keep" | "maybe" | "drop";
+  locale: Locale;
+}
+const { verdict, locale } = Astro.props;
+const t = useTranslations(locale);
+const icons = {
+  keep: "M4.5 8.5l2.5 2.5 4.5-6",
+  maybe: "M4 9c1.3-2 2.7-2 4 0s2.7 2 4 0",
+  drop: "M5 5l6 6M11 5l-6 6",
+} as const;
+---
+
+<span class="stamp" data-verdict={verdict}>
+  <svg
+    width="14"
+    height="14"
+    viewBox="0 0 16 16"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <path d={icons[verdict]}></path>
+  </svg>
+  {t(`verdict.${verdict}`)}
+</span>
+
+<style>
+  .stamp {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.6rem 0.2rem 0.45rem;
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+    transform: rotate(-3deg);
+    transition: transform 0.35s var(--ease-bounce);
+  }
+  .stamp[data-verdict="keep"] {
+    color: var(--color-keep);
+    background: var(--color-keep-bg);
+  }
+  .stamp[data-verdict="maybe"] {
+    color: var(--color-maybe);
+    background: var(--color-maybe-bg);
+    transform: rotate(2deg);
+  }
+  .stamp[data-verdict="drop"] {
+    color: var(--color-drop);
+    background: var(--color-drop-bg);
+  }
+  :global(.snack:hover) .stamp {
+    transform: rotate(0deg) scale(1.06);
+  }
+</style>

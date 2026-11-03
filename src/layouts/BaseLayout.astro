@@ -1,6 +1,7 @@
 ---
 /** The page shell every route uses: <head>, header, main, footer. */
 import "@/styles/global.css";
+import { Font } from "astro:assets";
 import { ClientRouter } from "astro:transitions";
 
 import Footer from "@/components/site/Footer.astro";
@@ -25,16 +26,22 @@ const { locale, ...seo } = Astro.props;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <Font cssVariable="--font-figtree" preload={[{ style: "normal" }]} />
+    <Font cssVariable="--font-bricolage" preload />
+    <Font cssVariable="--font-jetbrains" />
     <Seo locale={locale} {...seo} />
     <ThemeScript />
     <ClientRouter />
   </head>
   <body>
-    <a href="#main" class="sr-only focus:not-sr-only">
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-full focus:bg-fg focus:px-4 focus:py-2 focus:text-bg"
+    >
       Skip to content
     </a>
     <Header locale={locale} />
-    <main id="main" class="mx-auto max-w-3xl px-5" data-pagefind-body>
+    <main id="main" class="mx-auto max-w-[44rem] px-5" data-pagefind-body>
       <slot />
     </main>
     <Footer locale={locale} />

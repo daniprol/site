@@ -1,0 +1,35 @@
+---
+/**
+ * A hairline divider drawn like a half-court line: two rules meeting a centre circle.
+ * The only court geometry on the site, kept quiet on purpose.
+ */
+interface Props {
+  class?: string;
+}
+const { class: className } = Astro.props;
+---
+
+<div class:list={["court", className]} aria-hidden="true">
+  <span class="court-line"></span>
+  <svg width="30" height="30" viewBox="0 0 30 30" fill="none">
+    <circle cx="15" cy="15" r="12" stroke="var(--color-border)" stroke-width="1.25"></circle>
+    <circle cx="15" cy="15" r="2.25" fill="var(--color-ball)"></circle>
+  </svg>
+  <span class="court-line"></span>
+</div>
+
+<style>
+  .court {
+    display: flex;
+    align-items: center;
+    gap: 0;
+  }
+  .court-line {
+    flex: 1;
+    height: 1.25px;
+    background: var(--color-border);
+  }
+  .court svg {
+    flex: none;
+  }
+</style>

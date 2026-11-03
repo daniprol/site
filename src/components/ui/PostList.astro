@@ -11,18 +11,38 @@ interface Props {
 const { items, locale } = Astro.props;
 ---
 
-<ul class="divide-y divide-border">
+<ul class="post-list">
   {items.map(({ post, slug }) => (
-    <li>
-      <a
-        href={localePath(locale, `/writing/${slug}`)}
-        class="group flex flex-col gap-1 py-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6"
-      >
-        <span class="group-hover:text-accent" transition:name={`post-title-${slug}`}>
-          {post.data.title}
+    <li class="border-t border-border first:border-t-0">
+      <a href={localePath(locale, `/writing/${slug}`)} class="group block py-5">
+        <span class="flex items-baseline justify-between gap-6">
+          <span class="text-[1.2rem] leading-snug font-[620] text-balance" style="font-family: var(--font-display)">
+            <span class="swipe" transition:name={`post-title-${slug}`}>
+              {post.data.title}
+            </span>
+          </span>
+          <DateTime date={post.data.date} locale={locale} format="short" class="meta hidden shrink-0 sm:inline" />
         </span>
-        <DateTime date={post.data.date} locale={locale} format="short" class="shrink-0 text-sm text-muted" />
+        <span class="mt-1.5 block text-muted">{post.data.description}</span>
+        <DateTime date={post.data.date} locale={locale} format="short" class="meta mt-2 block sm:hidden" />
       </a>
     </li>
   ))}
 </ul>
+
+<style>
+  /* Highlighter swipe behind the title on hover, same gesture as body links. */
+  .swipe {
+    background-image: linear-gradient(var(--color-highlight), var(--color-highlight));
+    background-size: 0% 100%;
+    background-repeat: no-repeat;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    border-radius: 3px;
+    transition: background-size 0.4s var(--ease-out-soft);
+  }
+  a:hover .swipe,
+  a:focus-visible .swipe {
+    background-size: 100% 100%;
+  }
+</style>

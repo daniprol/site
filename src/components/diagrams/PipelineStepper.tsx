@@ -1,5 +1,6 @@
 /**
  * Example interactive diagram: a pipeline the reader steps through.
+ * A small ball rolls along the track to the active stage; stages are also clickable.
  * Rendered to HTML at build time; React hydrates only when it scrolls into view (client:visible).
  */
 import { useState } from "react";
@@ -11,51 +12,61 @@ const STAGES = [
   { id: "return", label: "Return", detail: "Hits cross the PyO3 boundary as plain Python objects." },
 ] as const;
 
+const buttonClass =
+  "inline-flex min-h-11 cursor-pointer items-center rounded-full border border-border px-4 text-sm font-medium " +
+  "transition-colors hover:border-[var(--color-ball)] disabled:cursor-default disabled:opacity-40 disabled:hover:border-border";
+
 export default function PipelineStepper() {
   const [active, setActive] = useState(0);
   const stage = STAGES[active] ?? STAGES[0];
+  // Ball position as a share of the track: centre of the active column.
+  const ballLeft = `${((active + 0.5) / STAGES.length) * 100}%`;
 
   return (
-    <div className="rounded-lg border border-border p-4 sm:p-6">
-      <svg viewBox="0 0 400 60" className="w-full" role="img" aria-label="Pipeline stages">
-        {STAGES.map((s, i) => (
-          <g key={s.id} transform={`translate(${i * 100 + 10}, 10)`}>
-            <rect
-              width="80"
-              height="40"
-              rx="6"
-              className="transition-colors duration-300"
-              fill={i === active ? "var(--color-accent)" : "transparent"}
-              stroke={i <= active ? "var(--color-accent)" : "var(--color-border)"}
-            />
-            <text
-              x="40"
-              y="25"
-              textAnchor="middle"
-              fontSize="12"
-              fill={i === active ? "var(--color-bg)" : "var(--color-fg)"}
-            >
-              {s.label}
-            </text>
-            {i < STAGES.length - 1 && <line x1="82" y1="20" x2="98" y2="20" stroke="var(--color-border)" />}
-          </g>
-        ))}
-      </svg>
-      <p className="mt-4 min-h-12 text-sm" aria-live="polite">
+    <div className="rounded-xl border border-border bg-[var(--color-surface)] p-4 sm:p-6">
+      <div className="relative">
+        {/* Track: a hairline across the column centres, filled in orange up to the active stage. */}
+        <div className="absolute top-[0.6rem] right-[12.5%] left-[12.5%] h-px bg-border" aria-hidden="true" />
+        <div
+          className="absolute top-[0.6rem] left-[12.5%] h-px bg-[var(--color-ball)] transition-[width] duration-500"
+          style={{ width: `${(active / STAGES.length) * 100}%` }}
+          aria-hidden="true"
+        />
+        <div
+          className="absolute top-0 size-5 -translate-x-1/2 rounded-full bg-[var(--color-ball)] shadow-[inset_0_0_0_1.5px_var(--color-seam)] transition-[left] duration-500 ease-[var(--ease-bounce)]"
+          style={{ left: ballLeft }}
+          aria-hidden="true"
+        />
+        <ol className="relative grid grid-cols-4 pt-7">
+          {STAGES.map((s, i) => (
+            <li key={s.id} className="flex justify-center">
+              <button
+                type="button"
+                onClick={() => setActive(i)}
+                aria-current={i === active ? "step" : undefined}
+                className={`min-h-11 cursor-pointer rounded-lg px-1 text-[0.8rem] transition-colors sm:text-sm ${
+                  i === active
+                    ? "font-semibold text-[var(--color-fg)]"
+                    : "text-[var(--color-muted)] hover:text-[var(--color-fg)]"
+                }`}
+              >
+                <span className="block font-mono text-[0.65rem] opacity-70">0{i + 1}</span>
+                {s.label}
+              </button>
+            </li>
+          ))}
+        </ol>
+      </div>
+      <p className="mt-4 min-h-12 border-t border-border pt-4 text-[0.95rem]" aria-live="polite">
         {stage.detail}
       </p>
-      <div className="mt-4 flex gap-2">
-        <button
-          type="button"
-          className="rounded border border-border px-3 py-1 text-sm disabled:opacity-40"
-          disabled={active === 0}
-          onClick={() => setActive((i) => i - 1)}
-        >
+      <div className="mt-3 flex gap-2">
+        <button type="button" className={buttonClass} disabled={active === 0} onClick={() => setActive((i) => i - 1)}>
           Back
         </button>
         <button
           type="button"
-          className="rounded border border-border px-3 py-1 text-sm disabled:opacity-40"
+          className={buttonClass}
           disabled={active === STAGES.length - 1}
           onClick={() => setActive((i) => i + 1)}
         >

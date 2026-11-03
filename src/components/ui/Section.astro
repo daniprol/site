@@ -8,12 +8,18 @@ interface Props {
 const { title, href, linkLabel } = Astro.props;
 ---
 
-<section class="mt-16">
-  <div class="mb-4 flex items-baseline justify-between">
-    <h2 class="text-sm font-medium text-muted">{title}</h2>
+<section class="mt-14 first:mt-0 sm:mt-16">
+  <div class="mb-3 flex items-baseline justify-between gap-4">
+    <h2 class="text-xl font-[650]">{title}</h2>
     {href && (
-      <a href={href} class="text-sm text-muted hover:text-fg">
-        {linkLabel} →
+      <a
+        href={href}
+        class="group -my-3 inline-flex min-h-11 items-center gap-1 text-[0.95rem] text-muted hover:text-fg"
+      >
+        {linkLabel}
+        <span class="transition-transform duration-300 ease-bounce group-hover:translate-x-1" aria-hidden="true">
+          →
+        </span>
       </a>
     )}
   </div>

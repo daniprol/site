@@ -21,20 +21,20 @@ const { title, summary, stack, repo, url, year } = project.data;
 ---
 
 <BaseLayout locale={locale} title={title} description={summary} canonicalPath={`/projects/${project.id}`}>
-  <article class="mt-12">
-    <header class="mb-10">
-      <h1 class="text-3xl font-semibold">{title}</h1>
-      <p class="mt-3 text-muted">{summary}</p>
-      <p class="mt-4 flex flex-wrap gap-x-4 font-mono text-xs text-muted">
-        <span>{year}</span>
+  <article class="pt-8 sm:pt-14">
+    <header class="mb-10 max-w-[40rem]">
+      <p class="meta">{year}</p>
+      <h1 class="mt-2 text-[2.05rem] leading-[1.12] font-[720] sm:text-[2.6rem]">{title}</h1>
+      <p class="mt-4 text-lg leading-relaxed text-muted sm:text-xl">{summary}</p>
+      <p class="meta mt-5 flex flex-wrap items-center gap-x-4 gap-y-1">
         <span>{stack.join(" · ")}</span>
         {repo && (
-          <a href={repo} class="hover:text-fg">
+          <a href={repo} class="link inline-flex min-h-11 items-center">
             Source ↗
           </a>
         )}
         {url && (
-          <a href={url} class="hover:text-fg">
+          <a href={url} class="link inline-flex min-h-11 items-center">
             Live ↗
           </a>
         )}

@@ -1,4 +1,5 @@
 ---
+import PageHeader from "@/components/ui/PageHeader.astro";
 import { localeParams, useTranslations } from "@/i18n";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { education, experience, site } from "@/site.config";
@@ -10,8 +11,8 @@ const t = useTranslations(locale);
 ---
 
 <BaseLayout locale={locale} title={t("about.title")} description={`${site.name}, ${site.role}.`}>
-  <h1 class="mt-12 text-2xl font-semibold">{t("about.title")}</h1>
-  <div class="prose-site prose mt-6">
+  <PageHeader title={t("about.title")} />
+  <div class="prose-site prose -mt-2">
     <p>
       I'm a software and AI engineer based in {site.location}. I studied mathematics and economics, then spent the last
       few years building full-stack products and AI systems. TODO: write this in your own words, and translate it in a
@@ -20,14 +21,14 @@ const t = useTranslations(locale);
   </div>
 
   <section class="mt-14">
-    <h2 class="mb-4 text-sm font-medium text-muted">{t("about.experience")}</h2>
-    <ul class="divide-y divide-border">
+    <h2 class="mb-2 text-xl font-[650]">{t("about.experience")}</h2>
+    <ul>
       {experience.map((job) => (
-        <li class="grid gap-1 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
-          <span class="font-mono text-xs text-muted sm:pt-1">{job.period}</span>
+        <li class="grid gap-1 border-t border-border py-4 first:border-t-0 sm:grid-cols-[9rem_1fr] sm:gap-6">
+          <span class="meta sm:pt-1">{job.period}</span>
           <div>
-            <p class="font-medium">
-              {job.role} · {job.company}
+            <p class="font-semibold">
+              {job.role} <span class="font-normal text-muted">· {job.company}</span>
             </p>
             <p class="mt-1 text-muted">{job.summary}</p>
           </div>
@@ -36,24 +37,24 @@ const t = useTranslations(locale);
     </ul>
   </section>
 
-  <section class="mt-14">
-    <h2 class="mb-4 text-sm font-medium text-muted">{t("about.education")}</h2>
-    <ul class="divide-y divide-border">
+  <section class="mt-12">
+    <h2 class="mb-2 text-xl font-[650]">{t("about.education")}</h2>
+    <ul>
       {education.map((item) => (
-        <li class="grid gap-1 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
-          <span class="font-mono text-xs text-muted sm:pt-1">{item.period}</span>
+        <li class="grid gap-1 border-t border-border py-4 first:border-t-0 sm:grid-cols-[9rem_1fr] sm:gap-6">
+          <span class="meta empty:hidden sm:pt-1 sm:empty:block">{item.period}</span>
           <p>
-            {item.degree} · <span class="text-muted">{item.school}</span>
+            <span class="font-semibold">{item.degree}</span> <span class="text-muted">· {item.school}</span>
           </p>
         </li>
       ))}
     </ul>
   </section>
 
-  <section class="mt-14">
-    <h2 class="mb-4 text-sm font-medium text-muted">{t("about.contact")}</h2>
+  <section class="mt-12">
+    <h2 class="mb-3 text-xl font-[650]">{t("about.contact")}</h2>
     <p>
-      <a href={`mailto:${site.email}`} class="text-accent">
+      <a href={`mailto:${site.email}`} class="link text-lg">
         {site.email}
       </a>
     </p>

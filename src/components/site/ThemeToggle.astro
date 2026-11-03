@@ -1,4 +1,8 @@
 ---
+/**
+ * Theme toggle drawn as a basketball outline with one half filled.
+ * Switching themes spins the ball half a turn, so the dark half swaps sides.
+ */
 import type { Locale } from "@/i18n";
 import { useTranslations } from "@/i18n";
 
@@ -8,20 +12,41 @@ interface Props {
 const t = useTranslations(Astro.props.locale);
 ---
 
-<button type="button" data-theme-toggle aria-label={t("theme.toggle")} class="cursor-pointer text-muted hover:text-fg">
+<button
+  type="button"
+  data-theme-toggle
+  aria-label={t("theme.toggle")}
+  class="toggle inline-flex size-11 cursor-pointer items-center justify-center rounded-full text-fg hover:bg-surface"
+>
   <svg
-    width="18"
-    height="18"
+    width="22"
+    height="22"
     viewBox="0 0 24 24"
     fill="none"
     stroke="currentColor"
     stroke-width="1.5"
     aria-hidden="true"
   >
-    <circle cx="12" cy="12" r="8"></circle>
-    <path d="M12 4a8 8 0 0 1 0 16Z" fill="currentColor"></path>
+    <path d="M12 2.5a9.5 9.5 0 0 1 0 19Z" fill="currentColor" stroke="none"></path>
+    <circle cx="12" cy="12" r="9.5"></circle>
+    <path d="M2.5 12h19M5.4 5.2c3.4 3.8 3.4 9.8 0 13.6M18.6 5.2c-3.4 3.8-3.4 9.8 0 13.6" stroke-width="1.1"></path>
   </svg>
 </button>
+
+<style>
+  .toggle svg {
+    transition: transform 0.6s var(--ease-bounce);
+  }
+  .toggle:hover svg {
+    transform: rotate(-20deg);
+  }
+  :global(html[data-theme="dark"]) .toggle svg {
+    transform: rotate(180deg);
+  }
+  :global(html[data-theme="dark"]) .toggle:hover svg {
+    transform: rotate(160deg);
+  }
+</style>
 
 <script>
   const bind = () => {

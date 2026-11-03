@@ -1,0 +1,60 @@
+---
+/** One snack as a quick card: kind and date, a verdict stamp, the name and two lines of opinion. */
+import { render } from "astro:content";
+
+import type { Locale } from "@/i18n";
+import type { Snack } from "@/lib/content";
+
+import DateTime from "./DateTime.astro";
+import Verdict from "./Verdict.astro";
+
+interface Props {
+  snack: Snack;
+  locale: Locale;
+}
+const { snack, locale } = Astro.props;
+const { Content } = await render(snack);
+const { title, url, kind, verdict, date } = snack.data;
+---
+
+<li id={snack.id} class="snack flex flex-col rounded-xl border border-border bg-surface p-4 sm:p-5">
+  <div class="flex items-center justify-between gap-3">
+    <p class="meta">
+      {kind} · <DateTime date={date} locale={locale} format="short" />
+    </p>
+    <Verdict verdict={verdict} locale={locale} />
+  </div>
+  <h3 class="mt-2.5 text-[1.1rem] leading-snug font-[650]">
+    {url ? (
+      <a href={url} class="link">
+        {title}
+      </a>
+    ) : (
+      title
+    )}
+  </h3>
+  <div class="snack-body mt-1.5 text-[0.95rem] leading-relaxed text-muted">
+    <Content />
+  </div>
+</li>
+
+<style>
+  .snack {
+    transition:
+      transform 0.3s var(--ease-out-soft),
+      border-color 0.3s;
+  }
+  .snack:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in oklch, var(--color-ball) 45%, var(--color-border));
+  }
+  .snack-body :global(p + p) {
+    margin-top: 0.5em;
+  }
+  .snack-body :global(a) {
+    color: var(--color-fg);
+    text-decoration: underline;
+    text-decoration-color: var(--color-ball);
+    text-underline-offset: 0.2em;
+  }
+</style>

@@ -1,4 +1,5 @@
 ---
+import CourtDivider from "@/components/ui/CourtDivider.astro";
 import PostList from "@/components/ui/PostList.astro";
 import ProjectList from "@/components/ui/ProjectList.astro";
 import Section from "@/components/ui/Section.astro";
@@ -12,21 +13,30 @@ export const getStaticPaths = localeParams;
 
 const { locale } = Astro.props;
 const t = useTranslations(locale);
-const posts = (await getPosts(locale)).slice(0, 3);
-const snacks = (await getSnacks()).slice(0, 5);
-const projects = (await getProjects()).filter((p) => p.data.featured).slice(0, 3);
+const posts = (await getPosts(locale)).slice(0, 5);
+const snacks = (await getSnacks()).slice(0, 4);
+const projects = (await getProjects()).filter((p) => p.data.featured).slice(0, 4);
 ---
 
 <BaseLayout locale={locale} description={`${site.name}, ${site.role}.`}>
-  <section class="mt-12">
-    <h1 class="text-2xl font-semibold">{site.name}</h1>
-    <p class="mt-2 text-muted">
-      {site.role} · {site.location}
+  <section class="pt-10 pb-2 sm:pt-16">
+    <h1 class="text-[2.25rem] leading-none font-[740] sm:text-[2.75rem]">{site.name}</h1>
+    <p class="mt-5 max-w-[36rem] text-[1.15rem] leading-relaxed sm:text-[1.25rem]">{t("home.intro")}</p>
+    <p class="mt-5 flex max-w-[36rem] gap-3 text-muted">
+      <span class="meta mt-[0.3rem] inline-flex shrink-0 items-center gap-1.5 self-start font-semibold text-fg uppercase">
+        <span class="size-1.5 rounded-full bg-(--color-ball)" aria-hidden="true"></span>
+        {t("home.now")}
+      </span>
+      <span>{site.now}</span>
     </p>
-    <p class="mt-6 max-w-prose">
-      <span class="text-muted">{t("home.now")}:</span> {site.now}
+    <p class="mt-4">
+      <a href={localePath(locale, "/about")} class="link">
+        {t("home.more")}
+      </a>
     </p>
   </section>
+
+  <CourtDivider class="my-10 sm:my-12" />
 
   <Section title={t("home.latestWriting")} href={localePath(locale, "/writing")} linkLabel={t("home.viewAll")}>
     <PostList items={posts} locale={locale} />
