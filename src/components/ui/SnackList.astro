@@ -1,42 +1,57 @@
 ---
 import { render } from "astro:content";
 
-import { useTranslations, type Locale } from "@/i18n";
+import type { Locale } from "@/i18n";
 import type { Snack } from "@/lib/content";
 
 import DateTime from "./DateTime.astro";
+import Verdict from "./Verdict.astro";
 
 interface Props {
   items: Snack[];
   locale: Locale;
 }
 const { items, locale } = Astro.props;
-const t = useTranslations(locale);
 const entries = await Promise.all(items.map(async (snack) => ({ snack, Content: (await render(snack)).Content })));
 ---
 
-<ol class="divide-y divide-border">
+<!-- Dense on purpose: verdict glyph in the gutter, title and word on one line, a sentence or two below. -->
+<ol>
   {entries.map(({ snack, Content }) => (
-    <li id={snack.id} class="grid gap-1 py-4 sm:grid-cols-[7rem_1fr] sm:gap-6">
-      <DateTime date={snack.data.date} locale={locale} format="iso" class="font-mono text-xs text-muted sm:pt-1" />
-      <div>
-        <p class="flex flex-wrap items-baseline gap-x-3">
+    <li id={snack.id} class="grid scroll-mt-6 grid-cols-[1.9rem_1fr] gap-x-3 py-3.5">
+      <Verdict verdict={snack.data.verdict} locale={locale} variant="symbol" />
+      <div class="min-w-0">
+        <p class="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5 pt-0.5">
           {snack.data.url ? (
-            <a href={snack.data.url} class="font-medium hover:text-accent">
-              {snack.data.title}
+            <a href={snack.data.url} class="group font-bold tracking-tight">
+              <span class="marker-hover">{snack.data.title}</span>
+              <span aria-hidden="true" class="ml-0.5 text-xs text-muted">
+                ↗
+              </span>
             </a>
           ) : (
-            <span class="font-medium">{snack.data.title}</span>
+            <span class="font-bold tracking-tight">{snack.data.title}</span>
           )}
-          <span class="font-mono text-xs text-muted">{snack.data.kind}</span>
-          <span class="font-mono text-xs" data-verdict={snack.data.verdict}>
-            {t(`verdict.${snack.data.verdict}`)}
+          <Verdict verdict={snack.data.verdict} locale={locale} />
+          <span class="ml-auto font-mono text-xs text-muted">
+            {snack.data.kind} · <DateTime date={snack.data.date} locale={locale} format="short" />
           </span>
         </p>
-        <div class="mt-1 text-muted">
+        <div class="snack-body mt-1 text-[0.98rem] leading-relaxed text-muted">
           <Content />
         </div>
       </div>
     </li>
   ))}
 </ol>
+
+<style>
+  .snack-body :global(p + p) {
+    margin-top: 0.5em;
+  }
+  .snack-body :global(a) {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+</style>

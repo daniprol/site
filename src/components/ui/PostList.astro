@@ -1,6 +1,6 @@
 ---
-import { localePath, type Locale } from "@/i18n";
-import type { Post } from "@/lib/content";
+import { localePath, useTranslations, type Locale } from "@/i18n";
+import { readingTime, type Post } from "@/lib/content";
 
 import DateTime from "./DateTime.astro";
 
@@ -9,19 +9,28 @@ interface Props {
   locale: Locale;
 }
 const { items, locale } = Astro.props;
+const t = useTranslations(locale);
 ---
 
-<ul class="divide-y divide-border">
+<!-- Writing is the hero: title, one line of why, then quiet meta. -->
+<ul class="-mx-3">
   {items.map(({ post, slug }) => (
     <li>
       <a
         href={localePath(locale, `/writing/${slug}`)}
-        class="group flex flex-col gap-1 py-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6"
+        class="group block rounded-lg px-3 py-4 transition-colors hover:bg-surface"
       >
-        <span class="group-hover:text-accent" transition:name={`post-title-${slug}`}>
-          {post.data.title}
-        </span>
-        <DateTime date={post.data.date} locale={locale} format="short" class="shrink-0 text-sm text-muted" />
+        <h3 class="text-[1.15rem] leading-snug font-bold tracking-tight text-balance sm:text-[1.2rem]">
+          <span class="marker-hover" transition:name={`post-title-${slug}`}>
+            {post.data.title}
+          </span>
+        </h3>
+        <p class="mt-1 line-clamp-2 text-[0.98rem] text-muted">{post.data.description}</p>
+        <p class="mt-2 flex gap-3 font-mono text-xs text-muted">
+          <DateTime date={post.data.date} locale={locale} format="short" />
+          <span aria-hidden="true">·</span>
+          <span>{t("post.readingTime", { n: readingTime(post.body) })}</span>
+        </p>
       </a>
     </li>
   ))}

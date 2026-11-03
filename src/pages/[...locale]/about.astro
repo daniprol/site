@@ -1,4 +1,6 @@
 ---
+import Callout from "@/components/mdx/Callout.astro";
+import PageHeader from "@/components/ui/PageHeader.astro";
 import { localeParams, useTranslations } from "@/i18n";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { education, experience, site } from "@/site.config";
@@ -10,24 +12,26 @@ const t = useTranslations(locale);
 ---
 
 <BaseLayout locale={locale} title={t("about.title")} description={`${site.name}, ${site.role}.`}>
-  <h1 class="mt-12 text-2xl font-semibold">{t("about.title")}</h1>
-  <div class="prose-site prose mt-6">
-    <p>
-      I'm a software and AI engineer based in {site.location}. I studied mathematics and economics, then spent the last
-      few years building full-stack products and AI systems. TODO: write this in your own words, and translate it in a
-      per-locale file if you want.
-    </p>
+  <PageHeader title={t("about.title")} />
+  <div class="prose-site prose">
+    <Callout kind="definition" title={site.name}>
+      <p>
+        I'm a software and AI engineer based in {site.location}. I studied mathematics and economics, then spent the
+        last few years building full-stack products and AI systems. TODO: write this in your own words, and translate it
+        in a per-locale file if you want.
+      </p>
+    </Callout>
   </div>
 
   <section class="mt-14">
-    <h2 class="mb-4 text-sm font-medium text-muted">{t("about.experience")}</h2>
-    <ul class="divide-y divide-border">
+    <h2 class="eyebrow mb-2">{t("about.experience")}</h2>
+    <ul>
       {experience.map((job) => (
-        <li class="grid gap-1 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
-          <span class="font-mono text-xs text-muted sm:pt-1">{job.period}</span>
+        <li class="grid gap-1 border-b border-border py-4 last:border-0 sm:grid-cols-[9rem_1fr] sm:gap-6">
+          <span class="font-mono text-xs text-muted sm:pt-1.5">{job.period}</span>
           <div>
-            <p class="font-medium">
-              {job.role} · {job.company}
+            <p class="font-bold tracking-tight">
+              {job.role} <span class="font-normal text-muted">· {job.company}</span>
             </p>
             <p class="mt-1 text-muted">{job.summary}</p>
           </div>
@@ -37,13 +41,14 @@ const t = useTranslations(locale);
   </section>
 
   <section class="mt-14">
-    <h2 class="mb-4 text-sm font-medium text-muted">{t("about.education")}</h2>
-    <ul class="divide-y divide-border">
+    <h2 class="eyebrow mb-2">{t("about.education")}</h2>
+    <ul>
       {education.map((item) => (
-        <li class="grid gap-1 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
-          <span class="font-mono text-xs text-muted sm:pt-1">{item.period}</span>
+        <li class="grid gap-1 border-b border-border py-4 last:border-0 sm:grid-cols-[9rem_1fr] sm:gap-6">
+          <span class="font-mono text-xs text-muted empty:hidden sm:pt-1.5 sm:empty:block">{item.period}</span>
           <p>
-            {item.degree} · <span class="text-muted">{item.school}</span>
+            <span class="font-bold tracking-tight">{item.degree}</span>
+            <span class="text-muted"> · {item.school}</span>
           </p>
         </li>
       ))}
@@ -51,10 +56,10 @@ const t = useTranslations(locale);
   </section>
 
   <section class="mt-14">
-    <h2 class="mb-4 text-sm font-medium text-muted">{t("about.contact")}</h2>
+    <h2 class="eyebrow mb-2">{t("about.contact")}</h2>
     <p>
-      <a href={`mailto:${site.email}`} class="text-accent">
-        {site.email}
+      <a href={`mailto:${site.email}`} class="group inline-flex min-h-11 items-center text-[1.1rem] font-semibold">
+        <span class="marker-hover text-accent">{site.email}</span>
       </a>
     </p>
   </section>

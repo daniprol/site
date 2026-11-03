@@ -6,24 +6,25 @@ interface Props {
   locale: Locale;
 }
 const t = useTranslations(Astro.props.locale);
+const links = [
+  { label: "GitHub", href: site.socials.github },
+  { label: "LinkedIn", href: site.socials.linkedin },
+  { label: "Email", href: `mailto:${site.email}` },
+  { label: t("footer.rss"), href: "/rss.xml" },
+];
 ---
 
-<footer class="mx-auto mt-24 flex max-w-3xl flex-wrap justify-between gap-4 px-5 py-8 text-sm text-muted">
-  <p>
-    © {new Date().getFullYear()} {site.name}
-  </p>
-  <nav aria-label="Elsewhere" class="flex gap-4">
-    <a href={site.socials.github} class="hover:text-fg">
-      GitHub
-    </a>
-    <a href={site.socials.linkedin} class="hover:text-fg">
-      LinkedIn
-    </a>
-    <a href={`mailto:${site.email}`} class="hover:text-fg">
-      Email
-    </a>
-    <a href="/rss.xml" class="hover:text-fg">
-      {t("footer.rss")}
-    </a>
-  </nav>
+<footer class="mx-auto mt-24 w-full max-w-column px-4 pb-10 sm:px-6">
+  <div class="flex flex-col gap-3 border-t border-border pt-6 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
+    <nav aria-label="Elsewhere" class="-ml-2 flex flex-wrap">
+      {links.map(({ label, href }) => (
+        <a href={href} class="group flex min-h-11 items-center px-2 transition-colors hover:text-fg">
+          <span class="marker-hover">{label}</span>
+        </a>
+      ))}
+    </nav>
+    <p>
+      © {new Date().getFullYear()} {site.name} · {site.location.split(",")[0]}
+    </p>
+  </div>
 </footer>
