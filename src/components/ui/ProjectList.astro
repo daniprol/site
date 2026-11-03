@@ -1,4 +1,5 @@
 ---
+/** Projects as quiet rows: name, one-line summary, stack. No cards. */
 import { localePath, type Locale } from "@/i18n";
 import type { Project } from "@/lib/content";
 
@@ -9,13 +10,20 @@ interface Props {
 const { items, locale } = Astro.props;
 ---
 
-<ul class="grid gap-6 sm:grid-cols-2">
+<ul class="divide-y divide-border">
   {items.map((project) => (
     <li>
-      <a href={localePath(locale, `/projects/${project.id}`)} class="group block">
-        <p class="font-medium group-hover:text-accent">{project.data.title}</p>
-        <p class="mt-1 text-sm text-muted">{project.data.summary}</p>
-        <p class="mt-2 font-mono text-xs text-muted">{project.data.stack.join(" · ")}</p>
+      <a
+        href={localePath(locale, `/projects/${project.id}`)}
+        class="group grid gap-x-6 gap-y-1 py-4 sm:grid-cols-[7.5rem_1fr]"
+      >
+        <span class="font-semibold transition-colors group-hover:text-accent">{project.data.title}</span>
+        <span>
+          <span class="block font-serif text-[0.98rem] leading-relaxed text-pretty text-muted">
+            {project.data.summary}
+          </span>
+          <span class="mt-1.5 block font-mono text-xs text-muted">{project.data.stack.join(" · ")}</span>
+        </span>
       </a>
     </li>
   ))}

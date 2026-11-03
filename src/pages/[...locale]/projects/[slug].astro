@@ -21,24 +21,29 @@ const { title, summary, stack, repo, url, year } = project.data;
 ---
 
 <BaseLayout locale={locale} title={title} description={summary} canonicalPath={`/projects/${project.id}`}>
-  <article class="mt-12">
+  <article class="mt-10 sm:mt-16">
     <header class="mb-10">
-      <h1 class="text-3xl font-semibold">{title}</h1>
-      <p class="mt-3 text-muted">{summary}</p>
-      <p class="mt-4 flex flex-wrap gap-x-4 font-mono text-xs text-muted">
-        <span>{year}</span>
+      <p class="eyebrow">{year}</p>
+      <h1 class="mt-3 text-[1.875rem] leading-[1.15] font-semibold tracking-[-0.022em] text-balance sm:text-[2.375rem]">
+        {title}
+      </h1>
+      <p class="mt-4 font-serif text-[1.125rem] leading-relaxed text-pretty text-muted sm:text-[1.1875rem]">
+        {summary}
+      </p>
+      <p class="mt-5 flex flex-wrap items-center gap-x-5 gap-y-1 font-mono text-xs text-muted">
         <span>{stack.join(" · ")}</span>
         {repo && (
-          <a href={repo} class="hover:text-fg">
+          <a href={repo} class="link inline-flex min-h-11 items-center text-fg">
             Source ↗
           </a>
         )}
         {url && (
-          <a href={url} class="hover:text-fg">
+          <a href={url} class="link inline-flex min-h-11 items-center text-fg">
             Live ↗
           </a>
         )}
       </p>
+      <span class="tide mt-6 w-16" aria-hidden="true"></span>
     </header>
     <div class="prose-site prose" lang="en">
       <Content />

@@ -1,13 +1,14 @@
 ---
 /** The page shell every route uses: <head>, header, main, footer. */
 import "@/styles/global.css";
+import { Font } from "astro:assets";
 import { ClientRouter } from "astro:transitions";
 
 import Footer from "@/components/site/Footer.astro";
 import Header from "@/components/site/Header.astro";
 import Seo from "@/components/site/Seo.astro";
 import ThemeScript from "@/components/site/ThemeScript.astro";
-import type { Locale } from "@/i18n";
+import { useTranslations, type Locale } from "@/i18n";
 
 interface Props {
   locale: Locale;
@@ -17,6 +18,7 @@ interface Props {
 }
 
 const { locale, ...seo } = Astro.props;
+const t = useTranslations(locale);
 ---
 
 <!doctype html>
@@ -25,16 +27,22 @@ const { locale, ...seo } = Astro.props;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <Font cssVariable="--font-literata" preload={[{ style: "normal" }]} />
+    <Font cssVariable="--font-schibsted" preload />
+    <Font cssVariable="--font-fragment" />
     <Seo locale={locale} {...seo} />
     <ThemeScript />
     <ClientRouter />
   </head>
   <body>
-    <a href="#main" class="sr-only focus:not-sr-only">
-      Skip to content
+    <a
+      href="#main"
+      class="sr-only rounded bg-fg px-3 py-2 text-sm text-bg focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50"
+    >
+      {t("skip")}
     </a>
     <Header locale={locale} />
-    <main id="main" class="mx-auto max-w-3xl px-5" data-pagefind-body>
+    <main id="main" class="mx-auto w-full max-w-column flex-1 px-5" data-pagefind-body>
       <slot />
     </main>
     <Footer locale={locale} />

@@ -1,15 +1,32 @@
 /*
- * Design tokens. Each theme owns this file.
+ * Atlantic: design tokens. Each theme owns this file.
+ * Light is granite under an overcast sky; dark is the ría at night.
  * Colours use light-dark() so each token is defined once for both modes.
  */
 @theme {
-  --font-sans: ui-sans-serif, system-ui, sans-serif;
-  --font-serif: ui-serif, Georgia, serif;
-  --font-mono: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  /* Faces are self-hosted through Astro's Fonts API (see astro.config.ts). */
+  --font-serif: var(--font-literata), Georgia, serif;
+  --font-sans: var(--font-schibsted), system-ui, sans-serif;
+  --font-mono: var(--font-fragment), ui-monospace, "SFMono-Regular", Menlo, monospace;
 
-  --color-bg: light-dark(oklch(0.99 0 0), oklch(0.17 0 0));
-  --color-fg: light-dark(oklch(0.2 0 0), oklch(0.93 0 0));
-  --color-muted: light-dark(oklch(0.5 0 0), oklch(0.65 0 0));
-  --color-border: light-dark(oklch(0.9 0 0), oklch(0.3 0 0));
-  --color-accent: light-dark(oklch(0.5 0.15 250), oklch(0.75 0.12 250));
+  /* Surfaces */
+  --color-bg: light-dark(oklch(0.974 0.004 230), oklch(0.195 0.017 242));
+  --color-surface: light-dark(oklch(0.948 0.007 232), oklch(0.235 0.02 242));
+  --color-border: light-dark(oklch(0.885 0.01 235), oklch(0.335 0.02 242));
+
+  /* Ink */
+  --color-fg: light-dark(oklch(0.255 0.024 248), oklch(0.925 0.008 230));
+  --color-muted: light-dark(oklch(0.485 0.02 242), oklch(0.72 0.018 235));
+
+  /* Atlantic: the one accent, for links, focus and the tide line */
+  --color-accent: light-dark(oklch(0.47 0.085 222), oklch(0.8 0.075 205));
+  --color-accent-soft: light-dark(oklch(0.47 0.085 222 / 0.12), oklch(0.8 0.075 205 / 0.16));
+
+  /* Snack verdicts: moss, gorse and lichen on granite */
+  --color-keep: light-dark(oklch(0.48 0.09 150), oklch(0.79 0.1 150));
+  --color-maybe: light-dark(oklch(0.5 0.1 70), oklch(0.82 0.1 82));
+  --color-drop: light-dark(oklch(0.52 0.13 35), oklch(0.75 0.11 40));
+
+  /* The single reading column (max-w-column) */
+  --container-column: 40rem;
 }

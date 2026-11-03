@@ -38,6 +38,12 @@ const en = {
   "footer.rss": "RSS",
   "notFound.title": "Page not found",
   "notFound.body": "Nothing lives at this address.",
+  "home.intro":
+    "I'm Dani, a software and AI engineer. I studied mathematics and economics, and these days I build small, fast libraries with Rust cores and Python APIs. This is where I write about how they work.",
+  skip: "Skip to content",
+  "footer.written": "Written in Santiago de Compostela",
+  "footer.clock": "{time} there now, probably drizzling",
+  "notFound.home": "Back to the shore",
 };
 
 export type UIKey = keyof typeof en;
@@ -78,6 +84,12 @@ export const ui: Record<Locale, Record<UIKey, string>> = {
     "footer.rss": "RSS",
     "notFound.title": "Página no encontrada",
     "notFound.body": "No hay nada en esta dirección.",
+    "home.intro":
+      "Soy Dani, ingeniero de software e IA. Estudié matemáticas y economía, y ahora construyo librerías pequeñas y rápidas con núcleo en Rust y API en Python. Aquí escribo sobre cómo funcionan.",
+    skip: "Saltar al contenido",
+    "footer.written": "Escrito en Santiago de Compostela",
+    "footer.clock": "ahora mismo, las {time} y probablemente lloviendo",
+    "notFound.home": "Volver a la orilla",
   },
   gl: {
     "nav.home": "Inicio",
@@ -113,5 +125,11 @@ export const ui: Record<Locale, Record<UIKey, string>> = {
     "footer.rss": "RSS",
     "notFound.title": "Páxina non atopada",
     "notFound.body": "Non hai nada neste enderezo.",
+    "home.intro":
+      "Son Dani, enxeñeiro de software e IA. Estudei matemáticas e economía, e agora constrúo librarías pequenas e rápidas con núcleo en Rust e API en Python. Aquí escribo sobre como funcionan.",
+    skip: "Ir ao contido",
+    "footer.written": "Escrito en Santiago de Compostela",
+    "footer.clock": "agora mesmo, as {time} e seguramente orballando",
+    "notFound.home": "Volver á beira",
   },
 };

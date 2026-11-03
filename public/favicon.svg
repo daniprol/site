@@ -1,1 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#111"/><text x="16" y="22" font-family="Georgia, serif" font-size="18" fill="#fff" text-anchor="middle">dp</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Atlantic: a granite tile with two tide lines. Colours mirror tokens.css (light and dark accents). -->
+  <style>
+    rect { fill: #1f4f63; }
+    path { stroke: #eef3f5; }
+    @media (prefers-color-scheme: dark) {
+      rect { fill: #9fd3db; }
+      path { stroke: #172430; }
+    }
+  </style>
+  <rect width="32" height="32" rx="7" />
+  <path d="M6 13.5q2.5-3 5 0t5 0 5 0 5 0M6 20.5q2.5-3 5 0t5 0 5 0 5 0" fill="none" stroke-width="2" stroke-linecap="round" />
+</svg>

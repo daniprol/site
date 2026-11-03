@@ -1,4 +1,5 @@
 ---
+import PageHeader from "@/components/ui/PageHeader.astro";
 import { localeParams, useTranslations } from "@/i18n";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { education, experience, site } from "@/site.config";
@@ -10,8 +11,8 @@ const t = useTranslations(locale);
 ---
 
 <BaseLayout locale={locale} title={t("about.title")} description={`${site.name}, ${site.role}.`}>
-  <h1 class="mt-12 text-2xl font-semibold">{t("about.title")}</h1>
-  <div class="prose-site prose mt-6">
+  <PageHeader title={t("about.title")} />
+  <div class="prose-site prose">
     <p>
       I'm a software and AI engineer based in {site.location}. I studied mathematics and economics, then spent the last
       few years building full-stack products and AI systems. TODO: write this in your own words, and translate it in a
@@ -20,16 +21,16 @@ const t = useTranslations(locale);
   </div>
 
   <section class="mt-14">
-    <h2 class="mb-4 text-sm font-medium text-muted">{t("about.experience")}</h2>
+    <h2 class="border-b border-border pb-2 text-[0.9375rem] font-semibold">{t("about.experience")}</h2>
     <ul class="divide-y divide-border">
       {experience.map((job) => (
-        <li class="grid gap-1 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
-          <span class="font-mono text-xs text-muted sm:pt-1">{job.period}</span>
+        <li class="grid gap-x-6 gap-y-1 py-4 sm:grid-cols-[7.5rem_1fr]">
+          <span class="eyebrow sm:pt-0.5">{job.period}</span>
           <div>
-            <p class="font-medium">
+            <p class="font-semibold">
               {job.role} · {job.company}
             </p>
-            <p class="mt-1 text-muted">{job.summary}</p>
+            <p class="mt-1 font-serif text-[0.98rem] leading-relaxed text-pretty text-muted">{job.summary}</p>
           </div>
         </li>
       ))}
@@ -37,11 +38,11 @@ const t = useTranslations(locale);
   </section>
 
   <section class="mt-14">
-    <h2 class="mb-4 text-sm font-medium text-muted">{t("about.education")}</h2>
+    <h2 class="border-b border-border pb-2 text-[0.9375rem] font-semibold">{t("about.education")}</h2>
     <ul class="divide-y divide-border">
       {education.map((item) => (
-        <li class="grid gap-1 py-4 sm:grid-cols-[10rem_1fr] sm:gap-6">
-          <span class="font-mono text-xs text-muted sm:pt-1">{item.period}</span>
+        <li class="grid gap-x-6 gap-y-1 py-4 sm:grid-cols-[7.5rem_1fr]">
+          <span class="eyebrow sm:pt-0.5">{item.period}</span>
           <p>
             {item.degree} · <span class="text-muted">{item.school}</span>
           </p>
@@ -51,9 +52,9 @@ const t = useTranslations(locale);
   </section>
 
   <section class="mt-14">
-    <h2 class="mb-4 text-sm font-medium text-muted">{t("about.contact")}</h2>
-    <p>
-      <a href={`mailto:${site.email}`} class="text-accent">
+    <h2 class="border-b border-border pb-2 text-[0.9375rem] font-semibold">{t("about.contact")}</h2>
+    <p class="py-4">
+      <a href={`mailto:${site.email}`} class="link">
         {site.email}
       </a>
     </p>

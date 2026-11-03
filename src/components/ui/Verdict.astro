@@ -1,0 +1,41 @@
+---
+/** A snack verdict: a small mark and the word, in moss, gorse or lichen. */
+interface Props {
+  verdict: "keep" | "maybe" | "drop";
+  label: string;
+}
+const { verdict, label } = Astro.props;
+---
+
+<span class="verdict inline-flex items-center gap-1.5 font-mono text-xs" data-verdict={verdict}>
+  <span class="mark" aria-hidden="true"></span>
+  {label}
+</span>
+
+<style>
+  .verdict {
+    color: var(--verdict);
+  }
+  .verdict[data-verdict="keep"] {
+    --verdict: var(--color-keep);
+  }
+  .verdict[data-verdict="maybe"] {
+    --verdict: var(--color-maybe);
+  }
+  .verdict[data-verdict="drop"] {
+    --verdict: var(--color-drop);
+  }
+  /* keep: filled; maybe: half; drop: hollow */
+  .mark {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    border: 1.5px solid currentColor;
+  }
+  [data-verdict="keep"] .mark {
+    background: currentColor;
+  }
+  [data-verdict="maybe"] .mark {
+    background: linear-gradient(90deg, currentColor 50%, transparent 50%);
+  }
+</style>
