@@ -11,55 +11,52 @@ const STAGES = [
   { id: "return", label: "Return", detail: "Hits cross the PyO3 boundary as plain Python objects." },
 ] as const;
 
+const button =
+  "inline-flex min-h-11 cursor-pointer items-center rounded border border-border bg-bg px-4 font-mono text-[0.8125rem] transition-colors hover:border-accent hover:text-accent disabled:cursor-default disabled:opacity-40 disabled:hover:border-border disabled:hover:text-fg";
+
 export default function PipelineStepper() {
   const [active, setActive] = useState(0);
   const stage = STAGES[active] ?? STAGES[0];
 
   return (
-    <div className="rounded-lg border border-border p-4 sm:p-6">
-      <svg viewBox="0 0 400 60" className="w-full" role="img" aria-label="Pipeline stages">
+    <div className="rounded-md border border-border bg-surface p-4 sm:p-5">
+      <ol className="grid grid-cols-4 gap-1.5 sm:gap-3" aria-label="Pipeline stages">
         {STAGES.map((s, i) => (
-          <g key={s.id} transform={`translate(${i * 100 + 10}, 10)`}>
-            <rect
-              width="80"
-              height="40"
-              rx="6"
-              className="transition-colors duration-300"
-              fill={i === active ? "var(--color-accent)" : "transparent"}
-              stroke={i <= active ? "var(--color-accent)" : "var(--color-border)"}
-            />
-            <text
-              x="40"
-              y="25"
-              textAnchor="middle"
-              fontSize="12"
-              fill={i === active ? "var(--color-bg)" : "var(--color-fg)"}
+          <li key={s.id} className="relative">
+            <button
+              type="button"
+              aria-current={i === active ? "step" : undefined}
+              onClick={() => setActive(i)}
+              className={`flex min-h-11 w-full cursor-pointer items-center justify-center rounded border px-1 font-mono text-[0.75rem] transition-colors duration-300 sm:text-[0.8125rem] ${
+                i === active
+                  ? "border-accent bg-accent font-bold text-on-accent"
+                  : i < active
+                    ? "border-accent bg-bg text-fg"
+                    : "border-border bg-bg text-muted hover:text-fg"
+              }`}
             >
               {s.label}
-            </text>
-            {i < STAGES.length - 1 && <line x1="82" y1="20" x2="98" y2="20" stroke="var(--color-border)" />}
-          </g>
+            </button>
+          </li>
         ))}
-      </svg>
-      <p className="mt-4 min-h-12 text-sm" aria-live="polite">
+      </ol>
+      <p className="mt-3 min-h-12 text-[0.9375rem] leading-relaxed" aria-live="polite">
+        <span className="mr-2 font-mono text-[0.8125rem] text-muted">
+          {active + 1}/{STAGES.length}
+        </span>
         {stage.detail}
       </p>
-      <div className="mt-4 flex gap-2">
-        <button
-          type="button"
-          className="rounded border border-border px-3 py-1 text-sm disabled:opacity-40"
-          disabled={active === 0}
-          onClick={() => setActive((i) => i - 1)}
-        >
-          Back
+      <div className="mt-3 flex gap-2">
+        <button type="button" className={button} disabled={active === 0} onClick={() => setActive((i) => i - 1)}>
+          ← Back
         </button>
         <button
           type="button"
-          className="rounded border border-border px-3 py-1 text-sm disabled:opacity-40"
+          className={button}
           disabled={active === STAGES.length - 1}
           onClick={() => setActive((i) => i + 1)}
         >
-          Next step
+          Next step →
         </button>
       </div>
     </div>

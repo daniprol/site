@@ -2,28 +2,33 @@
 import { useTranslations, type Locale } from "@/i18n";
 import { site } from "@/site.config";
 
+import LanguagePicker from "./LanguagePicker.astro";
+
 interface Props {
   locale: Locale;
 }
-const t = useTranslations(Astro.props.locale);
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const links = [
+  { label: "GitHub", href: site.socials.github },
+  { label: "LinkedIn", href: site.socials.linkedin },
+  { label: "Email", href: `mailto:${site.email}` },
+  { label: t("footer.rss"), href: "/rss.xml" },
+];
 ---
 
-<footer class="mx-auto mt-24 flex max-w-3xl flex-wrap justify-between gap-4 px-5 py-8 text-sm text-muted">
-  <p>
+<footer class="column mt-24 mb-6">
+  <div class="flex flex-col gap-2 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
+    <nav aria-label="Elsewhere" class="-ml-2 flex flex-wrap">
+      {links.map(({ label, href }) => (
+        <a href={href} class="flex min-h-11 items-center px-2 text-[0.9375rem] text-muted hover:text-fg">
+          {label}
+        </a>
+      ))}
+    </nav>
+    <LanguagePicker locale={locale} />
+  </div>
+  <p class="meta mt-2">
     © {new Date().getFullYear()} {site.name}
   </p>
-  <nav aria-label="Elsewhere" class="flex gap-4">
-    <a href={site.socials.github} class="hover:text-fg">
-      GitHub
-    </a>
-    <a href={site.socials.linkedin} class="hover:text-fg">
-      LinkedIn
-    </a>
-    <a href={`mailto:${site.email}`} class="hover:text-fg">
-      Email
-    </a>
-    <a href="/rss.xml" class="hover:text-fg">
-      {t("footer.rss")}
-    </a>
-  </nav>
 </footer>

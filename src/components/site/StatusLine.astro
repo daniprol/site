@@ -1,0 +1,162 @@
+---
+/**
+ * A slim editor-style statusline pinned to the bottom of every page:
+ * the current section as a "mode", the path as the buffer name, the language,
+ * and the reading position the way Vim reports it (Top, 42%, Bot, All).
+ * Without JS it still shows section and path; only the position needs the script.
+ */
+import { stripLocale, useTranslations, type Locale } from "@/i18n";
+import { site } from "@/site.config";
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const path = stripLocale(Astro.url.pathname).replace(/\/$/, "");
+const section = site.nav.find(({ href }) => path.startsWith(href));
+const mode = section ? section.href.slice(1) : "home";
+const label = section ? t(section.key) : t("nav.home");
+---
+
+<div class="statusline" data-mode={mode}>
+  <div class="statusline-progress" data-status-progress aria-hidden="true"></div>
+  <span class="statusline-mode">{label}</span>
+  <span class="statusline-path" aria-hidden="true">
+    ~{path}
+  </span>
+  <span class="statusline-fill"></span>
+  <span class="statusline-seg statusline-locale" aria-hidden="true">
+    {locale}
+  </span>
+  <span
+    class="statusline-seg statusline-pos"
+    data-status-pos
+    data-top={t("status.top")}
+    data-bottom={t("status.bottom")}
+    data-all={t("status.all")}
+    aria-hidden="true"
+  ></span>
+  <button type="button" class="statusline-seg statusline-help hint-keys" data-keys-open>
+    <span class="statusline-key">?</span>&nbsp;
+    {t("status.help")}
+  </button>
+</div>
+
+<style>
+  .statusline {
+    --mode: var(--color-accent);
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 40;
+    display: flex;
+    align-items: stretch;
+    height: calc(var(--status-height) + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+    background: var(--color-status-bg);
+    border-top: 1px solid var(--color-border);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: var(--status-height);
+    color: var(--color-muted);
+    white-space: nowrap;
+  }
+  /* Each section has its own mode colour, the way an editor colours NORMAL and INSERT. */
+  .statusline[data-mode="snacks"] {
+    --mode: var(--color-ochre);
+  }
+  .statusline[data-mode="projects"] {
+    --mode: var(--color-blue);
+  }
+  .statusline[data-mode="about"] {
+    --mode: var(--color-coral);
+  }
+  .statusline[data-mode="home"] {
+    --mode: var(--color-fg);
+  }
+
+  .statusline-progress {
+    position: absolute;
+    top: -1px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--mode);
+    transform-origin: left;
+    transform: scaleX(var(--progress, 0));
+  }
+
+  .statusline-mode {
+    padding-inline: 0.75rem 0.85rem;
+    background: var(--mode);
+    color: var(--color-on-accent);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .statusline-path {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-inline: 0.75rem;
+    color: var(--color-fg);
+  }
+  .statusline-fill {
+    flex: 1;
+  }
+  .statusline-seg {
+    padding-inline: 0.75rem;
+    border-left: 1px solid var(--color-border);
+  }
+  .statusline-pos {
+    min-width: 4.25rem;
+    text-align: right;
+    color: var(--color-fg);
+    font-variant-numeric: tabular-nums;
+  }
+  .statusline-pos:empty {
+    display: none;
+  }
+  .statusline-help {
+    cursor: pointer;
+    color: var(--color-muted);
+  }
+  .statusline-help:hover {
+    color: var(--color-fg);
+  }
+  .statusline-key {
+    color: var(--mode);
+    font-weight: 700;
+  }
+  @media (max-width: 39.99rem) {
+    .statusline-locale,
+    .statusline-help {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  // Vim-style position: "Top" at the start, "Bot" at the end, "All" when it fits, else a percentage.
+  let frame = 0;
+  const update = () => {
+    frame = 0;
+    const pos = document.querySelector<HTMLElement>("[data-status-pos]");
+    const bar = document.querySelector<HTMLElement>("[data-status-progress]");
+    if (!pos || !bar) return;
+    const max = document.documentElement.scrollHeight - innerHeight;
+    const ratio = max > 0 ? Math.min(1, Math.max(0, scrollY / max)) : 1;
+    const { top = "Top", bottom = "Bot", all = "All" } = pos.dataset;
+    if (max <= 4) pos.textContent = all;
+    else if (ratio <= 0.005) pos.textContent = top;
+    else if (ratio >= 0.995) pos.textContent = bottom;
+    else pos.textContent = `${Math.round(ratio * 100)}%`;
+    bar.style.setProperty("--progress", max > 4 ? String(ratio) : "0");
+  };
+  const schedule = () => {
+    if (!frame) frame = requestAnimationFrame(update);
+  };
+  addEventListener("scroll", schedule, { passive: true });
+  addEventListener("resize", schedule, { passive: true });
+  document.addEventListener("astro:page-load", update);
+</script>

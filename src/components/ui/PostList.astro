@@ -7,21 +7,32 @@ import DateTime from "./DateTime.astro";
 interface Props {
   items: { post: Post; slug: string }[];
   locale: Locale;
+  /** Show each post's one-line description under its title. */
+  descriptions?: boolean;
 }
-const { items, locale } = Astro.props;
+const { items, locale, descriptions = true } = Astro.props;
 ---
 
-<ul class="divide-y divide-border">
+<ul class="flex flex-col" data-pagefind-ignore>
   {items.map(({ post, slug }) => (
     <li>
       <a
         href={localePath(locale, `/writing/${slug}`)}
-        class="group flex flex-col gap-1 py-4 sm:flex-row sm:items-baseline sm:justify-between sm:gap-6"
+        data-nav-item
+        class="cursorline group grid gap-0.5 py-3.5 sm:grid-cols-[6.5rem_1fr] sm:gap-4"
       >
-        <span class="group-hover:text-accent" transition:name={`post-title-${slug}`}>
-          {post.data.title}
+        <DateTime date={post.data.date} locale={locale} format="short" class="meta sm:pt-[0.3rem]" />
+        <span>
+          <span
+            class="block font-semibold tracking-[-0.01em] text-balance transition-colors group-hover:text-accent"
+            transition:name={`post-title-${slug}`}
+          >
+            {post.data.title}
+          </span>
+          {descriptions && (
+            <span class="mt-1 block text-[0.9375rem] leading-relaxed text-muted">{post.data.description}</span>
+          )}
         </span>
-        <DateTime date={post.data.date} locale={locale} format="short" class="shrink-0 text-sm text-muted" />
       </a>
     </li>
   ))}

@@ -1,11 +1,16 @@
 ---
-/** The page shell every route uses: <head>, header, main, footer. */
+/** The page shell every route uses: <head>, header, main, footer, statusline. */
 import "@/styles/global.css";
+import { Font } from "astro:assets";
 import { ClientRouter } from "astro:transitions";
 
 import Footer from "@/components/site/Footer.astro";
 import Header from "@/components/site/Header.astro";
+import KeyboardNav from "@/components/site/KeyboardNav.astro";
+import SearchDialog from "@/components/site/SearchDialog.astro";
 import Seo from "@/components/site/Seo.astro";
+import ShortcutsSheet from "@/components/site/ShortcutsSheet.astro";
+import StatusLine from "@/components/site/StatusLine.astro";
 import ThemeScript from "@/components/site/ThemeScript.astro";
 import type { Locale } from "@/i18n";
 
@@ -23,20 +28,29 @@ const { locale, ...seo } = Astro.props;
 <html lang={locale}>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <Font cssVariable="--font-schibsted" preload />
+    <Font cssVariable="--font-recursive" />
     <Seo locale={locale} {...seo} />
     <ThemeScript />
     <ClientRouter />
   </head>
   <body>
-    <a href="#main" class="sr-only focus:not-sr-only">
+    <a
+      href="#main"
+      class="sr-only rounded bg-surface px-3 py-2 focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-50"
+    >
       Skip to content
     </a>
     <Header locale={locale} />
-    <main id="main" class="mx-auto max-w-3xl px-5" data-pagefind-body>
+    <main id="main" class="column" data-pagefind-body>
       <slot />
     </main>
     <Footer locale={locale} />
+    <StatusLine locale={locale} />
+    <SearchDialog locale={locale} />
+    <ShortcutsSheet locale={locale} />
+    <KeyboardNav />
   </body>
 </html>

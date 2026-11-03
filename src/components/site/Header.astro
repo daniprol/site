@@ -2,7 +2,7 @@
 import { localePath, stripLocale, useTranslations, type Locale } from "@/i18n";
 import { site } from "@/site.config";
 
-import LanguagePicker from "./LanguagePicker.astro";
+import SearchButton from "./SearchButton.astro";
 import ThemeToggle from "./ThemeToggle.astro";
 
 interface Props {
@@ -11,25 +11,81 @@ interface Props {
 const { locale } = Astro.props;
 const t = useTranslations(locale);
 const current = stripLocale(Astro.url.pathname);
+/** Second key of the `g` chord for each section: g w, g s, g p, g a. */
+const gotoKey = (href: string) => href.slice(1, 2);
 ---
 
-<header class="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-4 px-5 py-6">
-  <a href={localePath(locale)} class="font-semibold">
-    {site.name}
-  </a>
-  <nav aria-label="Main" class="flex flex-wrap gap-4 text-sm">
+<header class="column pt-5 sm:pt-8">
+  <div class="flex items-center justify-between gap-4">
+    <a
+      href={localePath(locale)}
+      data-goto="h"
+      class="-ml-1 flex min-h-11 items-center px-1 text-[1.0625rem] font-semibold tracking-[-0.01em]"
+    >
+      {site.name}
+    </a>
+    <nav aria-label="Main" class="hidden items-center gap-1 sm:flex">
+      {site.nav.map(({ key, href }) => (
+        <a
+          href={localePath(locale, href)}
+          data-goto={gotoKey(href)}
+          aria-current={current.startsWith(href) ? "page" : undefined}
+          class="nav-link px-2.5 text-[0.9375rem]"
+        >
+          {t(key)}
+        </a>
+      ))}
+    </nav>
+    <div class="-mr-2 flex items-center">
+      <SearchButton locale={locale} />
+      <ThemeToggle locale={locale} />
+    </div>
+  </div>
+  {/* Phones: the four sections get a full-width row of their own. */}
+  <nav aria-label="Main" class="-mx-1 mt-1 grid grid-cols-4 border-b border-border sm:hidden">
     {site.nav.map(({ key, href }) => (
       <a
         href={localePath(locale, href)}
         aria-current={current.startsWith(href) ? "page" : undefined}
-        class:list={["hover:text-fg", current.startsWith(href) ? "text-fg" : "text-muted"]}
+        class="nav-link justify-center text-[0.9375rem]"
       >
         {t(key)}
       </a>
     ))}
   </nav>
-  <div class="flex items-center gap-4">
-    <LanguagePicker locale={locale} />
-    <ThemeToggle locale={locale} />
-  </div>
 </header>
+
+<style>
+  .nav-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 2.75rem;
+    color: var(--color-muted);
+    transition: color 120ms var(--ease-out);
+  }
+  .nav-link:hover {
+    color: var(--color-fg);
+  }
+  .nav-link[aria-current="page"] {
+    color: var(--color-fg);
+  }
+  /* The current section gets a short underline in its accent, like an active tab. */
+  .nav-link[aria-current="page"]::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 0.45rem;
+    width: 1.25rem;
+    height: 2px;
+    border-radius: 1px;
+    translate: -50% 0;
+    background: var(--color-accent);
+  }
+  @media (max-width: 39.99rem) {
+    .nav-link[aria-current="page"]::after {
+      bottom: -1px;
+      width: 2rem;
+    }
+  }
+</style>

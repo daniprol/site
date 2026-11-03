@@ -1,15 +1,47 @@
 /*
- * Design tokens. Each theme owns this file.
+ * "Arousa": a two-mode colourscheme named after the ría at Cambados.
+ * Day is fog over slate water; night is the same water after dark.
  * Colours use light-dark() so each token is defined once for both modes.
+ * Syntax colours are mirrored in code-themes.ts for Expressive Code.
  */
 @theme {
-  --font-sans: ui-sans-serif, system-ui, sans-serif;
-  --font-serif: ui-serif, Georgia, serif;
-  --font-mono: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-sans: var(--font-schibsted), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-recursive), ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-serif: var(--font-sans);
 
-  --color-bg: light-dark(oklch(0.99 0 0), oklch(0.17 0 0));
-  --color-fg: light-dark(oklch(0.2 0 0), oklch(0.93 0 0));
-  --color-muted: light-dark(oklch(0.5 0 0), oklch(0.65 0 0));
-  --color-border: light-dark(oklch(0.9 0 0), oklch(0.3 0 0));
-  --color-accent: light-dark(oklch(0.5 0.15 250), oklch(0.75 0.12 250));
+  /* Surfaces */
+  --color-bg: light-dark(#f7f8f8, #11181b);
+  --color-surface: light-dark(#eef1f1, #182226);
+  --color-cursorline: light-dark(#e9eef0, #1a252a);
+  --color-border: light-dark(#d9e0e2, #28363b);
+
+  /* Ink */
+  --color-fg: light-dark(#1c2a30, #d6dedf);
+  --color-muted: light-dark(#56676e, #8d9da3);
+
+  /* Accents, shared with the syntax theme */
+  --color-accent: light-dark(#0b6b6e, #62c3bd); /* ría teal: links, focus, active mode */
+  --color-ochre: light-dark(#855f00, #dcb65e); /* albariño: strings, "maybe" */
+  --color-coral: light-dark(#b03f2a, #ee8b70); /* nécora: keywords, "drop" */
+  --color-blue: light-dark(#3a5c96, #90afe4); /* slate: types, numbers */
+
+  /* Text on a filled accent block (statusline mode, active stepper stage) */
+  --color-on-accent: light-dark(#f7f8f8, #0d1416);
+  --color-selection: light-dark(#f1e2b4, #3d3a24);
+
+  /* Statusline */
+  --color-status-bg: light-dark(#e4e9eb, #1d292e);
+  --status-height: 2rem;
+
+  --text-body: 1.0625rem;
+  --leading-body: 1.7;
+  --width-column: 40rem;
+
+  --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+@media (min-width: 48rem) {
+  :root {
+    --text-body: 1.125rem;
+  }
 }

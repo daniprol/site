@@ -13,11 +13,11 @@ const years = Map.groupBy(posts, ({ post }) => post.data.date.getFullYear());
 ---
 
 <BaseLayout locale={locale} title={t("writing.title")} description={t("writing.description")}>
-  <h1 class="mt-12 text-2xl font-semibold">{t("writing.title")}</h1>
-  <p class="mt-2 text-muted">{t("writing.description")}</p>
+  <h1 class="mt-10 text-[1.75rem] leading-tight font-semibold tracking-[-0.02em] sm:mt-16">{t("writing.title")}</h1>
+  <p class="mt-3 text-pretty text-muted">{t("writing.description")}</p>
   {[...years].map(([year, items]) => (
     <section class="mt-12">
-      <h2 class="mb-2 font-mono text-sm text-muted">{year}</h2>
+      <h2 class="meta mb-1 font-semibold text-fg">{year}</h2>
       <PostList items={items} locale={locale} />
     </section>
   ))}

@@ -12,19 +12,18 @@ export const getStaticPaths = localeParams;
 
 const { locale } = Astro.props;
 const t = useTranslations(locale);
-const posts = (await getPosts(locale)).slice(0, 3);
-const snacks = (await getSnacks()).slice(0, 5);
+const posts = (await getPosts(locale)).slice(0, 5);
+const snacks = (await getSnacks()).slice(0, 3);
 const projects = (await getProjects()).filter((p) => p.data.featured).slice(0, 3);
 ---
 
 <BaseLayout locale={locale} description={`${site.name}, ${site.role}.`}>
-  <section class="mt-12">
-    <h1 class="text-2xl font-semibold">{site.name}</h1>
-    <p class="mt-2 text-muted">
-      {site.role} · {site.location}
-    </p>
-    <p class="mt-6 max-w-prose">
-      <span class="text-muted">{t("home.now")}:</span> {site.now}
+  <section class="mt-10 sm:mt-16">
+    <h1 class="text-[1.75rem] leading-tight font-semibold tracking-[-0.02em] sm:text-[2rem]">{site.name}</h1>
+    <p class="mt-4 text-[1.125rem] leading-[1.65] text-pretty sm:text-[1.25rem]">{t("home.intro")}</p>
+    <p class="mt-5 flex gap-3 text-[0.9375rem] leading-relaxed text-muted">
+      <span class="meta shrink-0 pt-px font-semibold text-accent">{t("home.now")}</span>
+      <span>{site.now}</span>
     </p>
   </section>
 

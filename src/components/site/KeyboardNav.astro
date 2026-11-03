@@ -1,0 +1,81 @@
+---
+/**
+ * Vim-flavoured keyboard navigation, about 60 lines of vanilla JS.
+ *   j / k     move the cursorline through [data-nav-item] rows; scroll on pages without rows
+ *   g g / G   top / bottom          g h, g w, g s, g p, g a   go to a section ([data-goto])
+ *   /         search                t   theme                 ?   shortcuts sheet
+ * Ignored while typing or with modifier keys, so it never fights the browser.
+ */
+---
+
+<script>
+  import { navigate } from "astro:transitions/client";
+
+  let pending = false;
+  let timer = 0;
+
+  const items = () => [...document.querySelectorAll<HTMLElement>("main [data-nav-item], dialog[open] [data-nav-item]")];
+
+  const move = (step: 1 | -1) => {
+    const list = items();
+    if (!list.length) return scrollBy({ top: step * 96, behavior: "smooth" });
+    const at = list.indexOf(document.activeElement as HTMLElement);
+    const next = list[at < 0 ? (step > 0 ? 0 : list.length - 1) : Math.min(list.length - 1, Math.max(0, at + step))];
+    next?.focus({ preventScroll: true });
+    next?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  };
+
+  const click = (selector: string) => document.querySelector<HTMLElement>(selector)?.click();
+
+  document.addEventListener("keydown", (e) => {
+    if (e.metaKey || e.ctrlKey || e.altKey || e.defaultPrevented) return;
+    const target = e.target as HTMLElement;
+    if (target.closest("input, textarea, select, [contenteditable]")) {
+      // Arrow-down from the search box drops into the results.
+      if (e.key === "ArrowDown" && target.matches("[data-search-input]")) {
+        e.preventDefault();
+        move(1);
+      }
+      return;
+    }
+    const inDialog = !!document.querySelector("dialog[open]");
+
+    if (pending) {
+      pending = false;
+      clearTimeout(timer);
+      if (e.key === "g") return scrollTo({ top: 0, behavior: "smooth" });
+      const link = document.querySelector<HTMLAnchorElement>(`a[data-goto="${e.key}"]`);
+      if (link && !inDialog) navigate(link.href);
+      return;
+    }
+
+    switch (e.key) {
+      case "j":
+      case "k":
+        e.preventDefault();
+        return move(e.key === "j" ? 1 : -1);
+      case "g":
+        if (inDialog) return;
+        pending = true;
+        timer = window.setTimeout(() => (pending = false), 900);
+        return;
+      case "G":
+        if (!inDialog) scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth" });
+        return;
+      case "/":
+        if (inDialog) return;
+        e.preventDefault();
+        click("[data-search-open]");
+        return;
+      case "?":
+        if (!inDialog) click("[data-keys-open]");
+        return;
+      case "t":
+        if (!inDialog) click("[data-theme-toggle]");
+        return;
+    }
+  });
+
+  // A new page starts with no cursorline.
+  document.addEventListener("astro:after-swap", () => (pending = false));
+</script>

@@ -9,13 +9,22 @@ interface Props {
 const { items, locale } = Astro.props;
 ---
 
-<ul class="grid gap-6 sm:grid-cols-2">
+<ul class="flex flex-col" data-pagefind-ignore>
   {items.map((project) => (
     <li>
-      <a href={localePath(locale, `/projects/${project.id}`)} class="group block">
-        <p class="font-medium group-hover:text-accent">{project.data.title}</p>
-        <p class="mt-1 text-sm text-muted">{project.data.summary}</p>
-        <p class="mt-2 font-mono text-xs text-muted">{project.data.stack.join(" · ")}</p>
+      <a
+        href={localePath(locale, `/projects/${project.id}`)}
+        data-nav-item
+        class="cursorline group grid gap-0.5 py-3.5 sm:grid-cols-[6.5rem_1fr] sm:gap-4"
+      >
+        <span class="meta sm:pt-[0.3rem]">{project.data.year}</span>
+        <span>
+          <span class="block font-semibold tracking-[-0.01em] transition-colors group-hover:text-accent">
+            {project.data.title}
+          </span>
+          <span class="mt-1 block text-[0.9375rem] leading-relaxed text-muted">{project.data.summary}</span>
+          <span class="meta mt-1.5 block">{project.data.stack.join(" · ")}</span>
+        </span>
       </a>
     </li>
   ))}

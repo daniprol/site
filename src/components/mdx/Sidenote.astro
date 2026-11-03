@@ -21,33 +21,46 @@ const id = `sn-${Math.random().toString(36).slice(2, 8)}`;
     counter-increment: sidenote;
     cursor: pointer;
   }
+  /* The reference is a small mono number; on phones it is also the tap target that opens the note. */
   .sidenote-ref::after {
     content: counter(sidenote);
+    display: inline-block;
+    min-width: 1.4em;
+    padding: 0 0.15em;
+    font-family: var(--font-mono);
     font-size: 0.7em;
+    font-weight: 600;
+    line-height: 1;
+    text-align: center;
     vertical-align: super;
     color: var(--color-accent);
-    padding-inline: 0.1em;
   }
   .sidenote-toggle {
     display: none;
   }
   .sidenote {
     display: none;
-    font-size: 0.85rem;
-    line-height: 1.5;
+    font-size: 0.875rem;
+    line-height: 1.55;
     color: var(--color-muted);
   }
   .sidenote::before {
     content: counter(sidenote) " ";
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    font-weight: 600;
     color: var(--color-accent);
   }
   .sidenote-toggle:checked + .sidenote {
     display: block;
     margin: 0.75rem 0;
-    padding-left: 1rem;
-    border-left: 1px solid var(--color-border);
+    padding: 0.6rem 0.85rem;
+    border-left: 2px solid var(--color-accent);
+    border-radius: 0 4px 4px 0;
+    background: var(--color-surface);
   }
-  @media (min-width: 72rem) {
+  /* Wide screens: the note sits in the right margin, like virtual text beside the line. */
+  @media (min-width: 76rem) {
     .sidenote-ref {
       cursor: default;
     }
@@ -56,10 +69,13 @@ const id = `sn-${Math.random().toString(36).slice(2, 8)}`;
       display: block;
       float: right;
       clear: right;
-      width: 14rem;
-      margin: 0.25rem -17rem 1rem 0;
-      padding: 0;
+      width: 13rem;
+      margin: 0.3rem -16rem 1rem 0;
+      padding: 0 0 0 0.75rem;
       border: 0;
+      border-left: 1px solid var(--color-border);
+      border-radius: 0;
+      background: none;
     }
   }
 </style>

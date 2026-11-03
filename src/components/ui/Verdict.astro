@@ -1,0 +1,35 @@
+---
+/** A snack's verdict, written like a diff line: + keep, ~ maybe, - drop. */
+import { useTranslations, type Locale } from "@/i18n";
+import type { Snack } from "@/lib/content";
+
+interface Props {
+  verdict: Snack["data"]["verdict"];
+  locale: Locale;
+}
+const { verdict, locale } = Astro.props;
+const t = useTranslations(locale);
+const sign = { keep: "+", maybe: "~", drop: "−" }[verdict];
+---
+
+<span class="verdict" data-verdict={verdict}>
+  <span aria-hidden="true">{sign}</span>
+  {t(`verdict.${verdict}`)}
+</span>
+
+<style>
+  .verdict {
+    display: inline-flex;
+    gap: 0.3em;
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-accent);
+  }
+  [data-verdict="maybe"] {
+    color: var(--color-ochre);
+  }
+  [data-verdict="drop"] {
+    color: var(--color-coral);
+  }
+</style>

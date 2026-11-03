@@ -1,0 +1,162 @@
+---
+/**
+ * Site search on Pagefind. The index and its JS load only when the dialog first opens,
+ * so pages that never search ship none of it. Pagefind picks the index matching <html lang>.
+ */
+import { useTranslations, type Locale } from "@/i18n";
+
+interface Props {
+  locale: Locale;
+}
+const t = useTranslations(Astro.props.locale);
+---
+
+<dialog
+  class="panel"
+  data-search
+  aria-label={t("search.open")}
+  data-empty={t("search.empty")}
+  data-unavailable={t("search.unavailable")}
+>
+  <form method="dialog" class="flex items-center gap-3 border-b border-border px-4" role="search">
+    <svg
+      width="17"
+      height="17"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.6"
+      aria-hidden="true"
+      class="shrink-0 text-muted"
+    >
+      <circle cx="10.5" cy="10.5" r="6.5"></circle>
+      <path d="m15.5 15.5 5 5" stroke-linecap="round"></path>
+    </svg>
+    <input
+      type="search"
+      data-search-input
+      placeholder={t("search.placeholder")}
+      aria-label={t("search.placeholder")}
+      autocomplete="off"
+      spellcheck="false"
+      class="h-14 w-full min-w-0 bg-transparent text-base outline-none placeholder:text-muted"
+    />
+    <kbd class="hint-keys">esc</kbd>
+  </form>
+  <ul data-search-results class="max-h-[22rem] overflow-y-auto p-2" aria-live="polite"></ul>
+</dialog>
+
+<style>
+  [data-search-results]:empty {
+    display: none;
+  }
+  [data-search-results] :global(a) {
+    display: block;
+    padding: 0.6rem 0.75rem;
+    border-radius: 4px;
+  }
+  [data-search-results] :global(a:hover),
+  [data-search-results] :global(a:focus-visible) {
+    outline: none;
+    background: var(--color-cursorline);
+  }
+  [data-search-results] :global(mark) {
+    background: none;
+    color: var(--color-accent);
+    font-weight: 600;
+  }
+  [data-search-results] :global(.excerpt) {
+    display: block;
+    margin-top: 0.15rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--color-muted);
+  }
+  [data-search-results] :global(.note) {
+    padding: 0.75rem;
+    font-size: 0.875rem;
+    color: var(--color-muted);
+  }
+</style>
+
+<script>
+  interface Result {
+    url: string;
+    meta: { title?: string };
+    excerpt: string;
+  }
+  interface Pagefind {
+    search: (q: string) => Promise<{ results: { data: () => Promise<Result> }[] }>;
+  }
+
+  let pagefind: Promise<Pagefind | null> | undefined;
+  const load = () => {
+    // Built by `pagefind --site dist`; missing in `astro dev`. The path is built at runtime so Vite leaves it alone.
+    const url = ["", "pagefind", "pagefind.js"].join("/");
+    pagefind ??= import(/* @vite-ignore */ url).catch(() => null);
+    return pagefind;
+  };
+
+  const note = (list: HTMLElement, text: string) => {
+    const li = document.createElement("li");
+    li.className = "note";
+    li.textContent = text;
+    list.replaceChildren(li);
+  };
+
+  let token = 0;
+  const run = async (dialog: HTMLDialogElement, list: HTMLElement, query: string) => {
+    const mine = ++token;
+    if (!query.trim()) return list.replaceChildren();
+    const engine = await load();
+    if (!engine) return note(list, dialog.dataset.unavailable ?? "");
+    const { results } = await engine.search(query);
+    const hits = await Promise.all(results.slice(0, 8).map((r) => r.data()));
+    if (mine !== token) return;
+    if (!hits.length) return note(list, dialog.dataset.empty ?? "");
+    list.replaceChildren(
+      ...hits.map((hit) => {
+        const li = document.createElement("li");
+        const a = document.createElement("a");
+        a.href = hit.url;
+        a.dataset.navItem = "";
+        const title = document.createElement("span");
+        title.className = "font-medium";
+        title.textContent = hit.meta.title ?? hit.url;
+        const excerpt = document.createElement("span");
+        excerpt.className = "excerpt";
+        // Pagefind escapes the page text and only adds <mark> around matches.
+        excerpt.innerHTML = hit.excerpt;
+        a.append(title, excerpt);
+        li.append(a);
+        return li;
+      }),
+    );
+  };
+
+  const bind = () => {
+    const dialog = document.querySelector<HTMLDialogElement>("[data-search]");
+    const input = dialog?.querySelector<HTMLInputElement>("[data-search-input]");
+    const list = dialog?.querySelector<HTMLElement>("[data-search-results]");
+    if (!dialog || !input || !list) return;
+    input.oninput = () => run(dialog, list, input.value);
+    // A search input clears itself on the first Escape; close the dialog straight away instead.
+    input.onkeydown = (e) => {
+      if (e.key !== "Escape") return;
+      e.preventDefault();
+      dialog.close();
+    };
+    // Close on navigation, and on a click on the backdrop.
+    list.onclick = (e) => (e.target as Element).closest("a") && dialog.close();
+    dialog.onclick = (e) => e.target === dialog && dialog.close();
+    document.querySelectorAll<HTMLButtonElement>("[data-search-open]").forEach((button) => {
+      button.hidden = false;
+      button.onclick = () => {
+        dialog.showModal();
+        void load();
+      };
+    });
+  };
+  bind();
+  document.addEventListener("astro:page-load", bind);
+</script>
