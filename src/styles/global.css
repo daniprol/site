@@ -18,6 +18,8 @@
     color: var(--color-fg);
     -webkit-text-size-adjust: 100%;
     text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    scrollbar-gutter: stable;
   }
   html[data-theme="light"] {
     color-scheme: light;
@@ -28,12 +30,22 @@
 
   body {
     font-family: var(--font-sans);
+    font-size: 1.0625rem;
+    line-height: 1.6;
     min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  ::selection {
+    background: var(--color-mark-strong);
+    color: var(--color-fg);
   }
 
   :focus-visible {
     outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
+    outline-offset: 3px;
+    border-radius: 2px;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -44,5 +56,46 @@
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
     }
+  }
+}
+
+@layer components {
+  /*
+   * The highlighter. `.marker` draws a yellow stroke behind the lower part of the text;
+   * `.marker-hover` sweeps it in from the left on hover or focus of the nearest `.group`.
+   */
+  .marker,
+  .marker-hover {
+    background-image: linear-gradient(
+      100deg,
+      transparent 0.2em,
+      var(--color-mark) 0.35em,
+      var(--color-mark) calc(100% - 0.35em),
+      transparent calc(100% - 0.2em)
+    );
+    background-repeat: no-repeat;
+    background-position: 0 88%;
+    background-size: 100% 0.55em;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    padding-inline: 0.15em;
+    margin-inline: -0.15em;
+  }
+  .marker-hover {
+    background-size: 0% 0.55em;
+    transition: background-size 0.45s var(--ease-out-soft);
+  }
+  .group:hover .marker-hover,
+  .group:focus-visible .marker-hover {
+    background-size: 100% 0.55em;
+  }
+
+  /* Small uppercase label used for section titles and meta. */
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-muted);
   }
 }

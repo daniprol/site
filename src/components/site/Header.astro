@@ -3,6 +3,7 @@ import { localePath, stripLocale, useTranslations, type Locale } from "@/i18n";
 import { site } from "@/site.config";
 
 import LanguagePicker from "./LanguagePicker.astro";
+import LogoMark from "./LogoMark.astro";
 import ThemeToggle from "./ThemeToggle.astro";
 
 interface Props {
@@ -13,23 +14,42 @@ const t = useTranslations(locale);
 const current = stripLocale(Astro.url.pathname);
 ---
 
-<header class="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-4 px-5 py-6">
-  <a href={localePath(locale)} class="font-semibold">
-    {site.name}
-  </a>
-  <nav aria-label="Main" class="flex flex-wrap gap-4 text-sm">
-    {site.nav.map(({ key, href }) => (
-      <a
-        href={localePath(locale, href)}
-        aria-current={current.startsWith(href) ? "page" : undefined}
-        class:list={["hover:text-fg", current.startsWith(href) ? "text-fg" : "text-muted"]}
-      >
-        {t(key)}
-      </a>
-    ))}
-  </nav>
-  <div class="flex items-center gap-4">
-    <LanguagePicker locale={locale} />
-    <ThemeToggle locale={locale} />
+<!--
+  Phones: wordmark and controls on one row, the four sections as an even row of tabs below.
+  From 48rem: everything on one line.
+-->
+<header class="mx-auto w-full max-w-column px-4 pt-3 sm:px-6 md:flex md:items-center md:gap-6 md:pt-8">
+  <div class="flex items-center justify-between gap-2 md:contents">
+    <a
+      href={localePath(locale)}
+      class="group -ml-1 flex min-h-11 items-center gap-2 rounded-md px-1 text-[1.05rem] font-bold tracking-tight"
+    >
+      <LogoMark />
+      <span>{site.shortName}</span>
+    </a>
+    <div class="flex items-center md:order-last">
+      <LanguagePicker locale={locale} />
+      <ThemeToggle locale={locale} />
+    </div>
   </div>
+  <nav
+    aria-label="Main"
+    class="mt-1 grid grid-cols-4 border-y border-border md:mt-0 md:ml-auto md:flex md:gap-1 md:border-0"
+  >
+    {site.nav.map(({ key, href }) => {
+      const active = current.startsWith(href);
+      return (
+        <a
+          href={localePath(locale, href)}
+          aria-current={active ? "page" : undefined}
+          class:list={[
+            "group flex min-h-11 items-center justify-center px-2 text-[0.95rem] transition-colors md:px-3",
+            active ? "font-semibold text-fg" : "text-muted hover:text-fg",
+          ]}
+        >
+          <span class:list={[active ? "marker" : "marker-hover"]}>{t(key)}</span>
+        </a>
+      );
+    })}
+  </nav>
 </header>

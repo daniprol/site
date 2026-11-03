@@ -1,0 +1,45 @@
+---
+/**
+ * The mark: a tiny plot. Two axes and one curve that ends on a point.
+ * The curve re-draws itself when the wordmark link is hovered (see Header).
+ */
+interface Props {
+  class?: string;
+}
+const { class: className } = Astro.props;
+---
+
+<svg class:list={["logo-mark", className]} width="26" height="26" viewBox="0 0 26 26" fill="none" aria-hidden="true">
+  <path d="M4 3.5V22h18.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity="0.45"></path>
+  <path
+    class="logo-curve"
+    d="M4.5 19.5C10 19.5 11 7 15.5 7.5S19 11 21.5 5.5"
+    stroke="var(--color-accent)"
+    stroke-width="2.2"
+    stroke-linecap="round"
+    pathLength="1"
+  ></path>
+  <circle
+    cx="21.5"
+    cy="5.5"
+    r="2.4"
+    fill="var(--color-mark-strong)"
+    stroke="var(--color-accent)"
+    stroke-width="1.4"
+  ></circle>
+</svg>
+
+<style>
+  .logo-curve {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+  }
+  :global(.group:hover) .logo-curve {
+    animation: draw 0.7s var(--ease-out-soft);
+  }
+  @keyframes draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+  }
+</style>

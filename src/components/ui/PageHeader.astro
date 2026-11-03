@@ -1,0 +1,14 @@
+---
+/** Title and one-line description at the top of an index page. */
+interface Props {
+  title: string;
+  description?: string;
+}
+const { title, description } = Astro.props;
+---
+
+<header class="mt-10 mb-8 sm:mt-16 sm:mb-10">
+  <h1 class="text-[1.9rem] leading-tight font-bold tracking-[-0.02em] sm:text-[2.2rem]">{title}</h1>
+  {description && <p class="mt-2 text-[1.05rem] text-pretty text-muted">{description}</p>}
+  <slot />
+</header>

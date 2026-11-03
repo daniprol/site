@@ -19,8 +19,10 @@ const { caption } = Astro.props;
     counter-increment: figure;
   }
   figcaption::before {
-    content: "Fig. " counter(figure) " — ";
+    content: "Fig. " counter(figure) "\00a0\00a0";
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--color-accent);
   }
 </style>

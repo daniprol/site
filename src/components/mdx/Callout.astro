@@ -1,0 +1,69 @@
+---
+/**
+ * Theorem-style aside: Definition, Lemma or Note, numbered through the article.
+ * Usage in MDX: <Callout kind="definition" title="Recall">A query is…</Callout>
+ */
+import { DEFAULT_LOCALE, isLocale, useTranslations } from "@/i18n";
+
+interface Props {
+  kind?: "definition" | "lemma" | "note";
+  title?: string;
+}
+const { kind = "note", title } = Astro.props;
+const first = Astro.url.pathname.split("/")[1];
+const t = useTranslations(isLocale(first) ? first : DEFAULT_LOCALE);
+---
+
+<aside class="callout" data-kind={kind}>
+  <p class="callout-label">
+    <span class="callout-kind">{t(`callout.${kind}`)}</span>
+    {title && <span class="callout-title">({title})</span>}
+    <span aria-hidden="true">.</span>
+  </p>
+  <div class="callout-body">
+    <slot />
+  </div>
+</aside>
+
+<style>
+  .callout {
+    --callout-rule: var(--color-accent);
+    counter-increment: callout;
+    margin-block: 1.8em;
+    padding: 0.9em 1.1em;
+    border-left: 3px solid var(--callout-rule);
+    border-radius: 0 0.4rem 0.4rem 0;
+    background: var(--color-surface);
+    font-size: 0.95em;
+  }
+  .callout[data-kind="definition"] {
+    background: var(--color-accent-soft);
+  }
+  .callout[data-kind="lemma"] {
+    --callout-rule: var(--color-fg);
+  }
+  .callout[data-kind="note"] {
+    --callout-rule: var(--color-mark-strong);
+  }
+  .callout-label {
+    margin: 0 0 0.3em;
+    font-weight: 700;
+  }
+  .callout-kind::after {
+    content: "\00a0" counter(callout);
+    font-family: var(--font-mono);
+    font-weight: 500;
+    color: var(--color-accent);
+  }
+  .callout-title {
+    margin-left: 0.3em;
+    font-weight: 400;
+    color: var(--color-muted);
+  }
+  .callout-body > :global(:first-child) {
+    margin-top: 0;
+  }
+  .callout-body > :global(:last-child) {
+    margin-bottom: 0;
+  }
+</style>

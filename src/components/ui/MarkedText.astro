@@ -1,0 +1,9 @@
+---
+/** Renders a string, drawing the highlighter behind any *asterisked* phrase. No HTML is injected. */
+interface Props {
+  text: string;
+}
+const parts = Astro.props.text.split("*");
+---
+
+{parts.map((part, i) => (i % 2 === 1 ? <mark class="marker bg-transparent text-inherit">{part}</mark> : part))}

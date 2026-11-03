@@ -1,15 +1,39 @@
 /*
- * Design tokens. Each theme owns this file.
- * Colours use light-dark() so each token is defined once for both modes.
+ * Design tokens for "Proof". Each theme owns this file.
+ * Colours use light-dark() so each token is defined once for both modes;
+ * color-scheme on <html> (set from data-theme) picks the side.
+ *
+ * Palette: cool white paper, navy ink, one cobalt pen, one yellow highlighter.
  */
 @theme {
-  --font-sans: ui-sans-serif, system-ui, sans-serif;
-  --font-serif: ui-serif, Georgia, serif;
-  --font-mono: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  /* --font-atkinson* are injected by <Font /> with metric-matched fallbacks. */
+  --font-sans: var(--font-atkinson), system-ui, sans-serif;
+  --font-mono: var(--font-atkinson-mono), ui-monospace, monospace;
+  --font-math: KaTeX_Main, "Latin Modern Math", "STIX Two Math", serif;
 
-  --color-bg: light-dark(oklch(0.99 0 0), oklch(0.17 0 0));
-  --color-fg: light-dark(oklch(0.2 0 0), oklch(0.93 0 0));
-  --color-muted: light-dark(oklch(0.5 0 0), oklch(0.65 0 0));
-  --color-border: light-dark(oklch(0.9 0 0), oklch(0.3 0 0));
-  --color-accent: light-dark(oklch(0.5 0.15 250), oklch(0.75 0.12 250));
+  /* Surfaces */
+  --color-bg: light-dark(oklch(0.992 0.003 250), oklch(0.185 0.018 265));
+  --color-surface: light-dark(oklch(0.966 0.008 255), oklch(0.225 0.022 265));
+  --color-code-bg: light-dark(oklch(0.976 0.006 255), oklch(0.21 0.02 265));
+  --color-border: light-dark(oklch(0.905 0.012 260), oklch(0.32 0.024 265));
+
+  /* Ink */
+  --color-fg: light-dark(oklch(0.255 0.04 268), oklch(0.94 0.008 260));
+  --color-muted: light-dark(oklch(0.5 0.03 265), oklch(0.73 0.022 262));
+
+  /* Pen and highlighter */
+  --color-accent: light-dark(oklch(0.49 0.2 266), oklch(0.79 0.12 264));
+  --color-accent-soft: light-dark(oklch(0.945 0.03 266), oklch(0.27 0.05 266));
+  --color-mark: light-dark(oklch(0.93 0.16 104 / 0.9), oklch(0.86 0.17 100 / 0.36));
+  --color-mark-strong: light-dark(oklch(0.9 0.18 102), oklch(0.86 0.17 100 / 0.5));
+
+  /* Snack verdicts: ∈ keep, ≈ maybe, ∉ drop. Text-safe on bg in both modes. */
+  --color-keep: light-dark(oklch(0.5 0.13 155), oklch(0.8 0.14 155));
+  --color-maybe: light-dark(oklch(0.55 0.12 70), oklch(0.83 0.13 80));
+  --color-drop: light-dark(oklch(0.54 0.18 25), oklch(0.75 0.14 25));
+
+  /* The single reading column. */
+  --container-column: 42rem;
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
 }

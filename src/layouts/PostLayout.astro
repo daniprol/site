@@ -17,7 +17,7 @@ interface Props {
 
 const { locale, post, slug, isFallback, canonicalPath } = Astro.props;
 const t = useTranslations(locale);
-const { title, description, date, series } = post.data;
+const { title, description, date, series, tags } = post.data;
 const parts = series ? await getSeries(series) : [];
 const index = parts.findIndex((p) => postSlug(p) === slug);
 const previous = index > 0 ? parts[index - 1] : undefined;
@@ -25,18 +25,35 @@ const next = index >= 0 ? parts[index + 1] : undefined;
 ---
 
 <BaseLayout locale={locale} title={title} description={description} canonicalPath={canonicalPath}>
-  <article class="mt-12">
-    <header class="mb-10">
-      <h1 class="text-3xl font-semibold text-balance" transition:name={`post-title-${slug}`}>
+  <article class="mt-10 sm:mt-16">
+    <header class="mb-10 sm:mb-12">
+      <p class="flex flex-wrap gap-x-2 font-mono text-xs text-muted">
+        <DateTime date={date} locale={locale} />
+        <span aria-hidden="true">·</span>
+        <span>{t("post.readingTime", { n: readingTime(post.body) })}</span>
+        {series && (
+          <>
+            <span aria-hidden="true">·</span>
+            <span class="text-accent">{t("post.series", { n: index + 1 })}</span>
+          </>
+        )}
+      </p>
+      <h1
+        class="mt-3 text-[1.9rem] leading-[1.15] font-bold tracking-[-0.02em] text-balance sm:text-[2.4rem]"
+        transition:name={`post-title-${slug}`}
+      >
         {title}
       </h1>
-      <p class="mt-3 flex flex-wrap gap-x-3 text-sm text-muted">
-        <DateTime date={date} locale={locale} />
-        <span>{t("post.readingTime", { n: readingTime(post.body) })}</span>
-        {series && <span>{t("post.series", { n: index + 1 })}</span>}
-      </p>
+      <p class="mt-4 text-[1.1rem] leading-relaxed text-pretty text-muted">{description}</p>
+      {tags.length > 0 && (
+        <ul class="mt-4 flex flex-wrap gap-x-3 font-mono text-xs text-muted">
+          {tags.map((tag) => (
+            <li>#{tag}</li>
+          ))}
+        </ul>
+      )}
       {isFallback && (
-        <p class="mt-4 text-sm text-muted" lang={locale}>
+        <p class="mt-5 inline-block rounded-md bg-surface px-3 py-1.5 text-sm text-muted" lang={locale}>
           {t("post.onlyInEnglish")}
         </p>
       )}
@@ -44,15 +61,44 @@ const next = index >= 0 ? parts[index + 1] : undefined;
     <div class="prose-site prose" lang={post.data.lang}>
       <slot />
     </div>
+    <!-- Every post ends like a proof. -->
+    <p class="mt-10 flex items-center gap-3" role="img" aria-label={t("post.qed")}>
+      <span class="h-px flex-1 bg-border"></span>
+      <span class="qed"></span>
+    </p>
     {(previous || next) && (
-      <nav class="mt-16 flex justify-between gap-4 border-t border-border pt-6 text-sm">
+      <nav class="mt-12 grid gap-2 sm:grid-cols-2" aria-label={t("post.series", { n: index + 1 })}>
         {previous ? (
-          <a href={localePath(locale, `/writing/${postSlug(previous)}`)}>← {previous.data.title}</a>
+          <a
+            href={localePath(locale, `/writing/${postSlug(previous)}`)}
+            class="group rounded-lg border border-border px-4 py-3 transition-colors hover:bg-surface"
+          >
+            <span class="block font-mono text-xs text-muted">← {t("post.previous")}</span>
+            <span class="marker-hover mt-1 inline font-semibold">{previous.data.title}</span>
+          </a>
         ) : (
-          <span />
+          <span class="hidden sm:block" />
         )}
-        {next && <a href={localePath(locale, `/writing/${postSlug(next)}`)}>{next.data.title} →</a>}
+        {next && (
+          <a
+            href={localePath(locale, `/writing/${postSlug(next)}`)}
+            class="group rounded-lg border border-border px-4 py-3 text-right transition-colors hover:bg-surface"
+          >
+            <span class="block font-mono text-xs text-muted">{t("post.next")} →</span>
+            <span class="marker-hover mt-1 inline font-semibold">{next.data.title}</span>
+          </a>
+        )}
       </nav>
     )}
   </article>
 </BaseLayout>
+
+<style>
+  /* The tombstone: a solid square in ink, with a highlighter shadow. */
+  .qed {
+    width: 0.8rem;
+    height: 0.8rem;
+    background: var(--color-fg);
+    box-shadow: 0.2rem 0.2rem 0 var(--color-mark-strong);
+  }
+</style>

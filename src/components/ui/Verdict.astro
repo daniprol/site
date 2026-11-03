@@ -1,0 +1,47 @@
+---
+/**
+ * A snack's verdict as set membership: ∈ keep (in my toolbox), ≈ maybe, ∉ drop.
+ * The symbol is decorative; the translated word carries the meaning.
+ */
+import { useTranslations, type Locale } from "@/i18n";
+import type { Snack } from "@/lib/content";
+
+interface Props {
+  verdict: Snack["data"]["verdict"];
+  locale: Locale;
+  /** "symbol" renders only the glyph (with the word for screen readers). */
+  variant?: "symbol" | "word";
+  /** Set false when the word is shown right next to the symbol anyway. */
+  srLabel?: boolean;
+}
+const { verdict, locale, variant = "word", srLabel = true } = Astro.props;
+const t = useTranslations(locale);
+const symbol = { keep: "∈", maybe: "≈", drop: "∉" }[verdict];
+const tone = { keep: "text-keep", maybe: "text-maybe", drop: "text-drop" }[verdict];
+---
+
+{variant === "symbol" ? (
+  <span class:list={["verdict-symbol", tone]} data-verdict={verdict}>
+    <span aria-hidden="true">{symbol}</span>
+    {srLabel && <span class="sr-only">{t(`verdict.${verdict}`)}</span>}
+  </span>
+) : (
+  <span class:list={["font-mono text-xs font-semibold", tone]} data-verdict={verdict}>
+    {t(`verdict.${verdict}`)}
+  </span>
+)}
+
+<style>
+  .verdict-symbol {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.9rem;
+    height: 1.9rem;
+    border-radius: 999px;
+    background: color-mix(in oklch, currentColor 12%, transparent);
+    font-family: var(--font-math);
+    font-size: 1.2rem;
+    line-height: 1;
+  }
+</style>
