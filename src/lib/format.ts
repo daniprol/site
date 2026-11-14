@@ -11,5 +11,10 @@ export function formatDate(date: Date, locale: Locale, style: "long" | "short" =
   });
 }
 
+/** "20 Oct", for places where the year is noise. */
+export function formatDayMonth(date: Date, locale: Locale): string {
+  return date.toLocaleDateString(LOCALE_TAGS[locale], { day: "numeric", month: "short" });
+}
+
 /** "2026-10-20", for <time datetime> and compact lists. */
 export const isoDate = (date: Date) => date.toISOString().slice(0, 10);

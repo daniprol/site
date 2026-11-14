@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 306" width="600" height="306" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="17">
+<rect width="600" height="306" rx="14" fill="#151a2c"/>
+<circle cx="28" cy="27" r="6" fill="#3a4263"/><circle cx="48" cy="27" r="6" fill="#3a4263"/><circle cx="68" cy="27" r="6" fill="#3a4263"/>
+<text x="96" y="32" fill="#7f88ab" font-size="14">research fan-out</text>
+<text x="572" y="32" fill="#4d567a" font-size="12" text-anchor="end" letter-spacing="1.5">SAMPLE IMAGE</text>
+<text x="28" y="78" xml:space="preserve"><tspan fill="#7f88ab">$ </tspan><tspan fill="#e8ebf7">fanout --agents 8 --topic "pyo3 + maturin"</tspan></text>
+<text x="28" y="108" xml:space="preserve"><tspan fill="#6fd6a0">✓</tspan><tspan fill="#e8ebf7"> agent 1  </tspan><tspan fill="#7f88ab">pyo3 / gil and threads        </tspan><tspan fill="#e8ebf7">  9.2 s</tspan></text>
+<text x="28" y="138" xml:space="preserve"><tspan fill="#6fd6a0">✓</tspan><tspan fill="#e8ebf7"> agent 2  </tspan><tspan fill="#7f88ab">pyo3 / error conversion       </tspan><tspan fill="#e8ebf7">  7.8 s</tspan></text>
+<text x="28" y="168" xml:space="preserve"><tspan fill="#6fd6a0">✓</tspan><tspan fill="#e8ebf7"> agent 3  </tspan><tspan fill="#7f88ab">maturin / wheels and abi3     </tspan><tspan fill="#e8ebf7"> 11.4 s</tspan></text>
+<text x="28" y="198" xml:space="preserve"><tspan fill="#6fd6a0">✓</tspan><tspan fill="#e8ebf7"> agent 4  </tspan><tspan fill="#7f88ab">maturin / cross-compiling     </tspan><tspan fill="#e8ebf7">  8.1 s</tspan></text>
+<text x="28" y="228" xml:space="preserve"><tspan fill="#7f88ab">  … 4 more</tspan></text>
+<text x="28" y="258" xml:space="preserve"><tspan fill="#f0dc4e">merged 8 notes</tspan><tspan fill="#7f88ab"> in </tspan><tspan fill="#e8ebf7">41 s</tspan><tspan fill="#7f88ab"> · 2 pages reported as not useful</tspan></text>
+</svg>

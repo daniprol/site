@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 366" width="600" height="366" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="17">
+<rect width="600" height="366" rx="14" fill="#151a2c"/>
+<circle cx="28" cy="27" r="6" fill="#3a4263"/><circle cx="48" cy="27" r="6" fill="#3a4263"/><circle cx="68" cy="27" r="6" fill="#3a4263"/>
+<text x="96" y="32" fill="#7f88ab" font-size="14">~/.config/ghostty/config</text>
+<text x="572" y="32" fill="#4d567a" font-size="12" text-anchor="end" letter-spacing="1.5">SAMPLE IMAGE</text>
+<text x="28" y="78" xml:space="preserve"><tspan fill="#7f88ab">$ </tspan><tspan fill="#e8ebf7">cat ~/.config/ghostty/config</tspan></text>
+<text x="28" y="108" xml:space="preserve"><tspan fill="#9fb4ff">font-family</tspan><tspan fill="#7f88ab"> = </tspan><tspan fill="#e8ebf7">Atkinson Hyperlegible Mono</tspan></text>
+<text x="28" y="138" xml:space="preserve"><tspan fill="#9fb4ff">font-size</tspan><tspan fill="#7f88ab"> = </tspan><tspan fill="#e8ebf7">14</tspan></text>
+<text x="28" y="168" xml:space="preserve"><tspan fill="#9fb4ff">theme</tspan><tspan fill="#7f88ab"> = </tspan><tspan fill="#e8ebf7">light:proof,dark:proof-night</tspan></text>
+<text x="28" y="198" xml:space="preserve"><tspan fill="#9fb4ff">window-padding-x</tspan><tspan fill="#7f88ab"> = </tspan><tspan fill="#e8ebf7">10</tspan></text>
+<text x="28" y="228" xml:space="preserve"><tspan fill="#9fb4ff">keybind</tspan><tspan fill="#7f88ab"> = </tspan><tspan fill="#e8ebf7">cmd+d=new_split:right</tspan></text>
+<text x="28" y="258" xml:space="preserve"><tspan fill="#9fb4ff">shell-integration</tspan><tspan fill="#7f88ab"> = </tspan><tspan fill="#e8ebf7">detect</tspan></text>
+<text x="28" y="288" xml:space="preserve"><tspan fill="#7f88ab">$ </tspan><tspan fill="#e8ebf7">wc -l ~/.config/ghostty/config</tspan></text>
+<text x="28" y="318" xml:space="preserve"><tspan fill="#f0dc4e">6</tspan></text>
+</svg>

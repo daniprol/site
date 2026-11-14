@@ -25,7 +25,10 @@ const posts = defineCollection({
     }),
 });
 
-/** Snacks: short, informal first impressions of tools, apps and models. One file per entry. */
+/**
+ * Snacks: short, informal first impressions of tools, apps and models. One file per entry,
+ * named <date>-<slug>.md; the slug becomes the URL (/snacks/<slug>).
+ */
 const snacks = defineCollection({
   loader: glob({ base: "./src/content/snacks", pattern: "**/*.{md,mdx}" }),
   schema: z.object({
@@ -34,6 +37,11 @@ const snacks = defineCollection({
     kind: z.enum(["model", "app", "cli", "library", "service", "hardware"]),
     verdict: z.enum(["keep", "maybe", "drop"]),
     url: z.url().optional(),
+    /** One highlighted sentence: shown on the machine's display, in lists and at the top of the snack. */
+    take: z.string().max(90).optional(),
+    /** Optional quick lists under the text. */
+    pros: z.array(z.string()).default([]),
+    cons: z.array(z.string()).default([]),
     draft: z.boolean().default(false),
   }),
 });

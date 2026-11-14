@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 306" width="600" height="306" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="17">
+<rect width="600" height="306" rx="14" fill="#151a2c"/>
+<circle cx="28" cy="27" r="6" fill="#3a4263"/><circle cx="48" cy="27" r="6" fill="#3a4263"/><circle cx="68" cy="27" r="6" fill="#3a4263"/>
+<text x="96" y="32" fill="#7f88ab" font-size="14">astro build</text>
+<text x="572" y="32" fill="#4d567a" font-size="12" text-anchor="end" letter-spacing="1.5">SAMPLE IMAGE</text>
+<text x="28" y="78" xml:space="preserve"><tspan fill="#7f88ab">$ </tspan><tspan fill="#e8ebf7">pnpm build</tspan></text>
+<text x="28" y="108" xml:space="preserve"><tspan fill="#ff9a8a">error</tspan><tspan fill="#e8ebf7">  Unclosed tag &lt;li&gt;</tspan></text>
+<text x="28" y="138" xml:space="preserve"><tspan fill="#7f88ab">  src/components/ui/PostList.astro:14:7</tspan></text>
+<text x="28" y="168" xml:space="preserve"><tspan fill="#7f88ab">  13 │ </tspan><tspan fill="#e8ebf7">  &lt;ul&gt;</tspan></text>
+<text x="28" y="198" xml:space="preserve"><tspan fill="#7f88ab">  14 │ </tspan><tspan fill="#e8ebf7">    &lt;li&gt;{post.data.title}</tspan></text>
+<text x="28" y="228" xml:space="preserve"><tspan fill="#7f88ab">     │ </tspan><tspan fill="#ff9a8a">    ^^^^ opened here, never closed</tspan></text>
+<text x="28" y="258" xml:space="preserve"><tspan fill="#7f88ab">  15 │ </tspan><tspan fill="#e8ebf7">  &lt;/ul&gt;</tspan></text>
+</svg>
