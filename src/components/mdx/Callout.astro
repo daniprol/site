@@ -3,14 +3,14 @@
  * Theorem-style aside: Definition, Lemma or Note, numbered through the article.
  * Usage in MDX: <Callout kind="definition" title="Recall">A query is…</Callout>
  */
-import { DEFAULT_LOCALE, isLocale, useTranslations } from "@/i18n";
+import { DEFAULT_LOCALE, isLocale, stripBase, useTranslations } from "@/i18n";
 
 interface Props {
   kind?: "definition" | "lemma" | "note";
   title?: string;
 }
 const { kind = "note", title } = Astro.props;
-const first = Astro.url.pathname.split("/")[1];
+const first = stripBase(Astro.url.pathname).split("/")[1];
 const t = useTranslations(isLocale(first) ? first : DEFAULT_LOCALE);
 ---
 
