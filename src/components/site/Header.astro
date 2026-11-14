@@ -3,7 +3,7 @@ import { localePath, stripLocale, useTranslations, type Locale } from "@/i18n";
 import { site } from "@/site.config";
 
 import LanguagePicker from "./LanguagePicker.astro";
-import LogoMark from "./LogoMark.astro";
+import Logo from "./Logo.astro";
 import SearchButton from "./SearchButton.astro";
 import ThemeToggle from "./ThemeToggle.astro";
 
@@ -21,12 +21,8 @@ const current = stripLocale(Astro.url.pathname);
 -->
 <header class="mx-auto w-full max-w-column px-4 pt-3 sm:px-6 md:flex md:items-center md:gap-6 md:pt-8">
   <div class="flex items-center justify-between gap-2 md:contents">
-    <a
-      href={localePath(locale)}
-      class="group -ml-1 flex min-h-11 items-center gap-2 rounded-md px-1 text-[1.05rem] font-bold tracking-tight"
-    >
-      <LogoMark />
-      <span>{site.shortName}</span>
+    <a href={localePath(locale)} class="-ml-1 flex min-h-11 items-center rounded-md px-1">
+      <Logo class="h-[23px] w-auto min-[400px]:h-[26px] md:h-7" />
     </a>
     <div class="flex items-center md:order-last">
       <SearchButton locale={locale} />

@@ -26,7 +26,13 @@ const { locale, ...seo } = Astro.props;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <!-- Browser bar matches the page background. ThemeScript keeps it in sync with the toggle. -->
+    <meta name="theme-color" content="#fbfdfe" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0f131b" media="(prefers-color-scheme: dark)" />
     <Seo locale={locale} {...seo} />
     <Font cssVariable="--font-atkinson" preload={[{ style: "normal" }]} />
     <Font cssVariable="--font-atkinson-mono" />
