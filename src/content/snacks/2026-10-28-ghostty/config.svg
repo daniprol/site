@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 360" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="17">
+  <rect width="720" height="360" fill="#141a2b"/>
+  <rect width="720" height="44" fill="#1b2338"/>
+  <circle cx="26" cy="22" r="6" fill="#39435e"/><circle cx="48" cy="22" r="6" fill="#39435e"/><circle cx="70" cy="22" r="6" fill="#39435e"/>
+  <text x="360" y="28" text-anchor="middle" fill="#8f9ab8" font-size="14">config</text>
+  <g fill="#56617f" text-anchor="end"><text x="52" y="92">1</text><text x="52" y="124">2</text><text x="52" y="156">3</text><text x="52" y="188">4</text><text x="52" y="220">5</text><text x="52" y="252">6</text></g>
+  <g fill="#e6eaf5">
+    <text x="76" y="92"><tspan fill="#9db4ff">font-family</tspan> = Atkinson Hyperlegible Mono</text>
+    <text x="76" y="124"><tspan fill="#9db4ff">theme</tspan> = light:proof,dark:proof-dark</text>
+    <text x="76" y="156"><tspan fill="#9db4ff">keybind</tspan> = cmd+d=new_split:right</text>
+    <text x="76" y="188"><tspan fill="#9db4ff">keybind</tspan> = cmd+shift+d=new_split:down</text>
+    <text x="76" y="220"><tspan fill="#9db4ff">keybind</tspan> = cmd+h=goto_split:left</text>
+    <text x="76" y="252"><tspan fill="#9db4ff">keybind</tspan> = cmd+l=goto_split:right</text>
+  </g>
+  <rect x="76" y="270" width="10" height="20" fill="#f1dc4f"/>
+  <text x="696" y="336" text-anchor="end" fill="#56617f" font-size="14">6 lines · was 80</text>
+</svg>

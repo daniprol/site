@@ -13,15 +13,15 @@ Requires Node 24 (see `.node-version`) and pnpm 11 (`corepack enable`).
 
 ## Scripts
 
-| Command                                 | What it does                                             |
-| --------------------------------------- | -------------------------------------------------------- |
-| `pnpm dev`                              | Dev server with drafts visible                           |
-| `pnpm build`                            | Static build to `dist/`, then the Pagefind search index  |
-| `pnpm preview`                          | Serve `dist/` with Wrangler, as Cloudflare will          |
-| `pnpm check`                            | Type-check `.astro`, `.ts` and `.tsx`                    |
-| `pnpm lint` / `lint:fix`                | ESLint (TypeScript, Astro, React hooks, a11y)            |
-| `pnpm format` / `format:check`          | oxfmt, including `.astro` files and Tailwind class order |
-| `pnpm new post\|snack\|project "Title"` | Create a content file with frontmatter                   |
+| Command                                | What it does                                             |
+| -------------------------------------- | -------------------------------------------------------- |
+| `pnpm dev`                             | Dev server with drafts visible                           |
+| `pnpm build`                           | Static build to `dist/`, then the Pagefind search index  |
+| `pnpm preview`                         | Serve `dist/` with Wrangler, as Cloudflare will          |
+| `pnpm check`                           | Type-check `.astro`, `.ts` and `.tsx`                    |
+| `pnpm lint` / `lint:fix`               | ESLint (TypeScript, Astro, React hooks, a11y)            |
+| `pnpm format` / `format:check`         | oxfmt, including `.astro` files and Tailwind class order |
+| `pnpm new post\|pick\|project "Title"` | Create a content file with frontmatter                   |
 
 ## Where things live
 
@@ -31,7 +31,7 @@ src/
   site.config.ts        Name, links, nav, experience, education
   content/              All writing. No layout code here.
     posts/<slug>/index.mdx   A post; translations sit next to it as es.mdx / gl.mdx
-    snacks/<date>-<slug>.md  One short review per file
+    snacks/<date>-<slug>.md  One cherry pick per file (or a folder with index.md and pictures)
     projects/<slug>.md       One case study per file
   pages/[...locale]/    Routes. One file serves /, /es/ and /gl/
   layouts/              BaseLayout (page shell), PostLayout

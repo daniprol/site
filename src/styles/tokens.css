@@ -34,6 +34,20 @@
   --color-maybe: light-dark(oklch(0.55 0.12 70), oklch(0.83 0.13 80));
   --color-drop: light-dark(oklch(0.54 0.18 25), oklch(0.75 0.14 25));
 
+  /* Cherry picks: the fruit, its stem and leaf, the yellow Rainier for "ripening", the dropped one. */
+  --color-cherry: light-dark(oklch(0.56 0.215 20), oklch(0.64 0.21 21));
+  --color-cherry-light: light-dark(oklch(0.7 0.19 27), oklch(0.77 0.16 27));
+  --color-cherry-deep: light-dark(oklch(0.39 0.155 16), oklch(0.43 0.16 16));
+  /* Cherry red as text: AA on bg in both modes. */
+  --color-cherry-ink: light-dark(oklch(0.5 0.2 20), oklch(0.78 0.14 20));
+  --color-rainier: light-dark(oklch(0.91 0.15 99), oklch(0.89 0.15 98));
+  --color-rainier-deep: light-dark(oklch(0.8 0.16 84), oklch(0.76 0.15 80));
+  --color-stem: light-dark(oklch(0.5 0.09 128), oklch(0.74 0.1 128));
+  --color-leaf: light-dark(oklch(0.64 0.15 150), oklch(0.72 0.15 152));
+  --color-leaf-deep: light-dark(oklch(0.5 0.13 153), oklch(0.56 0.13 153));
+  --color-pit: light-dark(oklch(0.7 0.035 20), oklch(0.56 0.04 18));
+  --color-pit-deep: light-dark(oklch(0.56 0.04 18), oklch(0.42 0.04 18));
+
   /* The single reading column. */
   --container-column: 42rem;
 

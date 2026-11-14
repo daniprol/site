@@ -1,7 +1,7 @@
 /**
  * Creates a content file with frontmatter filled in.
  *   pnpm new post "How foliq works"
- *   pnpm new snack "Claude Haiku 5.5"
+ *   pnpm new pick "Claude Haiku 5.5"
  *   pnpm new project "foliq"
  */
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
@@ -9,8 +9,8 @@ import { dirname, join } from "node:path";
 
 const [kind, ...words] = process.argv.slice(2);
 const title = words.join(" ").trim();
-if (!kind || !title || !["post", "snack", "project"].includes(kind)) {
-  console.error('Usage: pnpm new <post|snack|project> "Title"');
+if (!kind || !title || !["post", "pick", "project"].includes(kind)) {
+  console.error('Usage: pnpm new <post|pick|project> "Title"');
   process.exit(1);
 }
 
@@ -27,9 +27,10 @@ const templates = {
     path: join("src/content/posts", slug, "index.mdx"),
     body: `---\ntitle: ${title}\ndescription: TODO\ndate: ${today}\ntags: []\ndraft: true\n---\n\n`,
   },
-  snack: {
+  // A cherry pick. Its collection folder keeps the section's first name, "snacks".
+  pick: {
     path: join("src/content/snacks", `${today}-${slug}.md`),
-    body: `---\ntitle: ${title}\ndate: ${today}\nkind: app # model | app | cli | library | service | hardware\nverdict: maybe # keep | maybe | drop\nurl: https://\n---\n\n`,
+    body: `---\ntitle: ${title}\ndate: ${today}\nkind: app # model | app | cli | library | service | hardware\nverdict: maybe # keep (picked) | maybe (ripening) | drop (dropped)\nurl: https://\ntake: TODO one line\npros: []\ncons: []\n---\n\n`,
   },
   project: {
     path: join("src/content/projects", `${slug}.mdx`),

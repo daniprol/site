@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 300" font-family="ui-monospace, 'SF Mono', Menlo, Consolas, monospace" font-size="14">
+  <rect width="720" height="300" fill="#f6f8fc"/>
+  <g fill="none" stroke="#b9c2d8" stroke-width="2">
+    <path d="M150 150C230 150 250 50 330 50"/><path d="M150 150C230 150 250 100 330 100"/><path d="M150 150H330"/><path d="M150 150C230 150 250 200 330 200"/><path d="M150 150C230 150 250 250 330 250"/>
+    <path d="M390 50C470 50 490 150 570 150"/><path d="M390 100C470 100 490 150 570 150"/><path d="M390 150H570"/><path d="M390 200C470 200 490 150 570 150"/><path d="M390 250C470 250 490 150 570 150"/>
+  </g>
+  <g fill="#fff" stroke="#2f49c9" stroke-width="2">
+    <rect x="330" y="34" width="60" height="32" rx="16"/><rect x="330" y="84" width="60" height="32" rx="16"/><rect x="330" y="134" width="60" height="32" rx="16"/><rect x="330" y="184" width="60" height="32" rx="16"/><rect x="330" y="234" width="60" height="32" rx="16"/>
+  </g>
+  <g fill="#2f49c9" text-anchor="middle"><text x="360" y="55">w₁</text><text x="360" y="105">w₂</text><text x="360" y="155">w₃</text><text x="360" y="205">w₄</text><text x="360" y="255">w₅</text></g>
+  <rect x="70" y="128" width="96" height="44" rx="22" fill="#1c2340"/><text x="118" y="155" text-anchor="middle" fill="#fff">plan</text>
+  <rect x="554" y="128" width="96" height="44" rx="22" fill="#f1dc4f"/><text x="602" y="155" text-anchor="middle" fill="#1c2340">merge</text>
+</svg>

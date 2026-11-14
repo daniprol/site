@@ -1,0 +1,214 @@
+---
+import Cherry from "@/components/cherry/Cherry.astro";
+import CherryDefs from "@/components/cherry/CherryDefs.astro";
+import PickList from "@/components/cherry/PickList.astro";
+import PickMotion from "@/components/cherry/PickMotion.astro";
+import { localeParams, useTranslations } from "@/i18n";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getPicks } from "@/lib/content";
+
+export const getStaticPaths = localeParams;
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const picks = await getPicks();
+const VERDICTS = ["keep", "maybe", "drop"] as const;
+const count = (verdict: (typeof VERDICTS)[number]) => picks.filter((p) => p.entry.data.verdict === verdict).length;
+---
+
+<BaseLayout locale={locale} title={t("picks.title")} description={t("picks.description")}>
+  <CherryDefs />
+  <header class="relative mt-10 mb-6 sm:mt-16 sm:mb-8">
+    <!-- The section's emblem: a pair of cherries on a twig, which is also a branch. -->
+    <svg class="emblem" width="92" height="104" viewBox="0 0 92 104" fill="none" aria-hidden="true">
+      <path class="twig" d="M92 9C74 5.5 60 6.5 47 12" />
+      <path class="twig" d="M69 6.6C66 3.6 62 2.2 58 2.4" />
+      <g class="pair">
+        <path
+          d="M47 12C52 3.5 63.5 2.5 71 8.5C65 16.5 53.5 18 47 12Z"
+          fill="url(#cherry-leaf)"
+          transform="rotate(34 47 12)"
+        ></path>
+        <path
+          d="M47 12C40 24 31 38 27.5 52"
+          stroke="var(--color-stem)"
+          stroke-width="2.2"
+          stroke-linecap="round"
+        ></path>
+        <path
+          d="M47 12C52 28 58.5 44 63 60.5"
+          stroke="var(--color-stem)"
+          stroke-width="2.2"
+          stroke-linecap="round"
+        ></path>
+        <circle cx="26" cy="66" r="16" fill="url(#cherry-ripe)"></circle>
+        <ellipse cx="27.4" cy="52.6" rx="4.6" ry="1.9" fill="var(--color-cherry-deep)" opacity="0.55"></ellipse>
+        <ellipse
+          cx="18.6"
+          cy="60.4"
+          rx="3.2"
+          ry="5.6"
+          transform="rotate(34 18.6 60.4)"
+          fill="#fff"
+          opacity="0.62"
+        ></ellipse>
+        <circle cx="15.8" cy="69.6" r="1.4" fill="#fff" opacity="0.5"></circle>
+        <circle cx="63.5" cy="77" r="18" fill="url(#cherry-ripe)"></circle>
+        <ellipse cx="63" cy="61.8" rx="5.2" ry="2.1" fill="var(--color-cherry-deep)" opacity="0.55"></ellipse>
+        <ellipse
+          cx="55"
+          cy="70.6"
+          rx="3.6"
+          ry="6.3"
+          transform="rotate(34 55 70.6)"
+          fill="#fff"
+          opacity="0.62"
+        ></ellipse>
+        <circle cx="52" cy="81" r="1.6" fill="#fff" opacity="0.5"></circle>
+      </g>
+      <circle cx="47" cy="12" r="4" fill="var(--color-fg)" stroke="var(--color-bg)" stroke-width="2"></circle>
+    </svg>
+    <h1 class="pr-24 text-[1.9rem] leading-tight font-bold tracking-[-0.02em] sm:text-[2.2rem]">{t("picks.title")}</h1>
+    <p class="mt-2 max-w-[30rem] pr-20 text-[1.05rem] text-pretty text-muted sm:pr-24">{t("picks.description")}</p>
+  </header>
+
+  <div class="pick-scope">
+    <!-- Filter by verdict with plain radio buttons and :has(), so it works without JavaScript. -->
+    <fieldset class="-mx-1 flex flex-wrap items-center">
+      <legend class="sr-only">{t("picks.filter")}</legend>
+      <label class="chip">
+        <input type="radio" name="pick-filter" value="all" class="sr-only" checked />
+        <span>
+          {t("picks.all")} <b>{picks.length}</b>
+        </span>
+      </label>
+      {VERDICTS.map((verdict) => (
+        <label class="chip">
+          <input type="radio" name="pick-filter" value={verdict} class="sr-only" />
+          <span>
+            <Cherry verdict={verdict} class="-my-1 h-5 w-4" />
+            {t(`verdict.${verdict}`)} <b>{count(verdict)}</b>
+          </span>
+        </label>
+      ))}
+    </fieldset>
+
+    <!-- Legend for the two lines of the graph. -->
+    <p class="mt-3 mb-1 flex flex-wrap gap-x-5 gap-y-1 font-mono text-xs text-muted">
+      <span class="inline-flex items-center gap-2">
+        <span class="h-0.5 w-5 bg-fg"></span>
+        <span>
+          <b class="font-semibold text-fg">main</b> · {t("picks.legendMain")}
+        </span>
+      </span>
+      <span class="inline-flex items-center gap-2">
+        <span class="legend-dashed h-0.5 w-5"></span>
+        <span>
+          <b class="font-semibold text-fg">upstream</b> · {t("picks.legendUpstream")}
+        </span>
+      </span>
+    </p>
+
+    <PickList items={picks} locale={locale} />
+  </div>
+  <PickMotion />
+</BaseLayout>
+
+<style>
+  .emblem {
+    position: absolute;
+    top: -1.1rem;
+    right: -0.25rem;
+    width: 4.6rem;
+    height: auto;
+  }
+  @media (min-width: 40rem) {
+    .emblem {
+      top: -1.6rem;
+      width: 5.75rem;
+    }
+  }
+  .twig {
+    stroke: var(--color-fg);
+    stroke-width: 2.4;
+    stroke-linecap: round;
+  }
+  .pair {
+    transform-origin: 47px 12px;
+  }
+  @keyframes settle {
+    0% {
+      transform: rotate(-9deg);
+    }
+    30% {
+      transform: rotate(6deg);
+    }
+    55% {
+      transform: rotate(-3.5deg);
+    }
+    78% {
+      transform: rotate(1.5deg);
+    }
+    100% {
+      transform: rotate(0deg);
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .pair {
+      animation: settle 2.2s ease-in-out;
+    }
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding-inline: 0.25rem;
+    cursor: pointer;
+  }
+  .chip > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.32rem 0.7rem;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--color-muted);
+    transition:
+      background-color var(--duration-fast),
+      border-color var(--duration-fast),
+      color var(--duration-fast);
+  }
+  .chip b {
+    font-weight: 600;
+    color: var(--color-fg);
+  }
+  .chip:hover > span {
+    border-color: var(--color-muted);
+    color: var(--color-fg);
+  }
+  .chip input:checked + span {
+    border-color: var(--color-fg);
+    background: var(--color-fg);
+    color: var(--color-bg);
+  }
+  .chip input:checked + span b {
+    color: inherit;
+  }
+  .chip input:focus-visible + span {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+  }
+  .legend-dashed {
+    background: repeating-linear-gradient(to right, var(--color-muted) 0 5px, transparent 5px 9px);
+  }
+
+  .pick-scope:has(input[value="keep"]:checked) :global(.pick:not([data-verdict="keep"])),
+  .pick-scope:has(input[value="maybe"]:checked) :global(.pick:not([data-verdict="maybe"])),
+  .pick-scope:has(input[value="drop"]:checked) :global(.pick:not([data-verdict="drop"])) {
+    display: none;
+    opacity: 0;
+  }
+</style>

@@ -1,0 +1,330 @@
+---
+/**
+ * Cherry picks as a git graph. Two lines run down the left: `main` (solid: my toolbox) and
+ * `upstream` (dashed: everything I try). Every entry is a commit on upstream, drawn as a cherry:
+ *   keep  – picked: an arc carries it over to main, where the ripe cherry hangs
+ *   maybe – a yellow one still hanging on upstream
+ *   drop  – fallen off, lying under the branch
+ * Each row is one link to the entry's own page, so the list works without JavaScript.
+ * The cherry and the title carry view-transition names: on click they travel to the entry header.
+ */
+import { localePath, type Locale } from "@/i18n";
+import type { Pick } from "@/lib/content";
+
+import DateTime from "../ui/DateTime.astro";
+import Cherry from "./Cherry.astro";
+import Verdict from "./Verdict.astro";
+
+interface Props {
+  items: Pick[];
+  locale: Locale;
+}
+const { items, locale } = Astro.props;
+---
+
+<ol class="picks">
+  {items.map(({ entry, slug, hash }, i) => {
+    const { verdict, title, take, kind, date } = entry.data;
+    return (
+      <li class="pick" data-verdict={verdict} style={`--i:${i}`}>
+        <a href={localePath(locale, `/cherry-picks/${slug}`)} class="pick-link group" data-pick-link>
+          <span class="rail" aria-hidden="true">
+            <svg class="rail-art" width="68" height="76" viewBox="0 0 68 76" fill="none">
+              {verdict === "keep" && (
+                <>
+                  <path class="arc" pathLength="1" d="M43.5 14C31 14 29.5 24 18 24" />
+                  <circle class="node node-origin" cx="47" cy="14" r="3.5" />
+                  <circle class="node node-main" cx="13" cy="24" r="4.5" />
+                </>
+              )}
+              {verdict === "maybe" && <circle class="node node-upstream" cx="47" cy="22" r="4.5" />}
+              {verdict === "drop" && (
+                <>
+                  <path class="fall" d="M47 28.5C47 34 44 38 39 41.5" />
+                  <circle class="node node-origin node-cut" cx="47" cy="22" r="3.5" />
+                </>
+              )}
+            </svg>
+            <span class="hang" style={`view-transition-name: pick-cherry-${slug}`}>
+              <Cherry verdict={verdict} />
+            </span>
+          </span>
+          <span class="pick-text">
+            <span class="flex flex-wrap items-baseline gap-x-2 font-mono text-xs text-muted">
+              <span class="text-accent">{hash}</span>
+              <span>
+                {kind} · <DateTime date={date} locale={locale} format="day" />
+              </span>
+            </span>
+            <span class="mt-0.5 flex items-baseline justify-between gap-3">
+              <span class="text-[1.08rem] leading-snug font-bold tracking-tight">
+                <span class="marker-hover" style={`view-transition-name: pick-title-${slug}`}>
+                  {title}
+                </span>
+              </span>
+              <Verdict verdict={verdict} locale={locale} class="shrink-0" />
+            </span>
+            {take && (
+              <span class="mt-0.5 block text-[0.97rem] leading-normal text-pretty text-muted" lang="en">
+                {take}
+              </span>
+            )}
+          </span>
+        </a>
+      </li>
+    );
+  })}
+</ol>
+
+<style>
+  .picks {
+    --main-x: 12px;
+    --upstream-x: 46px;
+    --line-main: var(--color-fg);
+    --line-upstream: color-mix(in oklch, var(--color-muted) 60%, transparent);
+  }
+
+  /* Each row draws its own stretch of both lines, so filtered lists stay connected. */
+  .pick {
+    position: relative;
+    opacity: 1;
+    transition:
+      opacity 0.3s var(--ease-out-soft),
+      display 0.3s allow-discrete;
+  }
+  @starting-style {
+    .pick {
+      opacity: 0;
+    }
+  }
+  .pick::before,
+  .pick::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    transform-origin: top;
+    pointer-events: none;
+  }
+  .pick::before {
+    left: var(--main-x);
+    background: var(--line-main);
+  }
+  .pick::after {
+    left: var(--upstream-x);
+    background: repeating-linear-gradient(to bottom, var(--line-upstream) 0 5px, transparent 5px 9px);
+  }
+  /* The graph has no hard start or end: it fades in from above and runs on below. */
+  .pick:first-child::before {
+    background: linear-gradient(to bottom, transparent, var(--line-main) 1.25rem);
+  }
+  .pick:first-child::after,
+  .pick:last-child::after {
+    mask-image: linear-gradient(to bottom, transparent, #000 1.25rem);
+  }
+  .pick:last-child::before {
+    background: linear-gradient(to top, transparent, var(--line-main) 1.5rem);
+  }
+  .pick:last-child::after {
+    mask-image: linear-gradient(to top, transparent, #000 1.5rem);
+  }
+
+  .pick-link {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 4.25rem minmax(0, 1fr);
+    column-gap: 0.5rem;
+    min-height: 5.5rem;
+    padding-block: 0.85rem 1rem;
+    border-radius: 0.5rem;
+  }
+  .rail {
+    position: relative;
+  }
+  .rail-art {
+    position: absolute;
+    top: -0.85rem;
+    left: 0;
+    overflow: visible;
+  }
+
+  .node {
+    stroke-width: 2;
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: transform var(--duration-base) var(--ease-spring);
+  }
+  .node-main {
+    fill: var(--line-main);
+    stroke: var(--color-bg);
+  }
+  .node-origin {
+    fill: var(--color-bg);
+    stroke: var(--color-muted);
+  }
+  .node-cut {
+    stroke-dasharray: 2.4 2.2;
+  }
+  .node-upstream {
+    fill: var(--color-rainier-deep);
+    stroke: var(--color-bg);
+  }
+  .arc {
+    stroke: var(--color-cherry);
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+  }
+  .fall {
+    stroke: var(--color-muted);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-dasharray: 0.1 4.5;
+  }
+
+  /* The cherry hangs from its node and swings from the top of its stem. */
+  .hang {
+    position: absolute;
+    display: block;
+    view-transition-class: pick-cherry;
+  }
+  .pick:not([data-verdict="drop"]) .hang :global(svg) {
+    width: 36px;
+    height: 45px;
+  }
+  .pick[data-verdict="keep"] .hang {
+    left: 8.5px;
+    top: calc(21.75px - 0.85rem);
+    transform-origin: 4.5px 2.25px;
+  }
+  .pick[data-verdict="maybe"] .hang {
+    left: 15.5px;
+    top: calc(19.75px - 0.85rem);
+    transform-origin: 31.5px 2.25px;
+  }
+  .pick[data-verdict="maybe"] .hang :global(svg) {
+    transform: scaleX(-1);
+  }
+  .pick[data-verdict="drop"] .hang {
+    left: 14px;
+    top: calc(33px - 0.85rem);
+    transform-origin: 14px 37px;
+  }
+
+  @keyframes sway {
+    0% {
+      transform: rotate(0deg);
+    }
+    22% {
+      transform: rotate(11deg);
+    }
+    48% {
+      transform: rotate(-7deg);
+    }
+    72% {
+      transform: rotate(3.5deg);
+    }
+    100% {
+      transform: rotate(0deg);
+    }
+  }
+  @keyframes nudge {
+    0%,
+    100% {
+      transform: rotate(0deg);
+    }
+    40% {
+      transform: rotate(-9deg);
+    }
+    70% {
+      transform: rotate(4deg);
+    }
+  }
+  @media (hover: hover) {
+    .pick-link:hover .hang {
+      animation: sway 0.95s ease-in-out;
+    }
+    .pick[data-verdict="drop"] .pick-link:hover .hang {
+      animation: nudge 0.6s ease-in-out;
+    }
+    .pick-link:hover .node {
+      transform: scale(1.25);
+    }
+  }
+  .pick-link:focus-visible .hang {
+    animation: sway 0.95s ease-in-out;
+  }
+  .pick-link:active .hang {
+    scale: 0.94;
+  }
+
+  /*
+   * First paint only: the lines grow downwards, each arc draws from upstream to main, and the
+   * cherries swing into place one after another. Skipped after in-site navigation (html[data-nav],
+   * set by PickMotion), where the cherry is busy travelling back from the entry header.
+   */
+  @keyframes line-grow {
+    from {
+      transform: scaleY(0);
+    }
+  }
+  @keyframes arc-draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+  }
+  @keyframes node-pop {
+    from {
+      transform: scale(0);
+    }
+  }
+  @keyframes hang-in {
+    0% {
+      opacity: 0;
+      transform: rotate(-38deg) scale(0.2);
+    }
+    30% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes text-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    :global(html:not([data-nav])) .pick {
+      --d: calc(var(--i) * 85ms);
+    }
+    :global(html:not([data-nav])) .pick::before,
+    :global(html:not([data-nav])) .pick::after {
+      animation: line-grow 0.5s var(--ease-out-soft) var(--d) backwards;
+    }
+    :global(html:not([data-nav])) .pick .node {
+      animation: node-pop 0.5s var(--ease-spring) calc(var(--d) + 120ms) backwards;
+    }
+    :global(html:not([data-nav])) .pick .arc {
+      animation: arc-draw 0.45s var(--ease-out-soft) calc(var(--d) + 220ms) backwards;
+    }
+    :global(html:not([data-nav])) .pick .hang {
+      animation: hang-in 0.9s var(--ease-spring) calc(var(--d) + 380ms) backwards;
+    }
+    :global(html:not([data-nav])) .pick .pick-text {
+      animation: text-in 0.5s var(--ease-out-soft) calc(var(--d) + 80ms) backwards;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pick-link:hover .hang,
+    .pick-link:focus-visible .hang {
+      animation: none;
+    }
+  }
+</style>

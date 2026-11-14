@@ -25,14 +25,23 @@ const posts = defineCollection({
     }),
 });
 
-/** Snacks: short, informal first impressions of tools, apps and models. One file per entry. */
+/**
+ * Cherry picks: short, informal first impressions of tools, apps and models. One file per entry,
+ * or a folder with index.md when the entry has pictures. (The collection keeps its first name, "snacks".)
+ */
 const snacks = defineCollection({
   loader: glob({ base: "./src/content/snacks", pattern: "**/*.{md,mdx}" }),
   schema: z.object({
     title: z.string(),
     date: z.coerce.date(),
     kind: z.enum(["model", "app", "cli", "library", "service", "hardware"]),
+    /** keep = picked into main, maybe = still ripening on the branch, drop = dropped. */
     verdict: z.enum(["keep", "maybe", "drop"]),
+    /** The one-line take, shown in lists and under the title. */
+    take: z.string().optional(),
+    /** What speaks for and against it: the + and - lines of the pick result. */
+    pros: z.array(z.string()).default([]),
+    cons: z.array(z.string()).default([]),
     url: z.url().optional(),
     draft: z.boolean().default(false),
   }),

@@ -1,0 +1,27 @@
+---
+/**
+ * A pick's verdict: the set-membership glyph (∈ in my toolbox, ≈ maybe, ∉ not) and the translated
+ * word (picked, ripening, dropped). The glyph is decorative; the word carries the meaning.
+ */
+import { useTranslations, type Locale } from "@/i18n";
+import type { Snack } from "@/lib/content";
+
+interface Props {
+  verdict: Snack["data"]["verdict"];
+  locale: Locale;
+  class?: string;
+}
+const { verdict, locale, class: className } = Astro.props;
+const t = useTranslations(locale);
+const symbol = { keep: "∈", maybe: "≈", drop: "∉" }[verdict];
+const tone = { keep: "text-cherry-ink", maybe: "text-maybe", drop: "text-muted" }[verdict];
+---
+
+<span
+  class:list={["inline-flex items-baseline gap-1 font-mono text-xs font-semibold whitespace-nowrap", tone, className]}
+>
+  <span aria-hidden="true" class="font-math text-[1.05rem] leading-none font-normal">
+    {symbol}
+  </span>
+  {t(`verdict.${verdict}`)}
+</span>

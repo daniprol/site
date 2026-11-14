@@ -1,0 +1,21 @@
+/*
+ * Cherry picks: how a cherry travels between the list and an entry's header.
+ * Both ends carry the same view-transition-name (pick-cherry-<slug>) and the class pick-cherry,
+ * so the browser moves and scales one into the other. A spring makes it land with a little weight.
+ */
+::view-transition-group(.pick-cherry) {
+  animation-duration: 0.56s;
+  animation-timing-function: var(--ease-spring);
+}
+::view-transition-old(.pick-cherry),
+::view-transition-new(.pick-cherry) {
+  height: 100%;
+  object-fit: contain;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}

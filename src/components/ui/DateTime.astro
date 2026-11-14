@@ -5,7 +5,7 @@ import { formatDate, isoDate } from "@/lib/format";
 interface Props {
   date: Date;
   locale: Locale;
-  format?: "long" | "short" | "iso";
+  format?: "long" | "short" | "day" | "iso";
   class?: string;
 }
 const { date, locale, format = "long", class: className } = Astro.props;

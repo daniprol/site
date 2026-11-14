@@ -1,0 +1,58 @@
+---
+/**
+ * The only JavaScript in the Cherry picks section, all of it optional polish:
+ *   1. marks in-site navigations (html[data-nav]) so the list's first-paint animation doesn't replay
+ *      while a cherry travels back from an entry;
+ *   2. "plucks" the cherry of the row you click: it swings back and snaps off while the entry loads,
+ *      then the view transition carries it to the entry header;
+ *   3. plays the pick result (the terminal at the end of an entry) when it scrolls into view.
+ * Without JavaScript every row is still a plain link and the pick result is simply there.
+ */
+---
+
+<script>
+  const calm = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  document.addEventListener("astro:after-swap", () => {
+    document.documentElement.dataset.nav = "";
+  });
+
+  document.addEventListener("astro:before-preparation", (event) => {
+    const link = event.sourceElement?.closest("[data-pick-link]");
+    const cherry = link?.querySelector<HTMLElement>(".hang");
+    if (!cherry || calm() || !document.startViewTransition) return;
+    const load = event.loader;
+    event.loader = async () => {
+      const pluck = cherry.animate(
+        [
+          { transform: "rotate(0deg) scale(1)" },
+          { transform: "rotate(-16deg) scale(1.04)", offset: 0.45 },
+          { transform: "rotate(7deg) translateY(5px) scale(1.14)" },
+        ],
+        { duration: 300, easing: "cubic-bezier(0.3, 0, 0.2, 1)", fill: "forwards" },
+      );
+      await Promise.all([load(), pluck.finished.catch(() => undefined)]);
+    };
+  });
+
+  let observer: IntersectionObserver | undefined;
+  document.addEventListener("astro:page-load", () => {
+    observer?.disconnect();
+    const results = document.querySelectorAll<HTMLElement>("[data-pick-result]");
+    if (results.length === 0 || calm()) return;
+    observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          (entry.target as HTMLElement).dataset.inview = "";
+          observer?.unobserve(entry.target);
+        }
+      },
+      { threshold: 0.35 },
+    );
+    for (const result of results) {
+      result.dataset.armed = "";
+      observer.observe(result);
+    }
+  });
+</script>

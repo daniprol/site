@@ -1,0 +1,24 @@
+---
+/** One cherry, drawn from the symbols in <CherryDefs />. Decorative: the verdict word carries the meaning. */
+import type { Snack } from "@/lib/content";
+
+interface Props {
+  verdict: Snack["data"]["verdict"];
+  /** The larger drawing with a leaf, for entry headers. */
+  leaf?: boolean;
+  class?: string;
+}
+const { verdict, leaf = false, class: className } = Astro.props;
+const [width, height] = leaf ? [48, 58] : [32, 40];
+---
+
+<svg
+  class={className}
+  width={width}
+  height={height}
+  viewBox={`0 0 ${width} ${height}`}
+  aria-hidden="true"
+  focusable="false"
+>
+  <use href={`#cherry-${verdict}${leaf ? "-leaf" : ""}`}></use>
+</svg>
