@@ -70,3 +70,56 @@
   --duration-base: 240ms;
   --duration-spring: 520ms;
 }
+
+/*
+ * The snack machine (/snacks). Cobalt enamel by day; at night the cabinet sinks into the page
+ * and the window, sign and display do the glowing. Used by machine.css and snack-pack.css.
+ */
+:root {
+  /* Cabinet */
+  --vm-body: light-dark(oklch(0.5 0.19 266), oklch(0.265 0.055 266));
+  --vm-body-hi: light-dark(oklch(0.585 0.175 264), oklch(0.34 0.07 266));
+  --vm-body-lo: light-dark(oklch(0.41 0.17 268), oklch(0.2 0.045 268));
+  --vm-trim: light-dark(oklch(0.27 0.075 268), oklch(0.14 0.03 268));
+  --vm-floor: light-dark(oklch(0.255 0.04 268 / 0.28), oklch(0 0 0 / 0.6));
+
+  /* Inside the window */
+  --vm-inner: light-dark(oklch(0.955 0.014 256), oklch(0.6 0.095 258));
+  --vm-inner-lo: light-dark(oklch(0.875 0.028 260), oklch(0.36 0.085 264));
+  --vm-lamp: light-dark(oklch(1 0 0), oklch(0.97 0.03 250));
+  --vm-metal: light-dark(oklch(0.93 0.008 258), oklch(0.78 0.035 260));
+  --vm-metal-lo: light-dark(oklch(0.78 0.02 260), oklch(0.5 0.055 264));
+  --vm-coil: light-dark(oklch(0.46 0.04 264), oklch(0.22 0.05 266));
+  --vm-coil-hi: light-dark(oklch(0.9 0.012 260), oklch(0.8 0.05 260));
+  --vm-tag: light-dark(oklch(0.99 0.003 250), oklch(0.93 0.012 258));
+  --vm-tag-ink: oklch(0.255 0.04 268);
+  --vm-tag-muted: oklch(0.47 0.03 265);
+
+  /* Glass, light and shadow. Shine and shade are mixed with transparent wherever they are used. */
+  --vm-shine: oklch(1 0 0);
+  --vm-shade: oklch(0.16 0.04 268);
+  --vm-glare: light-dark(oklch(1 0 0 / 0.5), oklch(0.9 0.05 255 / 0.14));
+  --vm-glow: light-dark(oklch(0.6 0.15 262 / 0), oklch(0.62 0.16 262 / 0.42));
+
+  /* Sign, display, tray */
+  --vm-sign: light-dark(oklch(0.985 0.006 250), oklch(0.96 0.05 100));
+  --vm-sign-glow: light-dark(oklch(0.9 0.17 102 / 0), oklch(0.88 0.17 100 / 0.35));
+  --vm-screen: oklch(0.17 0.03 268);
+  --vm-led: oklch(0.9 0.17 102);
+  --vm-led-dim: oklch(0.9 0.06 250 / 0.72);
+  --vm-bin: oklch(0.13 0.025 268);
+  --vm-key: light-dark(oklch(0.96 0.008 258), oklch(0.36 0.05 266));
+  --vm-key-ink: light-dark(oklch(0.27 0.075 268), oklch(0.93 0.02 260));
+
+  /* Packages: printed objects, the same in both modes. */
+  --vm-pack-navy: oklch(0.29 0.075 268);
+  --vm-pack-cobalt: oklch(0.5 0.2 266);
+  --vm-pack-yellow: oklch(0.9 0.17 102);
+  --vm-pack-paper: oklch(0.985 0.005 250);
+  --vm-pack-sky: oklch(0.85 0.07 258);
+  --vm-pack-steel: oklch(0.9 0.012 258);
+  --vm-pack-steel-lo: oklch(0.68 0.025 260);
+  --vm-pack-keep: oklch(0.5 0.13 155);
+  --vm-pack-maybe: oklch(0.55 0.12 70);
+  --vm-pack-drop: oklch(0.54 0.18 25);
+}

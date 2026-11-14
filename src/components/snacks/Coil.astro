@@ -1,0 +1,33 @@
+---
+/**
+ * A vending spiral seen from the front and slightly above: loops receding into the shelf.
+ * Rendered twice per slot, behind the package ("back") and as the half loop that passes in front of it.
+ * `.vm-coil-turn` groups rotate when the slot vends.
+ */
+interface Props {
+  part: "back" | "front";
+}
+const { part } = Astro.props;
+/** [vertical offset, radius, opacity, phase in degrees], nearest loop first. */
+const LOOPS = [
+  [37, 36, 1, 0],
+  [29.5, 34, 0.78, 35],
+  [23, 32, 0.56, 70],
+  [17.5, 30, 0.38, 105],
+  [13, 28.5, 0.22, 140],
+] as const;
+const loops = part === "front" ? LOOPS.slice(0, 1) : [...LOOPS].reverse();
+---
+
+<svg class:list={["vm-coil", `vm-coil--${part}`]} viewBox="0 0 100 52" aria-hidden="true" focusable="false">
+  {loops.map(([y, r, opacity, phase]) => (
+    <g transform={`translate(50 ${y}) scale(1 0.38)`} opacity={opacity}>
+      <g class="vm-coil-turn">
+        <g transform={`rotate(${phase})`}>
+          <circle class="vm-coil-wire" r={r} pathLength="100" stroke-dasharray="93 7" />
+          <circle class="vm-coil-shine" r={r} pathLength="100" stroke-dasharray="93 7" />
+        </g>
+      </g>
+    </g>
+  ))}
+</svg>

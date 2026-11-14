@@ -1,16 +1,18 @@
 ---
+import Machine from "@/components/snacks/Machine.astro";
 import PageHeader from "@/components/ui/PageHeader.astro";
 import SnackList from "@/components/ui/SnackList.astro";
 import Verdict from "@/components/ui/Verdict.astro";
 import { localeParams, useTranslations } from "@/i18n";
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import { getSnacks } from "@/lib/content";
+import { MACHINE_SLOTS, getShelvedSnacks } from "@/lib/content";
 
 export const getStaticPaths = localeParams;
 
 const { locale } = Astro.props;
 const t = useTranslations(locale);
-const snacks = await getSnacks();
+const snacks = await getShelvedSnacks();
+const older = snacks.slice(MACHINE_SLOTS);
 const VERDICTS = ["keep", "maybe", "drop"] as const;
 ---
 
@@ -26,5 +28,15 @@ const VERDICTS = ["keep", "maybe", "drop"] as const;
       ))}
     </p>
   </PageHeader>
-  <SnackList items={snacks} locale={locale} />
+
+  <Machine items={snacks} locale={locale} />
+
+  {older.length > 0 && (
+    <section aria-labelledby="older-snacks" data-pagefind-ignore>
+      <h2 id="older-snacks" class="mb-1 text-[1.05rem] font-bold tracking-tight">
+        {t("snacks.older")}
+      </h2>
+      <SnackList items={older} locale={locale} />
+    </section>
+  )}
 </BaseLayout>

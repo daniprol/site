@@ -1,0 +1,124 @@
+---
+/**
+ * One snack as a package. The art comes from the snack's data (see src/lib/snackPack.ts), so every
+ * package is different but they all read as one product line. Decorative: the link around it carries the name.
+ * Needs <SnackPackDefs /> once on the page.
+ */
+import "@/styles/snack-pack.css";
+import { useTranslations, type Locale } from "@/i18n";
+import type { Snack } from "@/lib/content";
+import { PACK_SHAPES, packDesign, patternPath } from "@/lib/snackPack";
+
+interface Props {
+  snack: Snack;
+  locale: Locale;
+  class?: string;
+}
+const { snack, locale, class: className } = Astro.props;
+const t = useTranslations(locale);
+const design = packDesign(snack.data);
+const { shape, label, seal, title } = design;
+const kind = t(`kind.${snack.data.kind}`).toUpperCase();
+const pattern = patternPath(design.patternKind, design.pattern);
+const clip = `url(#pk-clip-${shape})`;
+const titleTop = label.y + 7.5;
+---
+
+<svg
+  class:list={["pk", `pk--${shape}`, `pk--${design.colourway}`, className]}
+  viewBox="0 0 80 104"
+  aria-hidden="true"
+  focusable="false"
+  data-verdict={design.verdict}
+>
+  {shape === "box" && (
+    <>
+      <path class="pk-body" d="M65 12L75 6V95L65 101Z" />
+      <path class="pk-side" d="M65 12L75 6V95L65 101Z" />
+      <path class="pk-body" d="M5 12L15 6H75L65 12Z" />
+      <path class="pk-top" d="M5 12L15 6H75L65 12Z" />
+    </>
+  )}
+  {shape === "jar" && (
+    <>
+      <rect class="pk-glass" x="19" y="16" width="42" height="9" />
+      <rect class="pk-lid" x="16" y="4.5" width="48" height="13.5" rx="3" />
+      <path class="pk-lid-ribs" d="M21 7v9M26 7v9M31 7v9M36 7v9M41 7v9M46 7v9M51 7v9M56 7v9" />
+      <rect fill="url(#pk-sheen-round)" x="16" y="4.5" width="48" height="13.5" rx="3" />
+    </>
+  )}
+
+  <path class="pk-body" d={PACK_SHAPES[shape]}></path>
+
+  <g clip-path={clip}>
+    <path class:list={["pk-pattern", `pk-pattern--${design.patternKind}`]} d={pattern}></path>
+    {shape === "bag" && (
+      <>
+        <path class="pk-shade" d="M0 0H80V13H0ZM0 91H80V104H0Z" />
+        <path class="pk-ribs" d="M0 8H80M0 10.5H80M0 93.5H80M0 96H80" />
+      </>
+    )}
+    {shape === "pouch" && (
+      <>
+        <path class="pk-shade" d="M0 0H80V15H0Z" />
+        <path class="pk-ribs" d="M0 15H80" />
+        <rect class="pk-hole" x="33" y="8.2" width="14" height="3.6" rx="1.8" />
+        <path class="pk-crease" d="M9 88Q40 97 71 88" />
+      </>
+    )}
+    {shape === "can" && <path class="pk-band" d="M10 22A30 7 0 0 0 70 22M10 86A30 7 0 0 0 70 86" />}
+    {shape === "jar" && (
+      <>
+        <path class="pk-air" d="M0 0H80V33H0Z" />
+        <rect class="pk-label" x="12" y="41" width="56" height="40" />
+      </>
+    )}
+    {shape === "blister" && (
+      <>
+        <rect class="pk-hole" x="32" y="8.5" width="16" height="4.2" rx="2.1" />
+        <rect class="pk-bubble" x="14" y="18" width="52" height="38" rx="9" />
+        <g class="pk-part">
+          <rect x="29" y="27.5" width="22" height="19" rx="3" />
+          <path d="M33 27.5v-4M40 27.5v-4M47 27.5v-4M33 50.5v-4M40 50.5v-4M47 50.5v-4M29 33h-4M29 41h-4M55 33h-4M55 41h-4" />
+        </g>
+        <path class="pk-glint" d="M20 27Q20 22 26 21.5" />
+      </>
+    )}
+    <rect
+      fill={shape === "can" || shape === "jar" ? "url(#pk-sheen-round)" : "url(#pk-sheen)"}
+      width="80"
+      height="104"
+    ></rect>
+    <rect fill="url(#pk-fall)" width="80" height="104"></rect>
+  </g>
+
+  {shape === "can" && (
+    <>
+      <ellipse class="pk-metal" cx="40" cy="14" rx="30" ry="7" />
+      <ellipse class="pk-metal-in" cx="40" cy="14.3" rx="25.5" ry="5.2" />
+      <ellipse class="pk-tab" cx="40" cy="14.6" rx="6.5" ry="2.4" />
+      <path class="pk-rim" d="M10 92A30 7 0 0 0 70 92" />
+    </>
+  )}
+  {shape === "box" && <path class="pk-crease" d="M5 17.5H65" />}
+
+  <text class="pk-kind" x={label.x} y={label.y}>
+    {kind}
+  </text>
+  <text class="pk-title" x={label.x} font-size={title.size}>
+    {title.lines.map((line, i) => (
+      <tspan x={label.x} y={Math.round((titleTop + title.size * (0.72 + i * 1.06)) * 100) / 100}>
+        {line}
+      </tspan>
+    ))}
+  </text>
+
+  <g class="pk-seal">
+    <circle cx={seal.x} cy={seal.y + 0.8} r={seal.r} class="pk-seal-shadow"></circle>
+    <circle cx={seal.x} cy={seal.y} r={seal.r} class="pk-seal-disc"></circle>
+    <circle cx={seal.x} cy={seal.y} r={seal.r - 1.7} class="pk-seal-ring"></circle>
+    <text x={seal.x} y={seal.y} class="pk-seal-glyph" font-size={seal.r * 1.25}>
+      {design.glyph}
+    </text>
+  </g>
+</svg>

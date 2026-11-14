@@ -1,0 +1,52 @@
+---
+/**
+ * Gradients and clip paths shared by every <SnackPack>. Render once on any page that shows packages.
+ * Zero-sized rather than display:none, so the references resolve in every browser.
+ */
+import { PACK_SHAPES } from "@/lib/snackPack";
+---
+
+<svg class="pk-defs" width="0" height="0" aria-hidden="true" focusable="false">
+  <defs>
+    <!-- Soft sheen for flat packs: light from the upper left, a darker right edge. -->
+    <linearGradient id="pk-sheen" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="80" y2="14">
+      <stop offset="0" stop-color="var(--vm-shine)" stop-opacity="0.05"></stop>
+      <stop offset="0.16" stop-color="var(--vm-shine)" stop-opacity="0.3"></stop>
+      <stop offset="0.36" stop-color="var(--vm-shine)" stop-opacity="0"></stop>
+      <stop offset="0.72" stop-color="var(--vm-shade)" stop-opacity="0"></stop>
+      <stop offset="1" stop-color="var(--vm-shade)" stop-opacity="0.2"></stop>
+    </linearGradient>
+    <!-- Rounder sheen for cans and jars. -->
+    <linearGradient id="pk-sheen-round" gradientUnits="userSpaceOnUse" x1="8" y1="0" x2="72" y2="0">
+      <stop offset="0" stop-color="var(--vm-shade)" stop-opacity="0.24"></stop>
+      <stop offset="0.14" stop-color="var(--vm-shade)" stop-opacity="0"></stop>
+      <stop offset="0.24" stop-color="var(--vm-shine)" stop-opacity="0.5"></stop>
+      <stop offset="0.38" stop-color="var(--vm-shine)" stop-opacity="0"></stop>
+      <stop offset="0.74" stop-color="var(--vm-shade)" stop-opacity="0"></stop>
+      <stop offset="1" stop-color="var(--vm-shade)" stop-opacity="0.34"></stop>
+    </linearGradient>
+    <linearGradient id="pk-metal" gradientUnits="userSpaceOnUse" x1="10" y1="0" x2="70" y2="0">
+      <stop offset="0" stop-color="var(--vm-pack-steel-lo)"></stop>
+      <stop offset="0.3" stop-color="var(--vm-pack-steel)"></stop>
+      <stop offset="0.62" stop-color="var(--vm-pack-steel)"></stop>
+      <stop offset="1" stop-color="var(--vm-pack-steel-lo)"></stop>
+    </linearGradient>
+    <!-- Top-down shading that seats a pack on its shelf. -->
+    <linearGradient id="pk-fall" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="104">
+      <stop offset="0" stop-color="var(--vm-shine)" stop-opacity="0.1"></stop>
+      <stop offset="0.5" stop-color="var(--vm-shade)" stop-opacity="0"></stop>
+      <stop offset="1" stop-color="var(--vm-shade)" stop-opacity="0.16"></stop>
+    </linearGradient>
+    {Object.entries(PACK_SHAPES).map(([shape, d]) => (
+      <clipPath id={`pk-clip-${shape}`}>
+        <path d={d} />
+      </clipPath>
+    ))}
+  </defs>
+</svg>
+
+<style>
+  .pk-defs {
+    position: absolute;
+  }
+</style>

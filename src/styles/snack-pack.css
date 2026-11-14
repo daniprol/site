@@ -1,0 +1,221 @@
+/*
+ * Snack packages (SnackPack.astro). One family: five colourways from the site palette,
+ * six silhouettes, a verdict seal. Colours are fixed in both modes; they are printed objects.
+ */
+.pk {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  --pk-body: var(--vm-pack-cobalt);
+  --pk-ink: var(--vm-pack-paper);
+  --pk-accent: var(--vm-pack-yellow);
+}
+.pk--navy {
+  --pk-body: var(--vm-pack-navy);
+  --pk-ink: var(--vm-pack-paper);
+  --pk-accent: var(--vm-pack-yellow);
+}
+.pk--yellow {
+  --pk-body: var(--vm-pack-yellow);
+  --pk-ink: var(--vm-pack-navy);
+  --pk-accent: var(--vm-pack-cobalt);
+}
+.pk--paper {
+  --pk-body: var(--vm-pack-paper);
+  --pk-ink: var(--vm-pack-navy);
+  --pk-accent: var(--vm-pack-cobalt);
+}
+.pk--sky {
+  --pk-body: var(--vm-pack-sky);
+  --pk-ink: var(--vm-pack-navy);
+  --pk-accent: var(--vm-pack-cobalt);
+}
+
+.pk-body {
+  fill: var(--pk-body);
+}
+.pk-side {
+  fill: var(--vm-shade);
+  fill-opacity: 0.3;
+}
+.pk-top {
+  fill: var(--vm-shine);
+  fill-opacity: 0.22;
+}
+.pk-shade {
+  fill: var(--vm-shade);
+  fill-opacity: 0.14;
+}
+.pk-ribs,
+.pk-crease,
+.pk-band {
+  fill: none;
+  stroke: var(--vm-shade);
+  stroke-opacity: 0.2;
+  stroke-width: 0.7;
+}
+.pk-band {
+  stroke: var(--pk-accent);
+  stroke-opacity: 0.9;
+  stroke-width: 1.4;
+}
+.pk-hole {
+  fill: var(--vm-shade);
+  fill-opacity: 0.45;
+}
+
+.pk-pattern {
+  fill: none;
+  stroke: var(--pk-accent);
+  stroke-width: 0.8;
+  stroke-opacity: 0.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.pk-pattern--stripes {
+  stroke-width: 2.6;
+  stroke-opacity: 0.5;
+  stroke-linecap: butt;
+}
+.pk-pattern--dots {
+  stroke-width: 1.9;
+}
+.pk-pattern--plot {
+  stroke-width: 1.5;
+  stroke-opacity: 0.85;
+}
+.pk-pattern--waves,
+.pk-pattern--rings {
+  stroke-width: 1.1;
+}
+
+/* Can */
+.pk-metal {
+  fill: url(#pk-metal);
+  stroke: var(--vm-pack-steel-lo);
+  stroke-width: 0.6;
+}
+.pk-metal-in {
+  fill: var(--vm-shade);
+  fill-opacity: 0.1;
+  stroke: var(--vm-shine);
+  stroke-opacity: 0.6;
+  stroke-width: 0.5;
+}
+.pk-tab {
+  fill: var(--vm-pack-steel);
+  stroke: var(--vm-pack-steel-lo);
+  stroke-width: 0.6;
+}
+.pk-rim {
+  fill: none;
+  stroke: var(--vm-shade);
+  stroke-opacity: 0.25;
+  stroke-width: 1.6;
+}
+
+/* Jar */
+.pk-glass {
+  fill: var(--pk-body);
+  fill-opacity: 0.55;
+}
+.pk-lid {
+  fill: var(--pk-ink);
+}
+.pk-lid-ribs {
+  stroke: var(--pk-body);
+  stroke-opacity: 0.35;
+  stroke-width: 0.8;
+}
+.pk-air {
+  fill: var(--vm-shine);
+  fill-opacity: 0.3;
+}
+.pk-label {
+  fill: var(--pk-ink);
+}
+.pk--jar .pk-pattern {
+  stroke-opacity: 0.4;
+}
+
+/* Blister card */
+.pk-bubble {
+  fill: var(--vm-shine);
+  fill-opacity: 0.28;
+  stroke: var(--vm-shine);
+  stroke-opacity: 0.75;
+  stroke-width: 0.8;
+}
+.pk-part rect {
+  fill: var(--pk-accent);
+}
+.pk-part path {
+  fill: none;
+  stroke: var(--pk-ink);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-opacity: 0.8;
+}
+.pk-glint {
+  fill: none;
+  stroke: var(--vm-shine);
+  stroke-opacity: 0.9;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+}
+
+/* Print */
+.pk-kind {
+  font-family: var(--font-mono);
+  font-size: 5.4px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  fill: var(--pk-accent);
+}
+.pk-title {
+  font-family: var(--font-sans);
+  font-weight: 760;
+  letter-spacing: -0.02em;
+  fill: var(--pk-ink);
+}
+.pk--jar .pk-kind {
+  fill: var(--pk-body);
+  fill-opacity: 0.8;
+}
+.pk--jar .pk-title {
+  fill: var(--pk-body);
+}
+.pk--jar.pk--navy .pk-kind,
+.pk--jar.pk--cobalt .pk-kind {
+  fill: var(--pk-body);
+}
+.pk--jar 
+/* Verdict seal: a paper sticker with the membership glyph. */
+.pk-seal-shadow {
+  fill: var(--vm-shade);
+  fill-opacity: 0.22;
+}
+.pk-seal-disc {
+  fill: var(--vm-pack-paper);
+}
+.pk-seal-ring {
+  fill: none;
+  stroke: var(--pk-verdict);
+  stroke-width: 0.9;
+}
+.pk-seal-glyph {
+  font-family: var(--font-math);
+  fill: var(--pk-verdict);
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+.pk[data-verdict="keep"] {
+  --pk-verdict: var(--vm-pack-keep);
+}
+.pk[data-verdict="maybe"] {
+  --pk-verdict: var(--vm-pack-maybe);
+}
+.pk[data-verdict="drop"] {
+  --pk-verdict: var(--vm-pack-drop);
+}

@@ -1,0 +1,158 @@
+---
+/**
+ * The snack machine: the latest snacks as packages behind glass, three to a shelf.
+ * Every product is a plain link to its snack page, so the machine works with no JavaScript.
+ * The script below only adds the show: coil, drop, tray, then the page opens.
+ */
+import "@/styles/machine.css";
+import Logo from "@/components/site/Logo.astro";
+import { localePath, useTranslations, type Locale } from "@/i18n";
+import { MACHINE_SLOTS, slotCode, type ShelvedSnack } from "@/lib/content";
+import { formatDayMonth } from "@/lib/format";
+import { VERDICT_GLYPHS } from "@/lib/snackPack";
+
+import Coil from "./Coil.astro";
+import SnackPack from "./SnackPack.astro";
+import SnackPackDefs from "./SnackPackDefs.astro";
+
+interface Props {
+  /** Newest first; only the first nine are stocked. */
+  items: ShelvedSnack[];
+  locale: Locale;
+}
+const { items, locale } = Astro.props;
+const t = useTranslations(locale);
+const stocked = items.slice(0, MACHINE_SLOTS);
+const slots = Array.from({ length: MACHINE_SLOTS }, (_, i) => ({ code: slotCode(i), item: stocked[i] }));
+const newest = stocked[0];
+const idleNote = newest
+  ? t("snacks.machine.restocked", { date: formatDayMonth(newest.snack.data.date, locale) })
+  : t("snacks.machine.empty");
+const KEYS = ["A", "B", "C", "1", "2", "3"];
+const VERDICTS = ["keep", "maybe", "drop"] as const;
+---
+
+<SnackPackDefs />
+<section class="vm" aria-label={t("snacks.machine.label", { n: stocked.length })} data-vm data-pagefind-ignore>
+  <div class="vm-cab">
+    <div class="vm-crown" aria-hidden="true">
+      <div class="vm-sign">
+        <Logo markOnly class="vm-sign-mark" />
+        <span class="vm-sign-word">{t("snacks.title")}</span>
+        <span class="vm-sign-note">
+          {newest && <span>{t("snacks.number", { n: newest.number })}</span>}
+          <span>{t("snacks.machine.sign")}</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="vm-win">
+      <span class="vm-lamp" aria-hidden="true"></span>
+      <ol class="vm-slots">
+        {slots.map(({ code, item }) => (
+          <li class="vm-slot">
+            {item ? (
+              <a
+                class="vm-item"
+                href={localePath(locale, `/snacks/${item.slug}`)}
+                aria-label={`${t("snacks.item", {
+                  code,
+                  title: item.snack.data.title,
+                  verdict: t(`verdict.${item.snack.data.verdict}`),
+                })} ${item.snack.data.take ?? ""}`.trim()}
+                data-code={code}
+                data-verdict={item.snack.data.verdict}
+                data-readout={`${VERDICT_GLYPHS[item.snack.data.verdict]} ${t(`verdict.${item.snack.data.verdict}`)}`}
+                data-take={item.snack.data.take || item.snack.data.title}
+              >
+                <span class="vm-bay">
+                  <Coil part="back" />
+                  <span class="vm-pack">
+                    <SnackPack snack={item.snack} locale={locale} />
+                  </span>
+                  <Coil part="front" />
+                </span>
+                <span class="vm-rail">
+                  <span class="vm-tag">
+                    <span class="vm-tag-code">{code}</span>
+                    <span class="vm-tag-glyph" data-verdict={item.snack.data.verdict}>
+                      {VERDICT_GLYPHS[item.snack.data.verdict]}
+                    </span>
+                    <span class="vm-tag-date">{formatDayMonth(item.snack.data.date, locale)}</span>
+                  </span>
+                </span>
+              </a>
+            ) : (
+              <span class="vm-item vm-item--empty">
+                <span class="vm-bay">
+                  <Coil part="back" />
+                </span>
+                <span class="vm-rail">
+                  <span class="vm-tag">
+                    <span class="vm-tag-code">{code}</span>
+                    <span class="vm-tag-date">{t("snacks.machine.empty")}</span>
+                  </span>
+                </span>
+              </span>
+            )}
+          </li>
+        ))}
+      </ol>
+    </div>
+    <div class="vm-glass" aria-hidden="true"></div>
+
+    <!-- The panel repeats what the links already say, so it stays out of the accessibility tree and the tab order. -->
+    <div class="vm-panel" aria-hidden="true">
+      <div
+        class="vm-display"
+        data-vm-display
+        data-idle={t("snacks.machine.idle")}
+        data-idle-note={idleNote}
+        data-vending={t("snacks.machine.vending", { code: "{code}" })}
+        data-empty={t("snacks.machine.empty")}
+      >
+        <span class="vm-display-head" data-vm-head>
+          {t("snacks.machine.idle")}
+        </span>
+        <span class="vm-display-body" data-vm-body>
+          {idleNote}
+        </span>
+      </div>
+      <div class="vm-keys">
+        {KEYS.map((key) => (
+          <button type="button" class="vm-key" tabindex="-1" data-vm-key={key} disabled>
+            {key}
+          </button>
+        ))}
+      </div>
+      <div class="vm-extras">
+        <span class="vm-coin"></span>
+        <span class="vm-sticker">
+          {VERDICTS.map((verdict) => (
+            <span data-verdict={verdict}>
+              <i>{VERDICT_GLYPHS[verdict]}</i>
+              {t(`verdict.${verdict}`)}
+            </span>
+          ))}
+        </span>
+        <span class="vm-grille"></span>
+      </div>
+    </div>
+
+    <div class="vm-tray" aria-hidden="true"></div>
+    <div class="vm-fall" aria-hidden="true" data-vm-fall></div>
+    <div class="vm-flapwrap" aria-hidden="true">
+      <div class="vm-flap" data-vm-flap>
+        <svg viewBox="0 0 30 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <path d="M5 3l10 6 10-6M5 11l10 6 10-6" stroke-linejoin="round"></path>
+        </svg>
+      </div>
+      <span class="vm-hinge"></span>
+    </div>
+  </div>
+  <div class="vm-feet" aria-hidden="true"></div>
+</section>
+
+<script>
+  import "@/scripts/vending";
+</script>
