@@ -1,0 +1,885 @@
+/*
+ * The Commits section: a git history on /commits and a pull-request page for each entry.
+ * Chrome is small, mono and muted on purpose, so the review text stays the loudest thing on the page.
+ * Every animation starts from the finished state, so reduced motion and no-JS get the still version.
+ */
+@layer components {
+  .cm-history,
+  .pr {
+    --cm-line: color-mix(in oklch, var(--color-fg) 17%, var(--color-bg));
+    --cm-main-x: 10px;
+    --cm-rail: 40px;
+  }
+  [data-verdict="keep"] {
+    --cm-tone: var(--color-keep);
+  }
+  [data-verdict="maybe"] {
+    --cm-tone: var(--color-maybe);
+  }
+  [data-verdict="drop"] {
+    --cm-tone: var(--color-drop);
+  }
+
+  /* ---------- State pill and icon ---------- */
+  .cm-icon {
+    width: 1em;
+    height: 1em;
+    flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .cm-icon .solid {
+    fill: currentColor;
+    stroke: none;
+  }
+  .cm-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    padding: 0.18em 0.6em 0.18em 0.45em;
+    border-radius: 999px;
+    background: color-mix(in oklch, var(--cm-tone) 13%, transparent);
+    color: var(--cm-tone);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.5;
+    white-space: nowrap;
+  }
+  .cm-pill[data-variant="solid"] {
+    padding: 0.36em 0.85em 0.36em 0.65em;
+    background: var(--cm-tone);
+    color: var(--color-bg);
+    font-size: 0.8rem;
+  }
+
+  /* ---------- Activity grid ---------- */
+  .cm-activity {
+    --off: 27;
+    --cols: 26;
+  }
+  @media (min-width: 40rem) {
+    .cm-activity {
+      --off: 0;
+      --cols: 53;
+    }
+  }
+  .cm-activity-grid,
+  .cm-activity-months {
+    display: grid;
+    grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+    gap: 2px;
+  }
+  .cm-activity-grid {
+    grid-template-rows: repeat(7, auto);
+  }
+  .cm-activity-months {
+    margin-bottom: 0.3rem;
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    line-height: 1;
+    color: var(--color-muted);
+  }
+  .cm-activity-months span {
+    grid-column: calc(var(--c) - var(--off)) / span 4;
+    grid-row: 1;
+    white-space: nowrap;
+  }
+  .cm-cell {
+    grid-column: calc(var(--c) - var(--off));
+    grid-row: var(--r);
+    aspect-ratio: 1;
+    border-radius: 2.5px;
+    background: var(--color-surface);
+    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--color-fg) 5%, transparent);
+  }
+  @media (max-width: 39.99rem) {
+    .cm-activity .is-far {
+      display: none;
+    }
+  }
+  a.cm-cell {
+    position: relative;
+    background: var(--cm-tone);
+    box-shadow: none;
+    transition: scale var(--duration-fast) var(--ease-out-soft);
+  }
+  /* A finger-sized hit area around a 10px square. */
+  a.cm-cell::after {
+    content: "";
+    position: absolute;
+    inset: -8px;
+  }
+  a.cm-cell:hover,
+  a.cm-cell:focus-visible {
+    scale: 1.5;
+    z-index: 1;
+  }
+
+  /* ---------- History ---------- */
+  .cm-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.15rem 0.25rem;
+    margin-inline: -0.5rem;
+  }
+  .cm-filter label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    min-height: 2.75rem;
+    padding-inline: 0.5rem;
+    border-radius: 0.4rem;
+    color: var(--color-muted);
+    font-size: 0.86rem;
+    cursor: pointer;
+    transition: color var(--duration-fast);
+  }
+  .cm-filter label:hover {
+    color: var(--color-fg);
+  }
+  .cm-filter label:has(:checked) {
+    color: var(--color-fg);
+    font-weight: 650;
+  }
+  .cm-filter label:has(:focus-visible) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: -2px;
+  }
+  .cm-filter .cm-icon {
+    color: var(--cm-tone);
+  }
+  .cm-filter .n {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--color-muted);
+  }
+  /* The filter needs no JavaScript: the checked radio hides the other rows and any month left empty. */
+  .cm-history:has(input[value="keep"]:checked) .cm-row:not([data-verdict="keep"]),
+  .cm-history:has(input[value="maybe"]:checked) .cm-row:not([data-verdict="maybe"]),
+  .cm-history:has(input[value="drop"]:checked) .cm-row:not([data-verdict="drop"]),
+  .cm-history:has(input[value="keep"]:checked) .cm-group:not(:has(.cm-row[data-verdict="keep"])),
+  .cm-history:has(input[value="maybe"]:checked) .cm-group:not(:has(.cm-row[data-verdict="maybe"])),
+  .cm-history:has(input[value="drop"]:checked) .cm-group:not(:has(.cm-row[data-verdict="drop"])) {
+    display: none;
+  }
+
+  /* The trunk: one line down the left edge, drawn piece by piece by each block. */
+  .cm-head,
+  .cm-month,
+  .cm-row,
+  .cm-root {
+    position: relative;
+    padding-left: var(--cm-rail);
+  }
+  .cm-head::before,
+  .cm-month::before,
+  .cm-row::before,
+  .cm-root::before {
+    content: "";
+    position: absolute;
+    left: var(--cm-main-x);
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--cm-line);
+  }
+  .cm-head::before {
+    top: 50%;
+  }
+  .cm-root::before {
+    bottom: 50%;
+  }
+  /* Rings on the trunk: HEAD at the top, a tick per month, the first commit at the bottom. */
+  .cm-head::after,
+  .cm-month::after,
+  .cm-root::after {
+    content: "";
+    position: absolute;
+    left: calc(var(--cm-main-x) + 1px);
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    translate: -50% -50%;
+    border: 2px solid var(--cm-line);
+    border-radius: 50%;
+    background: var(--color-bg);
+  }
+  .cm-head::after {
+    width: 12px;
+    height: 12px;
+    border-color: var(--color-fg);
+    box-shadow: 0 0 0 3px var(--color-mark-strong);
+  }
+  .cm-root::after {
+    border-color: var(--color-muted);
+    background: var(--color-muted);
+  }
+  .cm-head,
+  .cm-root {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 2.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    color: var(--color-muted);
+  }
+  .cm-chip {
+    padding: 0.12em 0.5em;
+    border: 1px solid var(--color-border);
+    border-radius: 0.35rem;
+    background: var(--color-surface);
+    color: var(--color-fg);
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    font-weight: 500;
+  }
+  .cm-month {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: 1.1rem 0.35rem;
+  }
+  .cm-month::after {
+    top: calc(50% + 0.4rem);
+  }
+
+  .cm-row {
+    min-height: 78px;
+  }
+  /* On the home page the history is an excerpt, so the trunk fades out instead of ending. */
+  .cm-excerpt .cm-row:last-child::before {
+    background: linear-gradient(var(--cm-line) 40%, transparent);
+  }
+  .cm-branch {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 40px;
+    height: 78px;
+    overflow: visible;
+    fill: none;
+    stroke: var(--cm-tone);
+    stroke-width: 2;
+    stroke-linecap: round;
+    pointer-events: none;
+  }
+  .cm-branch .dashed {
+    stroke-dasharray: 1.5 5;
+  }
+  .cm-branch .node {
+    fill: var(--cm-tone);
+    stroke: var(--color-bg);
+    stroke-width: 2.5;
+    transform-box: fill-box;
+    transform-origin: center;
+    transition: scale var(--duration-base) var(--ease-spring);
+  }
+  .cm-branch .node.hollow {
+    fill: var(--color-bg);
+    stroke: var(--cm-tone);
+    stroke-width: 2;
+  }
+  .cm-branch .join {
+    fill: var(--cm-tone);
+    stroke: none;
+  }
+  .cm-link {
+    display: block;
+    margin-right: -0.75rem;
+    padding: 0.85rem 0.75rem 0.9rem 0.5rem;
+    border-radius: 0.5rem;
+    transition: background-color var(--duration-fast);
+  }
+  .cm-link:hover,
+  .cm-link:focus-visible {
+    background: var(--color-surface);
+  }
+  .cm-row:has(.cm-link:hover) .node,
+  .cm-row:has(.cm-link:focus-visible) .node {
+    scale: 1.25;
+  }
+  .cm-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+  .cm-title {
+    font-size: 1.08rem;
+    font-weight: 700;
+    line-height: 1.45;
+    letter-spacing: -0.012em;
+  }
+  .cm-take {
+    display: block;
+    margin-top: 0.1rem;
+    color: var(--color-muted);
+    font-size: 0.98rem;
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
+  .cm-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 0.55em;
+    margin-top: 0.4rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--color-muted);
+  }
+  .cm-meta > * {
+    white-space: nowrap;
+  }
+  .cm-meta > :not(:last-child)::after {
+    content: "·";
+    margin-left: 0.55em;
+  }
+  .cm-sha {
+    color: var(--color-accent);
+  }
+
+  /* ---------- Pull request page ---------- */
+  .pr-crumb {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    color: var(--color-muted);
+  }
+  .pr-title {
+    margin-top: 0.6rem;
+    font-size: 1.9rem;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+  .pr-num {
+    color: var(--color-muted);
+    font-weight: 300;
+    letter-spacing: 0;
+  }
+  .pr-take {
+    margin-top: 0.7rem;
+    color: var(--color-muted);
+    font-size: 1.1rem;
+    line-height: 1.55;
+    text-wrap: pretty;
+  }
+  .pr-status {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.7rem;
+    margin-top: 1.1rem;
+    color: var(--color-muted);
+    font-size: 0.86rem;
+    line-height: 1.5;
+  }
+  .pr-status b,
+  .pr-event b,
+  .pr-comment-head b {
+    color: var(--color-fg);
+    font-weight: 650;
+  }
+  .pr code.ref {
+    padding: 0.1em 0.42em;
+    border-radius: 0.3rem;
+    background: var(--color-accent-soft);
+    color: var(--color-accent);
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    white-space: nowrap;
+  }
+  .pr-tabs {
+    display: flex;
+    gap: 0.25rem;
+    margin-top: 1.1rem;
+    border-bottom: 1px solid var(--color-border);
+    font-size: 0.9rem;
+  }
+  .pr-tabs a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45em;
+    min-height: 2.75rem;
+    margin-bottom: -1px;
+    padding-inline: 0.7rem;
+    border-bottom: 2px solid transparent;
+    color: var(--color-muted);
+    transition:
+      color var(--duration-fast),
+      border-color var(--duration-fast);
+  }
+  .pr-tabs a:first-child {
+    margin-left: -0.7rem;
+  }
+  .pr-tabs a:hover {
+    color: var(--color-fg);
+    border-bottom-color: var(--color-border);
+  }
+  .pr-tabs a[aria-current] {
+    border-bottom-color: var(--color-logo-dot);
+    color: var(--color-fg);
+    font-weight: 650;
+  }
+  .pr-count {
+    padding: 0.05em 0.5em;
+    border-radius: 999px;
+    background: var(--color-surface);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 500;
+  }
+
+  /* The conversation: one thread line behind everything, boxes sit on top of it. */
+  .pr-timeline {
+    --thread-x: 15px;
+    position: relative;
+    isolation: isolate;
+    margin-top: 1.5rem;
+  }
+  .pr-timeline::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    left: var(--thread-x);
+    top: 1rem;
+    bottom: 1rem;
+    width: 2px;
+    background: var(--cm-line);
+  }
+  .pr-avatar {
+    display: none;
+  }
+  .pr-box {
+    border: 1px solid var(--color-border);
+    border-radius: 0.6rem;
+    background: var(--color-bg);
+    scroll-margin-top: 1rem;
+  }
+  .pr-comment-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 0.9rem;
+    border-bottom: 1px solid var(--color-border);
+    border-radius: 0.6rem 0.6rem 0 0;
+    background: var(--color-surface);
+    color: var(--color-muted);
+    font-size: 0.82rem;
+    line-height: 1.4;
+  }
+  .pr-comment-head .who {
+    flex: 1;
+    min-width: 0;
+  }
+  .pr-mini {
+    width: 1.35rem;
+    height: 1.35rem;
+    flex: none;
+    color: var(--color-fg);
+  }
+  .pr-label {
+    padding: 0.08em 0.6em;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--color-bg);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    white-space: nowrap;
+  }
+  .pr-body {
+    padding: 0.4rem 0.95rem 0.6rem;
+  }
+  .pr-body > .prose-site > :first-child {
+    margin-top: 0.75em;
+  }
+  .pr-body > .prose-site > :last-child {
+    margin-bottom: 0.75em;
+  }
+  .pr-body .prose-site :where(img) {
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+  }
+
+  @media (min-width: 40rem) {
+    .pr-title {
+      font-size: 2.4rem;
+    }
+    .pr-timeline {
+      --thread-x: 19px;
+    }
+    .pr-comment {
+      display: grid;
+      grid-template-columns: 40px minmax(0, 1fr);
+      gap: 0.9rem;
+    }
+    .pr-avatar {
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--color-border);
+      border-radius: 50%;
+      background: var(--color-bg);
+      color: var(--color-fg);
+    }
+    .pr-avatar svg {
+      width: 26px;
+      height: 26px;
+    }
+    .pr-mini {
+      display: none;
+    }
+    .pr-body {
+      padding: 0.5rem 1.25rem 0.75rem;
+    }
+    .pr-comment-head {
+      position: relative;
+      padding-inline: 1.25rem;
+    }
+    /* The speech-bubble notch pointing at the avatar. */
+    .pr-comment-head::before {
+      content: "";
+      position: absolute;
+      left: -6px;
+      top: 14px;
+      width: 10px;
+      height: 10px;
+      rotate: 45deg;
+      border: solid var(--color-border);
+      border-width: 0 0 1px 1px;
+      background: var(--color-surface);
+    }
+    .pr-files,
+    .pr-merge {
+      margin-left: calc(40px + 0.9rem);
+    }
+  }
+
+  /* Diff: pros are added lines, cons are removed lines. */
+  .pr-files {
+    margin-top: 1.25rem;
+    overflow: hidden;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    line-height: 1.55;
+  }
+  .pr-files-head {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.9rem;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-surface);
+  }
+  .pr-files-head .name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 500;
+  }
+  .pr-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    font-weight: 600;
+  }
+  .pr-stat .add {
+    color: var(--color-keep);
+  }
+  .pr-stat .del {
+    color: var(--color-drop);
+  }
+  .pr-squares {
+    display: inline-flex;
+    gap: 2px;
+  }
+  .pr-squares i {
+    width: 8px;
+    height: 8px;
+    border-radius: 1.5px;
+    background: var(--color-border);
+  }
+  .pr-squares .add {
+    background: var(--color-keep);
+  }
+  .pr-squares .del {
+    background: var(--color-drop);
+  }
+  .pr-hunk {
+    padding: 0.25rem 0.9rem;
+    background: var(--color-accent-soft);
+    color: var(--color-muted);
+    font-size: 0.74rem;
+  }
+  .pr-lines li {
+    display: grid;
+    grid-template-columns: 2.1rem 1.1rem minmax(0, 1fr);
+    padding-right: 0.9rem;
+    --tone: var(--color-keep);
+    background: color-mix(in oklch, var(--tone) 11%, var(--color-bg));
+  }
+  .pr-lines li.del {
+    --tone: var(--color-drop);
+  }
+  .pr-lines .no {
+    padding: 0.28rem 0.5rem 0.28rem 0;
+    background: color-mix(in oklch, var(--tone) 20%, var(--color-bg));
+    color: var(--color-muted);
+    font-size: 0.7rem;
+    line-height: 1.8;
+    text-align: right;
+    user-select: none;
+  }
+  .pr-lines .sign {
+    padding-block: 0.28rem;
+    color: var(--tone);
+    font-weight: 700;
+    text-align: center;
+    user-select: none;
+  }
+  .pr-lines .text {
+    padding-block: 0.28rem;
+    overflow-wrap: anywhere;
+  }
+
+  /* A timeline event: a badge on the thread line and one sentence. */
+  .pr-event {
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr);
+    align-items: center;
+    gap: 0.6rem;
+    padding-block: 1.1rem;
+    color: var(--color-muted);
+    font-size: 0.84rem;
+    line-height: 1.5;
+  }
+  .pr-badge {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border: 2px solid var(--color-bg);
+    border-radius: 50%;
+    background: color-mix(in oklch, var(--cm-tone) 16%, var(--color-bg));
+    color: var(--cm-tone);
+    font-size: 1rem;
+  }
+  @media (min-width: 40rem) {
+    .pr-event {
+      grid-template-columns: 40px minmax(0, 1fr);
+      gap: 0.9rem;
+    }
+    .pr-badge {
+      margin-inline: 4px;
+    }
+  }
+
+  /* The verdict, as the merge box at the end of a pull request. */
+  .pr-merge {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 0.25rem 0.85rem;
+    padding: 0.9rem;
+    border-color: color-mix(in oklch, var(--cm-tone) 55%, var(--color-border));
+  }
+  .pr-merge-tile {
+    display: grid;
+    place-items: center;
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 0.55rem;
+    background: var(--cm-tone);
+    color: var(--color-bg);
+    font-size: 1.35rem;
+  }
+  .pr-merge-title {
+    font-weight: 700;
+    line-height: 1.3;
+  }
+  .pr-merge-text {
+    color: var(--color-muted);
+    font-size: 0.92rem;
+    line-height: 1.4;
+  }
+  .pr-visit {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4em;
+    min-height: 2.75rem;
+    margin-top: 0.6rem;
+    padding-inline: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    background: var(--color-surface);
+    font-size: 0.92rem;
+    font-weight: 600;
+    transition:
+      border-color var(--duration-fast),
+      background-color var(--duration-fast);
+  }
+  .pr-visit:hover {
+    border-color: var(--color-fg);
+    background: var(--color-bg);
+  }
+  @media (min-width: 40rem) {
+    .pr-merge {
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      padding: 1rem 1.1rem;
+    }
+    .pr-visit {
+      grid-column: 3;
+      grid-row: 1;
+      margin-top: 0;
+    }
+  }
+
+  .pr-nav {
+    display: grid;
+    gap: 0.5rem;
+    margin-top: 2.5rem;
+  }
+  @media (min-width: 40rem) {
+    .pr-nav {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .pr-nav a {
+    display: block;
+    padding: 0.7rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    transition: background-color var(--duration-fast);
+  }
+  .pr-nav a:hover {
+    background: var(--color-surface);
+  }
+  .pr-nav .dir {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    color: var(--color-muted);
+  }
+  .pr-nav .newer {
+    text-align: right;
+  }
+  .pr-nav .newer .dir {
+    justify-content: flex-end;
+  }
+  /* Keyboard hints only where there is a keyboard. */
+  .pr-nav .kbd,
+  .pr-crumb .kbd {
+    display: none;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .pr-nav .kbd,
+    .pr-crumb .kbd {
+      display: inline-block;
+    }
+  }
+
+  /* ---------- Motion ---------- */
+  @media (prefers-reduced-motion: no-preference) {
+    /* History: each branch draws out of the trunk, then its commit lands. */
+    .cm-branch .draw {
+      stroke-dasharray: 1;
+      animation: cm-draw 620ms var(--ease-out-soft) backwards;
+      animation-delay: calc(min(var(--i), 8) * 55ms + 80ms);
+    }
+    .cm-branch .dashed,
+    .cm-branch .join {
+      animation: cm-fade 300ms ease-out backwards;
+      animation-delay: calc(min(var(--i), 8) * 55ms + 420ms);
+    }
+    .cm-branch .node {
+      animation: cm-pop var(--duration-spring) var(--ease-spring) backwards;
+      animation-delay: calc(min(var(--i), 8) * 55ms + 300ms);
+    }
+    .cm-branch .cross {
+      animation: cm-fade 200ms ease-out backwards;
+      animation-delay: calc(min(var(--i), 8) * 55ms + 520ms);
+    }
+    /* Pull request: the state lands once, after the page has arrived. */
+    .cm-pill[data-variant="solid"] {
+      animation: cm-pop var(--duration-spring) var(--ease-spring) 260ms backwards;
+    }
+    /* The verdict box settles in as it scrolls into view, where the browser can link motion to scroll. */
+    @supports (animation-timeline: view()) {
+      .pr-merge {
+        animation: cm-settle linear both;
+        animation-timeline: view();
+        animation-range: entry 0% entry 90%;
+      }
+      .pr-merge-tile {
+        animation: cm-tile linear both;
+        animation-timeline: view();
+        animation-range: entry 20% cover 28%;
+      }
+    }
+  }
+}
+
+@keyframes cm-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+@keyframes cm-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes cm-pop {
+  from {
+    scale: 0;
+    opacity: 0;
+  }
+}
+@keyframes cm-settle {
+  from {
+    opacity: 0.35;
+    translate: 0 14px;
+  }
+}
+@keyframes cm-tile {
+  from {
+    scale: 0.6;
+    rotate: -12deg;
+  }
+}
+/* View transitions between the history and a pull request: the page rises in like a panel. */
+@keyframes cm-panel-in {
+  from {
+    opacity: 0;
+    translate: 0 28px;
+  }
+}
+@keyframes cm-panel-out {
+  to {
+    opacity: 0;
+    translate: 0 28px;
+  }
+}
+@keyframes cm-fade-out {
+  to {
+    opacity: 0;
+  }
+}

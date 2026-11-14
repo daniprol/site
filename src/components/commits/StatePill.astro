@@ -1,0 +1,20 @@
+---
+/** Merged / Open / Reverted, as a pill. "solid" is the big one at the top of a pull request. */
+import { useTranslations, type Locale } from "@/i18n";
+import type { Verdict } from "@/lib/commits";
+
+import StateIcon from "./StateIcon.astro";
+
+interface Props {
+  verdict: Verdict;
+  locale: Locale;
+  variant?: "soft" | "solid";
+}
+const { verdict, locale, variant = "soft" } = Astro.props;
+const t = useTranslations(locale);
+---
+
+<span class="cm-pill" data-verdict={verdict} data-variant={variant}>
+  <StateIcon verdict={verdict} />
+  {t(`commits.state.${verdict}`)}
+</span>

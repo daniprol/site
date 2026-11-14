@@ -1,0 +1,76 @@
+---
+/**
+ * The full history on /commits: a filter by state, then the commits grouped by month along one trunk.
+ * The filter is radio buttons plus CSS :has(), so it works without JavaScript.
+ */
+import { useTranslations, type Locale } from "@/i18n";
+import { BASE_BRANCH, VERDICTS, countByVerdict, type Commit } from "@/lib/commits";
+import { formatMonth, isoDate } from "@/lib/format";
+
+import CommitRow from "./CommitRow.astro";
+import StateIcon from "./StateIcon.astro";
+
+interface Props {
+  items: Commit[];
+  locale: Locale;
+}
+const { items, locale } = Astro.props;
+const t = useTranslations(locale);
+const counts = countByVerdict(items);
+
+const groups: { key: string; label: string; commits: { commit: Commit; index: number }[] }[] = [];
+items.forEach((commit, index) => {
+  const key = isoDate(commit.snack.data.date).slice(0, 7);
+  let group = groups.at(-1);
+  if (group?.key !== key) {
+    group = { key, label: formatMonth(commit.snack.data.date, locale), commits: [] };
+    groups.push(group);
+  }
+  group.commits.push({ commit, index });
+});
+const first = items.at(-1);
+---
+
+<div class="cm-history" data-pagefind-ignore>
+  <fieldset class="cm-filter">
+    <legend class="sr-only">{t("commits.filter")}</legend>
+    <label>
+      <input class="sr-only" type="radio" name="cm-state" value="all" checked />
+      {t("commits.all")}
+      <span class="n">{items.length}</span>
+    </label>
+    {VERDICTS.map((verdict) => (
+      <label data-verdict={verdict}>
+        <input class="sr-only" type="radio" name="cm-state" value={verdict} />
+        <StateIcon verdict={verdict} />
+        {t(`commits.state.${verdict}`)}
+        <span class="n">{counts[verdict]}</span>
+      </label>
+    ))}
+  </fieldset>
+
+  <p class="cm-head mt-3">
+    <span class="cm-chip">{BASE_BRANCH}</span>
+    <span>HEAD</span>
+  </p>
+  {groups.map((group) => (
+    <section class="cm-group">
+      <h2 class="cm-month">
+        <span class="eyebrow">{group.label}</span>
+        <span class="font-mono text-xs font-normal text-muted">{group.commits.length}</span>
+      </h2>
+      <ol>
+        {group.commits.map(({ commit, index }) => (
+          <CommitRow commit={commit} locale={locale} index={index} />
+        ))}
+      </ol>
+    </section>
+  ))}
+  {first && (
+    <p class="cm-root">
+      <span>git init</span>
+      <span aria-hidden="true">·</span>
+      <time datetime={isoDate(first.snack.data.date)}>{formatMonth(first.snack.data.date, locale)}</time>
+    </p>
+  )}
+</div>

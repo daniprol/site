@@ -1,0 +1,59 @@
+---
+/** Pros and cons as a diff of the toolbox: pros are added lines, cons are removed lines. */
+import { useTranslations, type Locale } from "@/i18n";
+
+interface Props {
+  file: string;
+  hunk: string;
+  pros: string[];
+  cons: string[];
+  locale: Locale;
+}
+const { file, hunk, pros, cons, locale } = Astro.props;
+const t = useTranslations(locale);
+const total = pros.length + cons.length;
+const SQUARES = 5;
+const added = Math.max(
+  pros.length ? 1 : 0,
+  Math.min(SQUARES - (cons.length ? 1 : 0), Math.round((SQUARES * pros.length) / total)),
+);
+const lines = [
+  ...pros.map((text) => ({ text, kind: "add" as const })),
+  ...cons.map((text) => ({ text, kind: "del" as const })),
+];
+---
+
+<section id="files" class="pr-box pr-files" aria-label={t("commits.tab.files")}>
+  <header class="pr-files-head">
+    <span class="name">{file}</span>
+    <span class="pr-stat">
+      <span class="add">
+        <span aria-hidden="true">+{pros.length}</span>
+        <span class="sr-only">{t("commits.additions", { n: pros.length })}</span>
+      </span>
+      <span class="del">
+        <span aria-hidden="true">−{cons.length}</span>
+        <span class="sr-only">{t("commits.deletions", { n: cons.length })}</span>
+      </span>
+      <span class="pr-squares" aria-hidden="true">
+        {Array.from({ length: SQUARES }, (_, i) => (
+          <i class={i < added ? "add" : "del"} />
+        ))}
+      </span>
+    </span>
+  </header>
+  <p class="pr-hunk" aria-hidden="true">
+    @@ {hunk} @@
+  </p>
+  <ol class="pr-lines" lang="en">
+    {lines.map(({ text, kind }, i) => (
+      <li class={kind}>
+        <span class="no" aria-hidden="true">
+          {i + 1}
+        </span>
+        <span class="sign">{kind === "add" ? "+" : "−"}</span>
+        <span class="text">{text}</span>
+      </li>
+    ))}
+  </ol>
+</section>

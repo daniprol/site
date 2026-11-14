@@ -1,0 +1,22 @@
+---
+import ActivityGrid from "@/components/commits/ActivityGrid.astro";
+import CommitHistory from "@/components/commits/CommitHistory.astro";
+import PageHeader from "@/components/ui/PageHeader.astro";
+import { localeParams, useTranslations } from "@/i18n";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getCommits } from "@/lib/commits";
+
+export const getStaticPaths = localeParams;
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const commits = await getCommits();
+---
+
+<BaseLayout locale={locale} title={t("commits.title")} description={t("commits.description")}>
+  <PageHeader title={t("commits.title")} description={t("commits.description")} />
+  <ActivityGrid items={commits} locale={locale} />
+  <div class="mt-7">
+    <CommitHistory items={commits} locale={locale} />
+  </div>
+</BaseLayout>

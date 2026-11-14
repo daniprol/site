@@ -1,0 +1,75 @@
+---
+/**
+ * A year of commits as a grid of days, one column per week. A day with a commit takes the colour
+ * of its state and links to it. Phones show the last 26 weeks, wider screens the full year.
+ */
+import { localePath, useTranslations, type Locale } from "@/i18n";
+import type { Commit } from "@/lib/commits";
+import { formatDate, formatMonthShort, isoDate } from "@/lib/format";
+
+interface Props {
+  items: Commit[];
+  locale: Locale;
+}
+const { items, locale } = Astro.props;
+const t = useTranslations(locale);
+
+const WEEKS = 53;
+const DAY = 86_400_000;
+/** Weeks hidden on phones; must match --off in commits.css. */
+const FAR_WEEKS = 27;
+
+const byDay = new Map(items.map((commit) => [isoDate(commit.snack.data.date), commit]));
+const today = new Date(isoDate(new Date()));
+// Monday of the current week, then back to the first column.
+const thisMonday = today.getTime() - ((today.getUTCDay() + 6) % 7) * DAY;
+const start = thisMonday - (WEEKS - 1) * 7 * DAY;
+
+const cells: { day: string; column: number; row: number; commit: Commit | undefined }[] = [];
+const months: { label: string; column: number }[] = [];
+for (let time = start; time <= today.getTime(); time += DAY) {
+  const index = Math.round((time - start) / DAY);
+  const date = new Date(time);
+  const column = Math.floor(index / 7) + 1;
+  cells.push({ day: isoDate(date), column, row: (index % 7) + 1, commit: byDay.get(isoDate(date)) });
+  // Label a month at the first week that starts inside it, leaving room for the label to fit.
+  if (index % 7 === 0 && date.getUTCDate() <= 7 && column <= WEEKS - 2) {
+    months.push({ label: formatMonthShort(date, locale), column });
+  }
+}
+const inRange = cells.filter((cell) => cell.commit).length;
+---
+
+<div class="cm-activity" data-pagefind-ignore>
+  <div class="cm-activity-months" aria-hidden="true">
+    {months.map(({ label, column }) => (
+      <span class:list={{ "is-far": column <= FAR_WEEKS }} style={`--c:${column}`}>
+        {label}
+      </span>
+    ))}
+  </div>
+  <div class="cm-activity-grid">
+    {cells.map(({ day, column, row, commit }) =>
+      commit ? (
+        <a
+          class:list={["cm-cell", { "is-far": column <= FAR_WEEKS }]}
+          style={`--c:${column};--r:${row}`}
+          data-verdict={commit.snack.data.verdict}
+          href={localePath(locale, `/commits/${commit.slug}`)}
+          title={`${commit.snack.data.title} · ${t(`commits.state.${commit.snack.data.verdict}`)} · ${formatDate(commit.snack.data.date, locale, "short")}`}
+        >
+          <span class="sr-only">
+            {commit.snack.data.title}, {t(`commits.state.${commit.snack.data.verdict}`)}, {day}
+          </span>
+        </a>
+      ) : (
+        <span
+          class:list={["cm-cell", { "is-far": column <= FAR_WEEKS }]}
+          style={`--c:${column};--r:${row}`}
+          aria-hidden="true"
+        />
+      ),
+    )}
+  </div>
+  <p class="mt-2 font-mono text-xs text-muted">{t("commits.activity", { n: inRange })}</p>
+</div>

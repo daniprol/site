@@ -25,7 +25,10 @@ const posts = defineCollection({
     }),
 });
 
-/** Snacks: short, informal first impressions of tools, apps and models. One file per entry. */
+/**
+ * Snacks: short, informal first impressions of tools, apps and models. One file per entry.
+ * The site shows them as "Commits" (/commits): keep = merged, maybe = open, drop = reverted.
+ */
 const snacks = defineCollection({
   loader: glob({ base: "./src/content/snacks", pattern: "**/*.{md,mdx}" }),
   schema: z.object({
@@ -33,6 +36,11 @@ const snacks = defineCollection({
     date: z.coerce.date(),
     kind: z.enum(["model", "app", "cli", "library", "service", "hardware"]),
     verdict: z.enum(["keep", "maybe", "drop"]),
+    /** The one-line opinion, shown as the commit message in the history. */
+    take: z.string().optional(),
+    /** Shown as the added (+) and removed (−) lines of the diff. */
+    pros: z.array(z.string()).default([]),
+    cons: z.array(z.string()).default([]),
     url: z.url().optional(),
     draft: z.boolean().default(false),
   }),

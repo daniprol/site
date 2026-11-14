@@ -29,7 +29,7 @@ const templates = {
   },
   snack: {
     path: join("src/content/snacks", `${today}-${slug}.md`),
-    body: `---\ntitle: ${title}\ndate: ${today}\nkind: app # model | app | cli | library | service | hardware\nverdict: maybe # keep | maybe | drop\nurl: https://\n---\n\n`,
+    body: `---\ntitle: ${title}\ndate: ${today}\nkind: app # model | app | cli | library | service | hardware\nverdict: maybe # keep (merged) | maybe (open) | drop (reverted)\ntake: TODO one line\npros: []\ncons: []\nurl: https://\n---\n\n`,
   },
   project: {
     path: join("src/content/projects", `${slug}.mdx`),

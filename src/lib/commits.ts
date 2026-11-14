@@ -1,0 +1,91 @@
+/**
+ * The "Commits" view of the snacks collection: every snack is a commit to the `toolbox` branch.
+ * keep = merged, maybe = still open on its branch, drop = reverted.
+ */
+import { getSnacks, type Snack } from "./content";
+
+export type Verdict = Snack["data"]["verdict"];
+export const VERDICTS = ["keep", "maybe", "drop"] as const satisfies readonly Verdict[];
+
+/** The branch every kept tool is merged into. */
+export const BASE_BRANCH = "toolbox";
+
+export interface Commit {
+  snack: Snack;
+  /** URL slug: the file name without its date, "2026-10-28-ghostty" -> "ghostty". */
+  slug: string;
+  /** 1 for the oldest entry, like a pull request number. */
+  number: number;
+  /** Seven hex digits derived from the file name. Decorative, but stable. */
+  sha: string;
+  /** The branch the tool was tried on: "try/ghostty". */
+  branch: string;
+  /** Host of the tool's own site, without "www.". */
+  host: string | undefined;
+}
+
+const slugOf = (id: string) => id.replace(/^\d{4}-\d{2}-\d{2}-/, "");
+
+/** FNV-1a, run twice with different seeds so there are seven nicely mixed hex digits to show. */
+function shortSha(text: string): string {
+  const hash = (seed: number) => {
+    let h = seed;
+    for (const char of text) h = Math.imul(h ^ char.charCodeAt(0), 16777619);
+    return (h >>> 0).toString(16).padStart(8, "0");
+  };
+  return (hash(2166136261) + hash(40503)).slice(3, 10);
+}
+
+/** All commits, newest first. */
+export async function getCommits(): Promise<Commit[]> {
+  const snacks = await getSnacks();
+  const commits = snacks.map((snack, index) => {
+    const slug = slugOf(snack.id);
+    return {
+      snack,
+      slug,
+      number: snacks.length - index,
+      sha: shortSha(snack.id),
+      branch: `try/${slug}`,
+      host: snack.data.url ? new URL(snack.data.url).hostname.replace(/^www\./, "") : undefined,
+    };
+  });
+  const seen = new Set<string>();
+  for (const { slug, snack } of commits) {
+    if (seen.has(slug)) throw new Error(`Two snacks share the URL /commits/${slug}. Rename ${snack.id}.`);
+    seen.add(slug);
+  }
+  return commits;
+}
+
+export function countByVerdict(commits: Commit[]): Record<Verdict, number> {
+  const counts: Record<Verdict, number> = { keep: 0, maybe: 0, drop: 0 };
+  for (const { snack } of commits) counts[snack.data.verdict] += 1;
+  return counts;
+}
+
+/** Rough reading time in seconds from the raw body, at 230 words per minute. */
+export function readingSeconds(body = ""): number {
+  const words = body.split(/\s+/).filter(Boolean).length;
+  return Math.max(10, Math.round((words / 230) * 6) * 10);
+}
+
+/**
+ * Fills `{name}` placeholders in a translated sentence with small pieces of HTML (a name, a branch),
+ * so word order can differ per language. Values must be trusted, build-time strings.
+ */
+export function fillHtml(template: string, parts: Record<string, string>): string {
+  return template.replace(/\{(\w+)\}/g, (match, name: string) => parts[name] ?? match);
+}
+
+export const refHtml = (text: string) => `<code class="ref">${text}</code>`;
+
+/** View transition for a pull request page: it rises in like a panel and drops away on the way back. */
+const ease = "cubic-bezier(0.22, 1, 0.36, 1)";
+const rise = { name: "cm-panel-in", duration: "440ms", easing: ease, fillMode: "both" } as const;
+const drop = { name: "cm-panel-out", duration: "200ms", easing: "ease-in", fillMode: "both" } as const;
+const fadeOut = { name: "cm-fade-out", duration: "140ms", easing: "ease-in", fillMode: "both" } as const;
+export const panelTransition = {
+  forwards: { old: fadeOut, new: rise },
+  backwards: { old: drop, new: rise },
+};

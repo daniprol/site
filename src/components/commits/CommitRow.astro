@@ -1,0 +1,65 @@
+---
+/**
+ * One commit in the history. The whole row links to its pull request page.
+ * The little graph beside it shows the verdict: the branch rejoins the trunk (merged),
+ * stays out (open), or stops at a cross (reverted).
+ */
+import DateTime from "@/components/ui/DateTime.astro";
+import { localePath, useTranslations, type Locale } from "@/i18n";
+import { readingSeconds, type Commit } from "@/lib/commits";
+
+import StatePill from "./StatePill.astro";
+
+interface Props {
+  commit: Commit;
+  locale: Locale;
+  /** Position in the list, used to stagger the graph drawing. */
+  index: number;
+}
+const { commit, locale, index } = Astro.props;
+const t = useTranslations(locale);
+const { snack, slug, sha } = commit;
+const { title, take, verdict, kind, date } = snack.data;
+---
+
+<li class="cm-row" data-verdict={verdict} style={`--i:${index}`}>
+  <svg class="cm-branch" viewBox="0 0 40 78" aria-hidden="true">
+    <path class="draw" pathLength="1" d="M11 75C11 61 27 61 27 47V27"></path>
+    {verdict === "keep" && (
+      <>
+        <path class="draw" pathLength="1" d="M27 27C27 15.5 11 15.5 11 4" />
+        <circle class="join" cx="11" cy="4" r="3" />
+        <circle class="node" cx="27" cy="27" r="5.5" />
+      </>
+    )}
+    {verdict === "maybe" && (
+      <>
+        <path class="dashed" d="M27 19V4" />
+        <circle class="node hollow" cx="27" cy="27" r="5" />
+      </>
+    )}
+    {verdict === "drop" && (
+      <>
+        <circle class="node hollow" cx="27" cy="27" r="7" />
+        <path class="cross" d="M24.4 24.4l5.2 5.2m0-5.2l-5.2 5.2" />
+      </>
+    )}
+  </svg>
+  <a class="cm-link group" href={localePath(locale, `/commits/${slug}`)}>
+    <div class="cm-top">
+      <h3 class="cm-title">
+        <span class="marker-hover" transition:name={`commit-title-${slug}`}>
+          {title}
+        </span>
+      </h3>
+      <StatePill verdict={verdict} locale={locale} />
+    </div>
+    {take && <p class="cm-take">{take}</p>}
+    <p class="cm-meta">
+      <span class="cm-sha">{sha}</span>
+      <span>{kind}</span>
+      <DateTime date={date} locale={locale} format="short" />
+      <span>{t("commits.readTime", { n: readingSeconds(snack.body) })}</span>
+    </p>
+  </a>
+</li>
