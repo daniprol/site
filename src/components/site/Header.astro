@@ -4,6 +4,7 @@ import { site } from "@/site.config";
 
 import LanguagePicker from "./LanguagePicker.astro";
 import LogoMark from "./LogoMark.astro";
+import SearchButton from "./SearchButton.astro";
 import ThemeToggle from "./ThemeToggle.astro";
 
 interface Props {
@@ -28,6 +29,7 @@ const current = stripLocale(Astro.url.pathname);
       <span>{site.shortName}</span>
     </a>
     <div class="flex items-center md:order-last">
+      <SearchButton locale={locale} />
       <LanguagePicker locale={locale} />
       <ThemeToggle locale={locale} />
     </div>

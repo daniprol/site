@@ -1,0 +1,40 @@
+/* The search dialog (from the Statusline theme): a quiet floating panel. */
+@layer components {
+  .panel {
+    width: min(36rem, calc(100vw - 2rem));
+    max-height: min(32rem, calc(100dvh - 6rem));
+    margin: 12dvh auto auto;
+    padding: 0;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background: var(--color-bg);
+    color: var(--color-fg);
+    box-shadow: 0 18px 50px -20px color-mix(in srgb, var(--color-fg) 35%, transparent);
+  }
+  /* Keyboard hint, e.g. the "/" next to the search button. */
+  .kbd {
+    padding: 0.05rem 0.4rem;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    line-height: 1.4;
+    color: var(--color-muted);
+  }
+  .panel:focus-visible {
+    outline: none;
+  }
+  .panel::backdrop {
+    background: color-mix(in srgb, var(--color-bg) 70%, transparent);
+    backdrop-filter: blur(2px);
+  }
+  .panel[open] {
+    animation: panel-in 160ms var(--ease-out-soft);
+  }
+  @keyframes panel-in {
+    from {
+      opacity: 0;
+      translate: 0 6px;
+    }
+  }
+}
