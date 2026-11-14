@@ -1,0 +1,33 @@
+---
+/**
+ * A picture that opens large when clicked. It is a real link to the full-size file, so it still
+ * works without JavaScript; with it, the page script opens the viewer.
+ */
+import type { ImageMetadata } from "astro";
+import { Image, getImage } from "astro:assets";
+
+interface Props {
+  src: ImageMetadata;
+  alt: string;
+  caption?: string | undefined;
+  /** Rendered width in CSS pixels, for the thumbnail sizes. */
+  width: number;
+  /** Crop to this shape (gallery thumbnails). Leave out to keep the picture's own shape. */
+  aspect?: number;
+  class?: string;
+}
+const { src, alt, caption, width, aspect, class: className } = Astro.props;
+const full = await getImage({ src, width: Math.min(src.width, 2000), format: "webp" });
+const height = aspect ? Math.round(width / aspect) : undefined;
+---
+
+<a class:list={["cm-zoom", className]} href={full.src} data-cm-zoom data-caption={caption}>
+  <Image
+    src={src}
+    alt={alt}
+    width={width * 2}
+    height={height ? height * 2 : undefined}
+    fit={aspect ? "cover" : undefined}
+    sizes={`${width}px`}
+  />
+</a>

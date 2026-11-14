@@ -20,7 +20,7 @@ const fromStart = items.length <= MAX;
 const width = LEAD + shown.length * STEP + 18;
 ---
 
-<div class="cm-titlegraph" aria-hidden="true">
+<div class:list={["cm-titlegraph", { "is-long": shown.length > 6, "is-full": shown.length >= 13 }]} aria-hidden="true">
   <svg viewBox={`0 0 ${width} 34`} width={width} height="34" style={`--len:${width}`}>
     <path class="trunk" d={`M${fromStart ? 5 : 0} 25H${width - 12}`}></path>
     {fromStart && <circle class="root" cx="5" cy="25" r="3" />}

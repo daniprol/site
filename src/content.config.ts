@@ -31,19 +31,26 @@ const posts = defineCollection({
  */
 const snacks = defineCollection({
   loader: glob({ base: "./src/content/snacks", pattern: "**/*.{md,mdx}" }),
-  schema: z.object({
-    title: z.string(),
-    date: z.coerce.date(),
-    kind: z.enum(["model", "app", "cli", "library", "service", "hardware"]),
-    verdict: z.enum(["keep", "maybe", "drop"]),
-    /** The one-line opinion, shown as the commit message in the history. */
-    take: z.string().optional(),
-    /** Shown as the added (+) and removed (−) lines of the diff. */
-    pros: z.array(z.string()).default([]),
-    cons: z.array(z.string()).default([]),
-    url: z.url().optional(),
-    draft: z.boolean().default(false),
-  }),
+  schema: ({ image }) => {
+    const picture = z.object({ src: image(), alt: z.string(), caption: z.string().optional() });
+    return z.object({
+      title: z.string(),
+      date: z.coerce.date(),
+      kind: z.enum(["model", "app", "cli", "library", "service", "hardware"]),
+      verdict: z.enum(["keep", "maybe", "drop"]),
+      /** The one-line opinion, shown as the commit message in the history. */
+      take: z.string().optional(),
+      /** Shown as the added (+) and removed (−) lines of the diff. */
+      pros: z.array(z.string()).default([]),
+      cons: z.array(z.string()).default([]),
+      /** The main picture, shown above the text. Paths are relative to the file: ./images/x.png */
+      cover: picture.optional(),
+      /** A few more pictures, shown as a row of thumbnails under the text. */
+      gallery: z.array(picture).default([]),
+      url: z.url().optional(),
+      draft: z.boolean().default(false),
+    });
+  },
 });
 
 /** Portfolio case studies. */

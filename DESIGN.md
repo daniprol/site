@@ -51,6 +51,7 @@ state, so no JavaScript, no scroll-timeline support or reduced motion all show t
    ends at its commit. A small graph of the latest entries sits under the title. Picking one opens
    `/snacks/<slug>` as a pull request: the same history on its side as a strip at the top, the review
    as the opening comment, pros and cons as a diff, the verdict as the merge box. Chrome stays small,
-   mono and muted so the text leads. Proof colours and our own icons; nothing from GitHub's artwork,
+   mono and muted so the text leads. An entry can have a main picture and a small gallery; every
+   picture opens in a viewer. The activity grid points at rows in the list instead of leaving the page. Proof colours and our own icons; nothing from GitHub's artwork,
    and the section is not called "Commits" so nobody takes these for real ones.
 5. **Pipeline as composition** — the stepper's nodes fill along a track, labelled f₁…f₄.

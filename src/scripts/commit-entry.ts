@@ -226,3 +226,176 @@ function endSwipe(event: PointerEvent, cancelled: boolean) {
 }
 document.addEventListener("pointerup", (event) => endSwipe(event, false));
 document.addEventListener("pointercancel", (event) => endSwipe(event, true));
+
+/* ---------- Activity grid: point at the row, do not leave the page ---------- */
+
+const rowFor = (cell: Element) => {
+  const id = cell.getAttribute("href")?.slice(1);
+  return id ? document.getElementById(id) : null;
+};
+
+document.addEventListener("click", (event) => {
+  const cell = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>("a[data-cm-jump]") : null;
+  const row = cell && rowFor(cell);
+  if (!cell || !row) return;
+  event.preventDefault();
+  // A filtered-out row cannot be shown, so go back to "All" first.
+  const all = document.querySelector<HTMLInputElement>('.cm-filter input[value="all"]');
+  if (all) all.checked = true;
+  document.querySelectorAll(".cm-row.is-target").forEach((el) => el.classList.remove("is-target"));
+  row.classList.add("is-target");
+  row.scrollIntoView({ behavior: reducedMotion.matches ? "auto" : "smooth", block: "center" });
+  history.replaceState(history.state, "", cell.hash);
+  row.querySelector<HTMLElement>("a.cm-link")?.focus({ preventScroll: true });
+});
+
+/** Hovering a day lights up its row, and hovering a row lights up its day. */
+function link(event: Event, on: boolean) {
+  if (!(event.target instanceof Element)) return;
+  const cell = event.target.closest<HTMLAnchorElement>("a[data-cm-jump]");
+  const row = cell ? rowFor(cell) : event.target.closest<HTMLElement>(".cm-row[id]");
+  if (!row) return;
+  row.classList.toggle("is-linked", on && Boolean(cell));
+  const day = cell ?? document.querySelector(`a[data-cm-jump][href="#${CSS.escape(row.id)}"]`);
+  day?.classList.toggle("is-linked", on && !cell);
+}
+document.addEventListener("pointerover", (event) => link(event, true));
+document.addEventListener("pointerout", (event) => link(event, false));
+
+/* ---------- Pictures: click to see one large ---------- */
+
+interface Shot {
+  el: HTMLElement;
+  img: HTMLImageElement;
+  src: string;
+  alt: string;
+  caption: string;
+}
+let shots: Shot[] = [];
+let shotIndex = 0;
+
+const lightbox = () => document.querySelector<HTMLDialogElement>("[data-cm-lightbox]");
+
+/** Every picture of the entry in reading order: cover, pictures in the text, gallery. */
+function collectShots(article: HTMLElement): Shot[] {
+  const found: Shot[] = [];
+  for (const el of article.querySelectorAll<HTMLElement>("[data-cm-zoom], .pr-body .prose-site img")) {
+    const img = el instanceof HTMLImageElement ? el : el.querySelector("img");
+    if (!img || (el instanceof HTMLImageElement && el.closest("[data-cm-zoom]"))) continue;
+    found.push({
+      el,
+      img,
+      src: el instanceof HTMLAnchorElement ? el.href : img.currentSrc || img.src,
+      alt: img.alt,
+      caption: el.dataset.caption ?? "",
+    });
+  }
+  return found;
+}
+
+function show(index: number) {
+  const dialog = lightbox();
+  const shot = shots[index];
+  if (!dialog || !shot) return;
+  shotIndex = index;
+  const img = dialog.querySelector("img");
+  if (img) {
+    img.src = shot.src;
+    img.alt = shot.alt;
+  }
+  const caption = dialog.querySelector("[data-caption]");
+  if (caption) caption.textContent = shot.caption || shot.alt;
+  const count = dialog.querySelector("[data-count]");
+  if (count) count.textContent = shots.length > 1 ? `${index + 1} / ${shots.length}` : "";
+  dialog.querySelectorAll<HTMLElement>("[data-step]").forEach((button) => (button.hidden = shots.length < 2));
+}
+
+/** Runs `change` as a view transition that grows the picture between thumbnail and viewer. */
+function zoom(thumb: HTMLImageElement | undefined, change: () => void, opening: boolean) {
+  const big = lightbox()?.querySelector("img");
+  const canAnimate = "startViewTransition" in document && !reducedMotion.matches && thumb && big;
+  if (!canAnimate) return change();
+  const name = (el: HTMLElement, value: string) => (el.style.viewTransitionName = value);
+  name(opening ? thumb : big, "cm-zoom");
+  const transition = document.startViewTransition(() => {
+    name(opening ? thumb : big, "");
+    change();
+    name(opening ? big : thumb, "cm-zoom");
+  });
+  const clear = () => [thumb, big].forEach((el) => name(el, ""));
+  transition.finished.then(clear, clear);
+}
+
+function openShot(index: number) {
+  const dialog = lightbox();
+  if (!dialog || dialog.open) return;
+  show(index);
+  const big = dialog.querySelector("img");
+  const start = () => zoom(shots[index]?.img, () => dialog.showModal(), true);
+  // Wait for the large file, so the picture does not grow into an empty frame.
+  if (big && !big.complete) big.decode().then(start, start);
+  else start();
+}
+
+function closeShot() {
+  const dialog = lightbox();
+  if (dialog?.open) zoom(shots[shotIndex]?.img, () => dialog.close(), false);
+}
+
+const step = (by: number) => show((shotIndex + by + shots.length) % shots.length);
+
+root.classList.add("cm-js");
+document.addEventListener("astro:after-swap", () => root.classList.add("cm-js"));
+
+document.addEventListener(
+  "click",
+  (event) => {
+    if (!(event.target instanceof Element)) return;
+    const dialog = lightbox();
+    if (dialog?.open) {
+      const stepBy = event.target.closest<HTMLElement>("[data-step]")?.dataset.step;
+      if (stepBy) step(Number(stepBy));
+      // Anything that is not a control closes: the picture, the caption, the backdrop.
+      else closeShot();
+      return;
+    }
+    const article = entry();
+    if (!article || event.metaKey || event.ctrlKey || event.shiftKey) return;
+    const hit = event.target.closest<HTMLElement>("[data-cm-zoom], .pr-body .prose-site img");
+    if (!hit || !article.contains(hit)) return;
+    shots = collectShots(article);
+    const index = shots.findIndex((shot) => shot.el === hit || shot.img === hit);
+    if (index < 0) return;
+    event.preventDefault();
+    openShot(index);
+    // Capture phase: this has to run before the client router follows the link to the image file.
+  },
+  true,
+);
+
+document.addEventListener("keydown", (event) => {
+  const dialog = lightbox();
+  if (!dialog?.open) return;
+  if (event.key === "ArrowLeft") step(-1);
+  else if (event.key === "ArrowRight") step(1);
+  else if (event.key === "Escape") {
+    // Take over from the dialog's own Esc, so closing gets the same animation.
+    event.preventDefault();
+    closeShot();
+  }
+});
+
+/** In the viewer: swipe sideways for the next picture, swipe down to close. */
+let viewerSwipe: { pointer: number; x: number; y: number } | undefined;
+document.addEventListener("pointerdown", (event) => {
+  if (event.pointerType === "touch" && lightbox()?.open)
+    viewerSwipe = { pointer: event.pointerId, x: event.clientX, y: event.clientY };
+});
+document.addEventListener("pointerup", (event) => {
+  if (!viewerSwipe || event.pointerId !== viewerSwipe.pointer) return;
+  const dx = event.clientX - viewerSwipe.x;
+  const dy = event.clientY - viewerSwipe.y;
+  viewerSwipe = undefined;
+  if (Math.abs(dx) > 48 && Math.abs(dx) > Math.abs(dy)) step(dx < 0 ? 1 : -1);
+  else if (dy > 64) closeShot();
+});

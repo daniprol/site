@@ -110,16 +110,20 @@
     box-shadow: none;
     transition: scale var(--duration-fast) var(--ease-out-soft);
   }
-  /* A finger-sized hit area around a 10px square. */
+  /* Fill the gaps so neighbouring days leave no dead strip between them, without overlapping. */
   a.cm-cell::after {
     content: "";
     position: absolute;
-    inset: -8px;
+    inset: -1px;
   }
   a.cm-cell:hover,
-  a.cm-cell:focus-visible {
+  a.cm-cell:focus-visible,
+  a.cm-cell.is-linked {
     scale: 1.5;
     z-index: 1;
+    box-shadow:
+      0 0 0 1.5px var(--color-bg),
+      0 0 0 3px var(--color-fg);
   }
 
   /* ---------- History ---------- */
@@ -232,7 +236,17 @@
     z-index: 2;
     top: calc(100svh - var(--cm-tip));
     height: 0;
+    /* Starts level with the HEAD label (half a row down) without taking up room. */
+    margin-block: 1.375rem -1.375rem;
     pointer-events: none;
+  }
+  /* The history ends at the middle of its last row, so HEAD comes to rest on the first commit. */
+  .cm-history:not(.cm-excerpt) {
+    display: flow-root;
+    margin-bottom: 1.375rem;
+  }
+  .cm-root {
+    margin-bottom: -1.375rem;
   }
   .cm-tip::after {
     top: 0;
@@ -330,8 +344,23 @@
     transition: background-color var(--duration-fast);
   }
   .cm-link:hover,
-  .cm-link:focus-visible {
+  .cm-link:focus-visible,
+  .cm-row.is-linked .cm-link {
     background: var(--color-surface);
+  }
+  /* Picked from the activity grid: the row is brought to the middle and marked with the highlighter. */
+  .cm-row {
+    scroll-margin-block: 30vh;
+  }
+  .cm-row:is(:target, .is-target) .cm-link {
+    background: var(--color-surface);
+    box-shadow: inset 0 0 0 1px var(--color-border);
+  }
+  .cm-row:is(:target, .is-target, .is-linked) .marker-hover {
+    background-size: 100% 0.55em;
+  }
+  .cm-row:is(:target, .is-target, .is-linked) .cm-dot {
+    scale: 1.25;
   }
   .cm-row:has(.cm-link:hover) .cm-dot,
   .cm-row:has(.cm-link:focus-visible) .cm-dot,
@@ -384,6 +413,15 @@
     justify-content: flex-end;
     margin-top: 1.1rem;
     overflow: hidden;
+  }
+  /* When there are more entries than fit, the oldest fade out on the left. */
+  .cm-titlegraph.is-full {
+    mask-image: linear-gradient(90deg, transparent, #000 3rem);
+  }
+  @media (max-width: 39.99rem) {
+    .cm-titlegraph.is-long {
+      mask-image: linear-gradient(90deg, transparent, #000 3rem);
+    }
   }
   .cm-titlegraph svg {
     flex: none;
@@ -664,9 +702,157 @@
   .pr-body > .prose-site > :last-child {
     margin-bottom: 0.75em;
   }
-  .pr-body .prose-site :where(img) {
+  .pr-body .prose-site :where(img),
+  .cm-zoom img {
     border: 1px solid var(--color-border);
     border-radius: 0.5rem;
+  }
+  /* Pictures: a main one above the text, a row of thumbnails under it. All open in the viewer. */
+  .cm-zoom {
+    display: block;
+    border-radius: 0.5rem;
+    cursor: zoom-in;
+  }
+  .cm-zoom img {
+    display: block;
+    width: 100%;
+    height: auto;
+    transition:
+      filter var(--duration-fast),
+      scale var(--duration-base) var(--ease-out-soft);
+  }
+  html.cm-js .pr-body .prose-site :where(img) {
+    cursor: zoom-in;
+  }
+  .pr-cover {
+    margin-block: 0.95rem 0.4rem;
+  }
+  .pr-cover figcaption {
+    margin-top: 0.5rem;
+    color: var(--color-muted);
+    font-size: 0.86rem;
+  }
+  .pr-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr));
+    gap: 0.5rem;
+    margin-block: 0.4rem 0.9rem;
+  }
+  .pr-gallery .cm-zoom {
+    overflow: hidden;
+  }
+  .pr-gallery img {
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    object-position: top left;
+  }
+  .pr-gallery .cm-zoom:hover img {
+    scale: 1.04;
+    filter: brightness(1.05);
+  }
+
+  /* The viewer */
+  .cm-lightbox {
+    width: 100vw;
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--color-fg);
+    overflow: hidden;
+    touch-action: none;
+  }
+  .cm-lightbox::backdrop {
+    background: color-mix(in oklch, var(--color-bg) 88%, transparent);
+    backdrop-filter: blur(10px);
+  }
+  .cm-lightbox figure {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    justify-items: center;
+    gap: 0.75rem;
+    height: 100%;
+    margin: 0;
+    padding: 3.75rem max(1rem, env(safe-area-inset-right)) max(1.25rem, env(safe-area-inset-bottom))
+      max(1rem, env(safe-area-inset-left));
+  }
+  .cm-lightbox img {
+    align-self: center;
+    max-width: min(100%, 72rem);
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    border: 1px solid var(--color-border);
+    border-radius: 0.6rem;
+    box-shadow: 0 30px 80px -30px color-mix(in srgb, var(--color-fg) 45%, transparent);
+    cursor: zoom-out;
+  }
+  .cm-lightbox figcaption {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.9rem;
+    max-width: 42rem;
+    min-height: 1.5rem;
+    font-size: 0.95rem;
+    text-align: center;
+    text-wrap: pretty;
+  }
+  .cm-lightbox .count {
+    flex: none;
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+  }
+  .cm-lightbox button {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+    background: var(--color-bg);
+    color: var(--color-fg);
+    cursor: pointer;
+    transition: background-color var(--duration-fast);
+  }
+  .cm-lightbox button:hover {
+    background: var(--color-surface);
+  }
+  .cm-lightbox button svg {
+    width: 1rem;
+    height: 1rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .cm-lightbox .close {
+    top: max(0.6rem, env(safe-area-inset-top));
+    right: max(0.75rem, env(safe-area-inset-right));
+  }
+  .cm-lightbox .prev,
+  .cm-lightbox .next {
+    top: 50%;
+    translate: 0 -50%;
+  }
+  .cm-lightbox .prev {
+    left: max(0.75rem, env(safe-area-inset-left));
+  }
+  .cm-lightbox .next {
+    right: max(0.75rem, env(safe-area-inset-right));
+  }
+  /* On phones you swipe between pictures, so the arrows step out of the way. */
+  @media (hover: none) {
+    .cm-lightbox .prev,
+    .cm-lightbox .next {
+      display: none;
+    }
   }
 
   @media (min-width: 40rem) {
@@ -1021,6 +1207,16 @@
       animation: cm-pop var(--duration-spring) var(--ease-spring) 820ms backwards;
     }
 
+    .cm-lightbox[open] figure {
+      animation: cm-fade 200ms ease-out;
+    }
+    .cm-lightbox[open]::backdrop {
+      animation: cm-fade 200ms ease-out;
+    }
+    .cm-row.is-target .cm-dot {
+      animation: cm-ping 700ms var(--ease-out-soft);
+    }
+
     /* Entry page: the state lands once, after the page has arrived. */
     .cm-pill[data-variant="solid"] {
       animation: cm-pop var(--duration-spring) var(--ease-spring) 260ms backwards;
@@ -1062,6 +1258,18 @@
   }
   75% {
     scale: 1.3;
+  }
+}
+@keyframes cm-ping {
+  from {
+    box-shadow:
+      0 0 0 2.5px var(--color-bg),
+      0 0 0 3px var(--cm-tone);
+  }
+  to {
+    box-shadow:
+      0 0 0 2.5px var(--color-bg),
+      0 0 0 16px transparent;
   }
 }
 @keyframes cm-ink {
@@ -1146,6 +1354,15 @@ html[data-cm-dir="newer"]::view-transition-old(cm-panel) {
 }
 html[data-cm-dir="newer"]::view-transition-new(cm-panel) {
   animation: cm-slide-in-right 460ms cubic-bezier(0.22, 1, 0.36, 1) 70ms both;
+}
+/* A picture grows from its thumbnail into the viewer and back. */
+::view-transition-group(cm-zoom) {
+  animation-duration: 380ms;
+}
+::view-transition-old(cm-zoom),
+::view-transition-new(cm-zoom) {
+  height: 100%;
+  object-fit: cover;
 }
 /* The flying dot and title keep their shape instead of cross-fading two sizes. */
 ::view-transition-group(*) {

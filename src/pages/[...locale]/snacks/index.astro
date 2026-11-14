@@ -18,9 +18,9 @@ const commits = await getCommits();
   <PageHeader title={t("commits.title")} description={t("commits.description")}>
     <TitleGraph items={commits} />
   </PageHeader>
-  <CommitHistory items={commits} locale={locale} />
-  <div class="mt-12">
-    <ActivityGrid items={commits} locale={locale} />
+  <ActivityGrid items={commits} locale={locale} />
+  <div class="mt-6">
+    <CommitHistory items={commits} locale={locale} />
   </div>
 </BaseLayout>
 

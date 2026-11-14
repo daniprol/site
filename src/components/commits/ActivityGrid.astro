@@ -1,10 +1,10 @@
 ---
 /**
  * A year of commits as a grid of days, one column per week. A day with a commit takes the colour
- * of its state and links to it. Phones show the last 26 weeks, wider screens the full year.
+ * of its state and points at its row in the list on the same page (the row is #s-<slug>). Phones show the last 26 weeks, wider screens the full year.
  */
-import { localePath, useTranslations, type Locale } from "@/i18n";
-import { commitPath, type Commit } from "@/lib/commits";
+import { useTranslations, type Locale } from "@/i18n";
+import type { Commit } from "@/lib/commits";
 import { formatDate, formatMonthShort, isoDate } from "@/lib/format";
 
 interface Props {
@@ -55,7 +55,8 @@ const inRange = cells.filter((cell) => cell.commit).length;
           class:list={["cm-cell", { "is-far": column <= FAR_WEEKS }]}
           style={`--c:${column};--r:${row}`}
           data-verdict={commit.snack.data.verdict}
-          href={localePath(locale, commitPath(commit.slug))}
+          href={`#s-${commit.slug}`}
+          data-cm-jump
           title={`${commit.snack.data.title} · ${t(`commits.state.${commit.snack.data.verdict}`)} · ${formatDate(commit.snack.data.date, locale, "short")}`}
         >
           <span class="sr-only">

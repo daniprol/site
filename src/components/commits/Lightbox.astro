@@ -1,0 +1,37 @@
+---
+/**
+ * The viewer for an entry's pictures. One <dialog> per page; the page script fills it and moves
+ * between the entry's pictures (cover, pictures in the text, gallery) in reading order.
+ */
+import { useTranslations, type Locale } from "@/i18n";
+
+interface Props {
+  locale: Locale;
+}
+const t = useTranslations(Astro.props.locale);
+---
+
+<dialog class="cm-lightbox" data-cm-lightbox aria-label={t("lightbox.label")}>
+  <figure>
+    <img alt="" />
+    <figcaption>
+      <span data-caption></span>
+      <span class="count" data-count></span>
+    </figcaption>
+  </figure>
+  <button type="button" class="close" data-close aria-label={t("lightbox.close")}>
+    <svg viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M3.5 3.5l9 9m0-9l-9 9"></path>
+    </svg>
+  </button>
+  <button type="button" class="prev" data-step="-1" aria-label={t("lightbox.previous")}>
+    <svg viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M10 3L5 8l5 5"></path>
+    </svg>
+  </button>
+  <button type="button" class="next" data-step="1" aria-label={t("lightbox.next")}>
+    <svg viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M6 3l5 5-5 5"></path>
+    </svg>
+  </button>
+</dialog>

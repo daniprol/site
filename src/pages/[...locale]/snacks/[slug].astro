@@ -8,8 +8,10 @@ import { render } from "astro:content";
 
 import DiffBlock from "@/components/commits/DiffBlock.astro";
 import GraphStrip from "@/components/commits/GraphStrip.astro";
+import Lightbox from "@/components/commits/Lightbox.astro";
 import StateIcon from "@/components/commits/StateIcon.astro";
 import StatePill from "@/components/commits/StatePill.astro";
+import ZoomImage from "@/components/commits/ZoomImage.astro";
 import Logo from "@/components/site/Logo.astro";
 import DateTime from "@/components/ui/DateTime.astro";
 import { DEFAULT_LOCALE, LOCALES, localePath, useTranslations, type Locale } from "@/i18n";
@@ -47,7 +49,7 @@ interface Props {
 const { locale, commit, commits, newer, older } = Astro.props;
 const t = useTranslations(locale);
 const { snack, slug, number, sha, branch, host } = commit;
-const { title, take, verdict, kind, date, pros, cons, url } = snack.data;
+const { title, take, verdict, kind, date, pros, cons, cover, gallery, url } = snack.data;
 const { Content } = await render(snack);
 
 const who = site.socials.github.split("/").at(-1) ?? site.shortName;
@@ -129,9 +131,30 @@ const listHref = localePath(locale, SECTION_PATH);
               <span class="pr-label">{kind}</span>
             </p>
             <div class="pr-body">
+              {cover && (
+                <figure class="pr-cover">
+                  <ZoomImage src={cover.src} alt={cover.alt} caption={cover.caption} width={640} />
+                  {cover.caption && <figcaption>{cover.caption}</figcaption>}
+                </figure>
+              )}
               <div class="prose-site prose" lang="en">
                 <Content />
               </div>
+              {gallery.length > 0 && (
+                <ul class="pr-gallery" aria-label={t("commits.gallery")}>
+                  {gallery.map((picture) => (
+                    <li>
+                      <ZoomImage
+                        src={picture.src}
+                        alt={picture.alt}
+                        caption={picture.caption}
+                        width={220}
+                        aspect={4 / 3}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
         </section>
@@ -200,6 +223,7 @@ const listHref = localePath(locale, SECTION_PATH);
       )}
     </div>
   </article>
+  <Lightbox locale={locale} />
 </BaseLayout>
 
 <script>
