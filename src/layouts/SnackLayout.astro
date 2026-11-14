@@ -1,0 +1,260 @@
+---
+/**
+ * One snack, opened. The text and pictures lead; the machine shrinks to a few quiet marks:
+ * a package chip, the slot code, the verdict and a way back. Nothing moves while you read.
+ */
+import SnackPack from "@/components/snacks/SnackPack.astro";
+import SnackPackDefs from "@/components/snacks/SnackPackDefs.astro";
+import DateTime from "@/components/ui/DateTime.astro";
+import Verdict from "@/components/ui/Verdict.astro";
+import { DEFAULT_LOCALE, localePath, useTranslations, type Locale } from "@/i18n";
+import { readingSeconds, type ShelvedSnack } from "@/lib/content";
+
+import BaseLayout from "./BaseLayout.astro";
+
+interface Props {
+  locale: Locale;
+  item: ShelvedSnack;
+  /** The snack published after this one, if any. */
+  newer?: ShelvedSnack | undefined;
+  /** The snack published before this one; at the oldest snack, the newest one again. */
+  older?: ShelvedSnack | undefined;
+  /** True when `older` wraps around to the newest snack. */
+  wraps?: boolean;
+}
+
+const { locale, item, newer, older, wraps = false } = Astro.props;
+const { snack, slug, number, slot } = item;
+const { title, date, kind, verdict, url, take, pros, cons } = snack.data;
+const t = useTranslations(locale);
+const host = url ? new URL(url).hostname.replace(/^www\./, "") : undefined;
+const description = take || `${title}: ${t(`verdict.${verdict}`)}.`;
+---
+
+<BaseLayout
+  locale={locale}
+  title={title}
+  description={description}
+  canonicalPath={locale === DEFAULT_LOCALE ? undefined : localePath(DEFAULT_LOCALE, `/snacks/${slug}`)}
+>
+  <SnackPackDefs />
+  <article class="snack mt-5 sm:mt-9">
+    <nav class="-ml-2 flex items-center justify-between gap-3 font-mono text-xs text-muted">
+      <a
+        href={localePath(locale, "/snacks")}
+        class="group inline-flex min-h-11 items-center gap-1.5 px-2 hover:text-fg"
+      >
+        <span aria-hidden="true" class="transition-transform group-hover:-translate-x-0.5">
+          ←
+        </span>
+        <span class="marker-hover">{t("snacks.back")}</span>
+      </a>
+      {slot && (
+        <span class="slot-chip" title={t("snacks.slot", { code: slot })}>
+          <span class="sr-only">{t("snacks.slot", { code: slot })}</span>
+          <span aria-hidden="true">{slot}</span>
+        </span>
+      )}
+    </nav>
+
+    <header class="mt-4 mb-8 sm:mt-6 sm:mb-10">
+      <div class="flex items-center gap-4">
+        <span class="snack-chip" data-pagefind-ignore>
+          <SnackPack snack={snack} locale={locale} />
+        </span>
+        <div class="min-w-0">
+          <p class="flex flex-wrap gap-x-2 font-mono text-xs text-muted">
+            <span>{t("snacks.number", { n: number })}</span>
+            <span aria-hidden="true">·</span>
+            <span>{t(`kind.${kind}`)}</span>
+            <span aria-hidden="true">·</span>
+            <DateTime date={date} locale={locale} format="short" />
+            <span aria-hidden="true">·</span>
+            <span>{t("snacks.readSeconds", { n: readingSeconds(snack.body) })}</span>
+          </p>
+          <h1 class="mt-1.5 text-[1.9rem] leading-[1.12] font-bold tracking-[-0.02em] text-balance sm:text-[2.4rem]">
+            {title}
+          </h1>
+        </div>
+      </div>
+      <p class="mt-5 flex items-center gap-2.5 text-[0.95rem] text-muted">
+        <Verdict verdict={verdict} locale={locale} variant="symbol" srLabel={false} />
+        <Verdict verdict={verdict} locale={locale} />
+        <span aria-hidden="true">·</span>
+        <span>{t(`verdict.${verdict}.long`)}</span>
+      </p>
+      {take && (
+        <p class="mt-4 text-[1.25rem] leading-[1.4] font-semibold text-pretty sm:text-[1.4rem]" lang="en">
+          <span class="marker">{take}</span>
+        </p>
+      )}
+    </header>
+
+    <div class="snack-prose prose-site prose" lang="en">
+      <slot />
+    </div>
+
+    {(pros.length > 0 || cons.length > 0) && (
+      <dl class="mt-9 grid gap-x-8 gap-y-6 text-[0.98rem] sm:grid-cols-2" lang="en">
+        {pros.length > 0 && (
+          <div>
+            <dt class="eyebrow" lang={locale}>
+              {t("snacks.pros")}
+            </dt>
+            {pros.map((line) => (
+              <dd class="tally tally-plus">{line}</dd>
+            ))}
+          </div>
+        )}
+        {cons.length > 0 && (
+          <div>
+            <dt class="eyebrow" lang={locale}>
+              {t("snacks.cons")}
+            </dt>
+            {cons.map((line) => (
+              <dd class="tally tally-minus">{line}</dd>
+            ))}
+          </div>
+        )}
+      </dl>
+    )}
+
+    {url && host && (
+      <p class="mt-9 font-mono text-sm">
+        <a href={url} class="group inline-flex min-h-11 items-center gap-1 text-accent" rel="noopener">
+          <span class="marker-hover">{host}</span>
+          <span aria-hidden="true">↗</span>
+        </a>
+      </p>
+    )}
+
+    <!-- Never a dead end: the next snack's verdict and take, one tap away. -->
+    <nav class="mt-10 border-t border-border pt-6" aria-label={t("snacks.browse")} data-pagefind-ignore>
+      {older && (
+        <a
+          href={localePath(locale, `/snacks/${older.slug}`)}
+          class="group grid grid-cols-[1.9rem_1fr_auto] items-center gap-x-3 rounded-lg bg-surface px-4 py-4 transition-colors hover:bg-accent-soft"
+        >
+          <Verdict verdict={older.snack.data.verdict} locale={locale} variant="symbol" />
+          <span class="min-w-0">
+            <span class="eyebrow block">{wraps ? t("snacks.backToNewest") : t("snacks.next")}</span>
+            <span class="mt-0.5 block font-bold tracking-tight">
+              <span class="marker-hover">{older.snack.data.title}</span>
+            </span>
+            {older.snack.data.take && (
+              <span class="mt-0.5 block text-[0.95rem] text-muted" lang="en">
+                {older.snack.data.take}
+              </span>
+            )}
+          </span>
+          <span aria-hidden="true" class="text-muted transition-transform group-hover:translate-x-0.5">
+            →
+          </span>
+        </a>
+      )}
+      <p class="mt-2 flex flex-wrap justify-between gap-x-4 font-mono text-xs text-muted">
+        {newer ? (
+          <a
+            href={localePath(locale, `/snacks/${newer.slug}`)}
+            class="group -ml-2 inline-flex min-h-11 items-center gap-1.5 px-2 hover:text-fg"
+          >
+            <span aria-hidden="true">←</span>
+            <span class="sr-only">{t("snacks.previous")}:</span>
+            <span class="marker-hover">{newer.snack.data.title}</span>
+          </a>
+        ) : (
+          <span />
+        )}
+        <a
+          href={localePath(locale, "/snacks")}
+          class="group -mr-2 inline-flex min-h-11 items-center gap-1.5 px-2 hover:text-fg"
+        >
+          <span class="marker-hover">{t("snacks.back")}</span>
+        </a>
+      </p>
+    </nav>
+  </article>
+</BaseLayout>
+
+<style>
+  /* The package, small: the one thing that travels from the machine to the page. */
+  .snack-chip {
+    flex: none;
+    width: 3.1rem;
+    view-transition-name: snack-pack;
+  }
+  @media (min-width: 40rem) {
+    .snack-chip {
+      width: 3.7rem;
+    }
+  }
+  .slot-chip {
+    display: inline-flex;
+    align-items: center;
+    height: 1.5rem;
+    padding-inline: 0.5em;
+    border-radius: 3px;
+    background: var(--color-logo-dot);
+    color: var(--vm-tag-ink);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  .snack {
+    view-transition-name: snack-sheet;
+  }
+
+  /* Pictures sit on the column like prints, with nothing around them asking for attention. */
+  .snack-prose :global(img) {
+    width: 100%;
+    height: auto;
+    margin-block: 1.6em;
+    border-radius: 0.6rem;
+    border: 1px solid var(--color-border);
+  }
+  .snack-prose :global(> :first-child) {
+    margin-top: 0;
+  }
+
+  .tally {
+    position: relative;
+    margin-top: 0.45rem;
+    padding-left: 1.5rem;
+  }
+  .tally::before {
+    position: absolute;
+    left: 0;
+    font-family: var(--font-mono);
+    font-weight: 700;
+  }
+  .tally-plus::before {
+    content: "+";
+    color: var(--color-keep);
+  }
+  .tally-minus::before {
+    content: "−";
+    color: var(--color-drop);
+  }
+
+  /* Opening: the page rises like something lifted out of the tray; the chip flies in from the package. */
+  :global(::view-transition-group(snack-pack)) {
+    animation-duration: 0.36s;
+    animation-timing-function: var(--ease-out-soft);
+  }
+  :global(::view-transition-new(snack-sheet)) {
+    animation: 0.32s var(--ease-out-soft) both snack-rise;
+  }
+  :global(::view-transition-old(snack-sheet)) {
+    animation: 0.14s ease-out both snack-leave;
+  }
+  @keyframes -global-snack-rise {
+    from {
+      opacity: 0;
+      transform: translateY(28px);
+    }
+  }
+  @keyframes -global-snack-leave {
+    to {
+      opacity: 0;
+    }
+  }
+</style>

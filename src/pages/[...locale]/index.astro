@@ -6,7 +6,7 @@ import Section from "@/components/ui/Section.astro";
 import SnackList from "@/components/ui/SnackList.astro";
 import { localeParams, localePath, useTranslations } from "@/i18n";
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import { getPosts, getProjects, getSnacks } from "@/lib/content";
+import { getPosts, getProjects, getShelvedSnacks } from "@/lib/content";
 import { site } from "@/site.config";
 
 export const getStaticPaths = localeParams;
@@ -14,7 +14,7 @@ export const getStaticPaths = localeParams;
 const { locale } = Astro.props;
 const t = useTranslations(locale);
 const posts = (await getPosts(locale)).slice(0, 3);
-const snacks = (await getSnacks()).slice(0, 5);
+const snacks = (await getShelvedSnacks()).slice(0, 5);
 const projects = (await getProjects()).filter((p) => p.data.featured).slice(0, 3);
 ---
 

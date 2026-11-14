@@ -1,0 +1,31 @@
+---
+import { render } from "astro:content";
+
+import { DEFAULT_LOCALE, LOCALES } from "@/i18n";
+import SnackLayout from "@/layouts/SnackLayout.astro";
+import { getShelvedSnacks } from "@/lib/content";
+
+export async function getStaticPaths() {
+  const snacks = await getShelvedSnacks();
+  return LOCALES.flatMap((locale) =>
+    snacks.map((item, index) => ({
+      params: { locale: locale === DEFAULT_LOCALE ? undefined : locale, slug: item.slug },
+      props: {
+        locale,
+        item,
+        newer: snacks[index - 1],
+        // The last snack points back to the newest, so there is always a next one.
+        older: snacks[index + 1] ?? (snacks.length > 1 ? snacks[0] : undefined),
+        wraps: index === snacks.length - 1,
+      },
+    })),
+  );
+}
+
+const { locale, item, newer, older, wraps } = Astro.props;
+const { Content } = await render(item.snack);
+---
+
+<SnackLayout locale={locale} item={item} newer={newer} older={older} wraps={wraps}>
+  <Content />
+</SnackLayout>
