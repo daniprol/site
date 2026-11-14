@@ -48,10 +48,19 @@ state, so no JavaScript, no scroll-timeline support or reduced motion all show t
 4. **Snacks as commits** — the short reviews are a git history at /snacks, with time running up.
    Each one is a branch off the trunk, true to real git: merged (keep) lands back on the trunk as a
    merge commit, reverted (drop) is merged and then followed by a red revert commit, open (maybe)
-   ends at its commit. A small graph of the latest entries sits under the title. Picking one opens
+   ends at its commit. The trunk runs out of the section title along its baseline, with the latest entries on it. Picking one opens
    `/snacks/<slug>` as a pull request: the same history on its side as a strip at the top, the review
    as the opening comment, pros and cons as a diff, the verdict as the merge box. Chrome stays small,
    mono and muted so the text leads. An entry can have a main picture and a small gallery; every
    picture opens in a viewer. The activity grid points at rows in the list instead of leaving the page. Proof colours and our own icons; nothing from GitHub's artwork,
    and the section is not called "Commits" so nobody takes these for real ones.
+   - **Verdicts change.** `updates` in the frontmatter records a later verdict and a line on why. The
+     entry shows the latest one, and each update is its own short row in the history.
+   - **"You are N commits behind."** The reader's browser remembers the newest row it has seen and
+     marks what was added since, with their own ref on the trunk and a `git pull` to clear it.
+     Nothing is sent anywhere. Preview it with `/snacks?behind=3`.
+   - **Toolbox** (`/toolbox`) lists what is merged today, by kind, then open and reverted.
+   - **Compare** (`/snacks/compare?a=…&b=…`) puts two entries side by side as a split diff.
+   - **Share images.** Every entry gets a 1200 × 630 card at `/snacks/og/<slug>.png`, built by
+     `src/lib/share-card.ts`. They need the real domain in `astro.config.ts` to resolve when shared.
 5. **Pipeline as composition** — the stepper's nodes fill along a track, labelled f₁…f₄.

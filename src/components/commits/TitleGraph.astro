@@ -1,8 +1,8 @@
 ---
 /**
- * The graph under the section title: the latest entries as branches off one horizontal trunk,
- * oldest on the left, HEAD on the right. Drawn from the real data, so it changes with every entry.
- * Decorative: the list below carries the same information as text.
+ * The graph in the section title: the trunk runs out of the title along its baseline and ends at
+ * HEAD, with the latest entries as branches along it, oldest on the left. Drawn from the real data,
+ * so it changes with every entry. Decorative: the list below carries the same information as text.
  */
 import type { Commit } from "@/lib/commits";
 
@@ -12,35 +12,34 @@ interface Props {
 }
 const { items } = Astro.props;
 
-const MAX = 14;
+const MAX = 12;
 const STEP = 44;
-const LEAD = 14;
+const LEAD = 6;
 const shown = items.slice(0, MAX).reverse();
-const fromStart = items.length <= MAX;
 const width = LEAD + shown.length * STEP + 18;
 ---
 
-<div class:list={["cm-titlegraph", { "is-long": shown.length > 6, "is-full": shown.length >= 13 }]} aria-hidden="true">
-  <svg viewBox={`0 0 ${width} 34`} width={width} height="34" style={`--len:${width}`}>
-    <path class="trunk" d={`M${fromStart ? 5 : 0} 25H${width - 12}`}></path>
-    {fromStart && <circle class="root" cx="5" cy="25" r="3" />}
-    {shown.map((commit, i) => {
-      const x = LEAD + i * STEP;
-      const { verdict } = commit.snack.data;
-      return (
-        <g data-verdict={verdict} style={`--i:${i}`}>
-          <path class="branch" d={`M${x} 25C${x + 7} 25 ${x + 6} 9 ${x + 13} 9H${x + 16}`} />
-          {verdict !== "maybe" && (
-            <>
-              <path class="branch" d={`M${x + 16} 9H${x + 19}C${x + 26} 9 ${x + 25} 25 ${x + 32} 25`} />
-              <circle class="ring" cx={x + 32} cy="25" r="2.6" />
-            </>
-          )}
-          {verdict === "drop" && <path class="cross" d={`M${x + 36.5} 22.5l5 5m0-5l-5 5`} />}
-          <circle class:list={["node", { hollow: verdict === "maybe" }]} cx={x + 16} cy="9" r="3.6" />
-        </g>
-      );
-    })}
-    <circle class="head" cx={width - 7} cy="25" r="4.5"></circle>
-  </svg>
-</div>
+<span class:list={["cm-titlegraph", { "is-long": shown.length > 4, "is-full": shown.length > 10 }]} aria-hidden="true">
+  <span class="cm-titlegraph-clip">
+    <svg viewBox={`0 0 ${width} 34`} width={width} height="34">
+      {shown.map((commit, i) => {
+        const x = LEAD + i * STEP;
+        const { verdict } = commit;
+        return (
+          <g data-verdict={verdict} style={`--i:${i}`}>
+            <path class="branch" d={`M${x} 25C${x + 7} 25 ${x + 6} 9 ${x + 13} 9H${x + 16}`} />
+            {verdict !== "maybe" && (
+              <>
+                <path class="branch" d={`M${x + 16} 9H${x + 19}C${x + 26} 9 ${x + 25} 25 ${x + 32} 25`} />
+                <circle class="ring" cx={x + 32} cy="25" r="2.6" />
+              </>
+            )}
+            {verdict === "drop" && <path class="cross" d={`M${x + 36.5} 22.5l5 5m0-5l-5 5`} />}
+            <circle class:list={["node", { hollow: verdict === "maybe" }]} cx={x + 16} cy="9" r="3.6" />
+          </g>
+        );
+      })}
+      <circle class="head" cx={width - 7} cy="25" r="4.5"></circle>
+    </svg>
+  </span>
+</span>

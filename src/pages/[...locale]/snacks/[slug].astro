@@ -18,10 +18,13 @@ import { DEFAULT_LOCALE, LOCALES, localePath, useTranslations, type Locale } fro
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import {
   BASE_BRANCH,
+  COMPARE_PATH,
   SECTION_PATH,
+  TOOLBOX_PATH,
   commitPath,
   fillHtml,
   getCommits,
+  laterLabel,
   readingSeconds,
   refHtml,
   type Commit,
@@ -48,8 +51,8 @@ interface Props {
 }
 const { locale, commit, commits, newer, older } = Astro.props;
 const t = useTranslations(locale);
-const { snack, slug, number, sha, branch, host } = commit;
-const { title, take, verdict, kind, date, pros, cons, cover, gallery, url } = snack.data;
+const { snack, slug, number, sha, branch, host, verdict, firstVerdict, updates } = commit;
+const { title, take, kind, date, pros, cons, cover, gallery, url } = snack.data;
 const { Content } = await render(snack);
 
 const who = site.socials.github.split("/").at(-1) ?? site.shortName;
@@ -60,6 +63,7 @@ const parts = {
   sha: refHtml(sha),
   date: `<time datetime="${isoDate(date)}">${formatDate(date, locale, "short")}</time>`,
 };
+const compareHref = `${localePath(locale, COMPARE_PATH)}?a=${slug}`;
 const hasDiff = pros.length + cons.length > 0;
 const description = take ?? `${title}: ${t(`commits.state.${verdict}`)}.`;
 const listHref = localePath(locale, SECTION_PATH);
@@ -70,6 +74,7 @@ const listHref = localePath(locale, SECTION_PATH);
   title={`${title} · ${t("commits.title")}`}
   description={description}
   canonicalPath={locale === DEFAULT_LOCALE ? undefined : localePath(DEFAULT_LOCALE, commitPath(slug))}
+  image={`${SECTION_PATH}/og/${slug}.png`}
 >
   <article class="pr mt-6 sm:mt-12" data-verdict={verdict} data-cm-entry>
     <nav class="pr-crumb" aria-label={t("commits.title")}>
@@ -163,12 +168,12 @@ const listHref = localePath(locale, SECTION_PATH);
           <DiffBlock file={`${BASE_BRANCH}/${slug}.md`} hunk={title} pros={pros} cons={cons} locale={locale} />
         )}
 
-        <p class="pr-event">
+        <p class="pr-event" data-verdict={firstVerdict}>
           <span class="pr-badge" aria-hidden="true">
-            <StateIcon verdict={verdict} />
+            <StateIcon verdict={firstVerdict} />
           </span>
           <span>
-            <Fragment set:html={fillHtml(t(`commits.event.${verdict}`), parts)} />
+            <Fragment set:html={fillHtml(t(`commits.event.${firstVerdict}`), parts)} />
             <span aria-hidden="true"> · </span>
             <DateTime date={date} locale={locale} format="short" />
             <span aria-hidden="true"> · </span>
@@ -176,13 +181,54 @@ const listHref = localePath(locale, SECTION_PATH);
           </span>
         </p>
 
+        {updates.map((update) => (
+          <>
+            <section id={update.anchor} class="pr-comment pr-update">
+              <span class="pr-avatar" aria-hidden="true">
+                <Logo markOnly />
+              </span>
+              <div class="pr-box">
+                <p class="pr-comment-head">
+                  <span class="pr-mini" aria-hidden="true">
+                    <Logo markOnly class="h-full w-full" />
+                  </span>
+                  <span
+                    class="who"
+                    set:html={fillHtml(t("commits.followedUp"), { ...parts, when: laterLabel(update.days, t) })}
+                  />
+                </p>
+                <div class="pr-body">
+                  <p class="pr-note">{update.note}</p>
+                </div>
+              </div>
+            </section>
+            <p class="pr-event" data-verdict={update.verdict}>
+              <span class="pr-badge" aria-hidden="true">
+                <StateIcon verdict={update.verdict} />
+              </span>
+              <span>
+                <Fragment set:html={fillHtml(t(`commits.event.${update.verdict}`), parts)} />
+                <span aria-hidden="true"> · </span>
+                <DateTime date={update.date} locale={locale} format="short" />
+              </span>
+            </p>
+          </>
+        ))}
+
         <aside class="pr-box pr-merge" aria-label={t(`commits.state.${verdict}`)}>
           <span class="pr-merge-tile" aria-hidden="true">
             <StateIcon verdict={verdict} />
           </span>
           <p>
             <strong class="pr-merge-title block">{t(`commits.state.${verdict}`)}</strong>
-            <span class="pr-merge-text block">{t(`commits.box.${verdict}`)}</span>
+            <span class="pr-merge-text block">
+              {t(`commits.box.${verdict}`)}{" "}
+              {verdict === "keep" && (
+                <a class="cm-textlink" href={localePath(locale, TOOLBOX_PATH)}>
+                  {t("toolbox.link")}
+                </a>
+              )}
+            </span>
           </p>
           {url && host && (
             <a class="pr-visit" href={url} rel="noopener">
@@ -191,6 +237,13 @@ const listHref = localePath(locale, SECTION_PATH);
             </a>
           )}
         </aside>
+        {hasDiff && (
+          <p class="pr-compare">
+            <a class="cm-textlink" href={compareHref} data-astro-prefetch="false">
+              {t("compare.with")}
+            </a>
+          </p>
+        )}
       </div>
 
       {(older || newer) && (

@@ -2,10 +2,9 @@
 import ActivityGrid from "@/components/commits/ActivityGrid.astro";
 import CommitHistory from "@/components/commits/CommitHistory.astro";
 import TitleGraph from "@/components/commits/TitleGraph.astro";
-import PageHeader from "@/components/ui/PageHeader.astro";
-import { localeParams, useTranslations } from "@/i18n";
+import { localeParams, localePath, useTranslations } from "@/i18n";
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import { getCommits } from "@/lib/commits";
+import { TOOLBOX_PATH, getCommits } from "@/lib/commits";
 
 export const getStaticPaths = localeParams;
 
@@ -15,9 +14,18 @@ const commits = await getCommits();
 ---
 
 <BaseLayout locale={locale} title={t("commits.title")} description={t("commits.description")}>
-  <PageHeader title={t("commits.title")} description={t("commits.description")}>
-    <TitleGraph items={commits} />
-  </PageHeader>
+  <header class="mt-10 mb-8 sm:mt-16 sm:mb-10">
+    <h1 class="cm-titlerow text-[1.9rem] leading-tight font-bold tracking-[-0.02em] sm:text-[2.2rem]">
+      <span>{t("commits.title")}</span>
+      <TitleGraph items={commits} />
+    </h1>
+    <p class="mt-2 text-[1.05rem] text-pretty text-muted">
+      {t("commits.description")}{" "}
+      <a class="cm-textlink whitespace-nowrap" href={localePath(locale, TOOLBOX_PATH)}>
+        {t("toolbox.link")}
+      </a>
+    </p>
+  </header>
   <ActivityGrid items={commits} locale={locale} />
   <div class="mt-6">
     <CommitHistory items={commits} locale={locale} />

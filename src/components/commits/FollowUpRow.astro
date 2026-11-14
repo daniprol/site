@@ -1,0 +1,83 @@
+---
+/**
+ * A later change of verdict, as its own short row in the history. It links to the note on the entry.
+ * The graph follows real git, time running upwards:
+ *   open -> merged    the branch that was left hanging comes back in and lands as a merge commit
+ *   merged -> reverted a revert commit on the trunk
+ *   open -> reverted  the branch is closed without ever landing
+ *   anything -> open  a new branch leaves the trunk again
+ */
+import DateTime from "@/components/ui/DateTime.astro";
+import { localePath, useTranslations, type Locale } from "@/i18n";
+import { commitPath, laterLabel, type Commit, type Update } from "@/lib/commits";
+
+import StatePill from "./StatePill.astro";
+
+interface Props {
+  commit: Commit;
+  update: Update;
+  locale: Locale;
+  index: number;
+  /** Position in the whole history, 1 for the oldest row. */
+  seq: number;
+}
+const { commit, update, locale, index, seq } = Astro.props;
+const t = useTranslations(locale);
+const { from, verdict, note, date, anchor } = update;
+const { title } = commit.snack.data;
+---
+
+<li
+  class="cm-row cm-follow"
+  id={`s-${commit.slug}-${anchor}`}
+  data-verdict={verdict}
+  data-seq={seq}
+  style={`--i:${index}`}
+>
+  <span class="cm-graph" aria-hidden="true">
+    <svg class="cm-branch" viewBox="0 0 40 72">
+      {verdict === "keep" && (
+        <>
+          <path class="later" d="M27 70V52" />
+          <path d="M27 52C27 40 11 42 11 30" />
+          <circle class="ring" cx="11" cy="28" r="4" />
+        </>
+      )}
+      {verdict === "drop" && from === "maybe" && (
+        <>
+          <path class="later" d="M27 70V40" />
+          <path class="cross" d="M23.5 29.5l7 7m0-7l-7 7" />
+        </>
+      )}
+      {verdict === "drop" && from !== "maybe" && (
+        <>
+          <circle class="ring" cx="11" cy="30" r="5.5" />
+          <path class="cross" d="M8.9 27.9l4.2 4.2m0-4.2l-4.2 4.2" />
+        </>
+      )}
+      {verdict === "maybe" && (
+        <>
+          <path d="M11 62C11 48 27 50 27 36" />
+          <circle class="ring" cx="27" cy="31" r="4.5" />
+        </>
+      )}
+    </svg>
+  </span>
+  <a class="cm-link group" href={`${localePath(locale, commitPath(commit.slug))}#${anchor}`}>
+    <div class="cm-top">
+      <h3 class="cm-title">
+        <span class="marker-hover">{title}</span>
+      </h3>
+      <span class="cm-change">
+        <span class="cm-was">{t(`commits.state.${from}`)}</span>
+        <span aria-hidden="true">→</span>
+        <StatePill verdict={verdict} locale={locale} />
+      </span>
+    </div>
+    <p class="cm-take">{note}</p>
+    <p class="cm-meta">
+      <span>{laterLabel(update.days, t)}</span>
+      <DateTime date={date} locale={locale} format="short" />
+    </p>
+  </a>
+</li>

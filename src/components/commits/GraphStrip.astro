@@ -41,7 +41,8 @@ const before = (hasRoot ? CAP : 0) + olderShown * SLOT + SLOT / 2;
       </li>
     )}
     {window.map((commit, i) => {
-      const { verdict, title } = commit.snack.data;
+      const { verdict } = commit;
+      const { title } = commit.snack.data;
       const offset = i - olderShown;
       const isCurrent = offset === 0;
       const Tag = isCurrent ? "span" : "a";

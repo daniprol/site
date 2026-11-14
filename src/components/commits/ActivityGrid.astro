@@ -54,13 +54,13 @@ const inRange = cells.filter((cell) => cell.commit).length;
         <a
           class:list={["cm-cell", { "is-far": column <= FAR_WEEKS }]}
           style={`--c:${column};--r:${row}`}
-          data-verdict={commit.snack.data.verdict}
+          data-verdict={commit.verdict}
           href={`#s-${commit.slug}`}
           data-cm-jump
-          title={`${commit.snack.data.title} · ${t(`commits.state.${commit.snack.data.verdict}`)} · ${formatDate(commit.snack.data.date, locale, "short")}`}
+          title={`${commit.snack.data.title} · ${t(`commits.state.${commit.verdict}`)} · ${formatDate(commit.snack.data.date, locale, "short")}`}
         >
           <span class="sr-only">
-            {commit.snack.data.title}, {t(`commits.state.${commit.snack.data.verdict}`)}, {day}
+            {commit.snack.data.title}, {t(`commits.state.${commit.verdict}`)}, {day}
           </span>
         </a>
       ) : (

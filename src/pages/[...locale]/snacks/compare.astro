@@ -1,0 +1,64 @@
+---
+/** Two snacks side by side. The pair is in the URL: /snacks/compare?a=herdr&b=t3-code */
+import Compare, { type CompareItem } from "@/components/commits/Compare";
+import PageHeader from "@/components/ui/PageHeader.astro";
+import { DEFAULT_LOCALE, localeParams, localePath, useTranslations } from "@/i18n";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { COMPARE_PATH, SECTION_PATH, commitPath, getCommits } from "@/lib/commits";
+
+export const getStaticPaths = localeParams;
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const commits = await getCommits();
+
+const items: CompareItem[] = commits
+  .filter(({ snack }) => snack.data.pros.length + snack.data.cons.length > 0)
+  .map(({ snack, slug, verdict }) => ({
+    slug,
+    title: snack.data.title,
+    take: snack.data.take,
+    kind: snack.data.kind,
+    verdict,
+    state: t(`commits.state.${verdict}`),
+    href: localePath(locale, commitPath(slug)),
+    pros: snack.data.pros,
+    cons: snack.data.cons,
+  }));
+const [first, second] = items;
+const labels = {
+  base: t("compare.base"),
+  compare: t("compare.compare"),
+  swap: t("compare.swap"),
+  liked: t("compare.liked"),
+  disliked: t("compare.disliked"),
+  none: t("compare.none"),
+  read: t("compare.read"),
+  same: t("compare.same"),
+};
+---
+
+<BaseLayout
+  locale={locale}
+  title={`${t("compare.title")} · ${t("commits.title")}`}
+  description={t("compare.description")}
+  canonicalPath={localePath(DEFAULT_LOCALE, COMPARE_PATH)}
+>
+  <nav class="pr-crumb mt-6 sm:mt-12" aria-label={t("commits.title")}>
+    <a
+      href={localePath(locale, SECTION_PATH)}
+      class="group -ml-2 inline-flex min-h-11 items-center gap-2 px-2 hover:text-fg"
+    >
+      <span aria-hidden="true">←</span>
+      <span class="marker-hover">{t("commits.back")}</span>
+    </a>
+  </nav>
+  <div class="cmp-header">
+    <PageHeader title={t("compare.title")} description={t("compare.description")} />
+  </div>
+  {first && second && (
+    <div data-pagefind-ignore>
+      <Compare client:load items={items} labels={labels} initialA={first.slug} initialB={second.slug} />
+    </div>
+  )}
+</BaseLayout>

@@ -5,6 +5,7 @@
  *   merged   the branch forks, gets its commit, and lands on the trunk as a merge commit
  *   reverted the same, followed by a revert commit on the trunk
  *   open     the branch ends at its commit and has not rejoined
+ * The graph draws the verdict of that day; the pill shows the verdict today.
  */
 import DateTime from "@/components/ui/DateTime.astro";
 import { localePath, useTranslations, type Locale } from "@/i18n";
@@ -17,24 +18,28 @@ interface Props {
   locale: Locale;
   /** Position in the list, used to stagger the drawing where scroll-driven animation is missing. */
   index: number;
+  /** Position in the whole history, 1 for the oldest row. Left out on the home page. */
+  seq?: number;
 }
-const { commit, locale, index } = Astro.props;
+const { commit, locale, index, seq } = Astro.props;
 const t = useTranslations(locale);
-const { snack, slug, sha } = commit;
-const { title, take, verdict, kind, date } = snack.data;
+const { snack, slug, sha, verdict, firstVerdict } = commit;
+const { title, take, kind, date } = snack.data;
+// The graph shows what happened that day. A later change of verdict has its own row further up.
+const changed = firstVerdict !== verdict;
 ---
 
-<li class="cm-row" id={`s-${slug}`} data-verdict={verdict} style={`--i:${index}`}>
-  <span class="cm-graph" aria-hidden="true">
+<li class="cm-row" id={`s-${slug}`} data-verdict={verdict} data-seq={seq} style={`--i:${index}`}>
+  <span class="cm-graph" data-verdict={firstVerdict} aria-hidden="true">
     <svg class="cm-branch" viewBox="0 0 40 104">
       <path d="M11 102C11 86 27 88 27 72V40"></path>
-      {verdict === "keep" && (
+      {firstVerdict === "keep" && (
         <>
           <path d="M27 40C27 27 11 29 11 16" />
           <circle class="ring" cx="11" cy="14" r="4" />
         </>
       )}
-      {verdict === "drop" && (
+      {firstVerdict === "drop" && (
         <>
           <path d="M27 40C27 30 11 33 11 23" />
           <circle class="ring" cx="11" cy="21" r="4" />
@@ -42,6 +47,7 @@ const { title, take, verdict, kind, date } = snack.data;
           <path class="cross" d="M8.9 4.9l4.2 4.2m0-4.2l-4.2 4.2" />
         </>
       )}
+      {firstVerdict === "maybe" && changed && <path class="later" d="M27 32V8" />}
     </svg>
     <span class="cm-dot" data-cm-vt style={`view-transition-name:cm-node-${slug}`}></span>
   </span>

@@ -12,8 +12,8 @@ export async function GET(context: APIContext) {
     title: `${site.name} · Snacks`,
     description: "Short first impressions of tools, apps and models.",
     site: context.site ?? "",
-    items: commits.map(({ snack, slug }) => ({
-      title: `${snack.data.title} (${STATE[snack.data.verdict]})`,
+    items: commits.map(({ snack, slug, verdict }) => ({
+      title: `${snack.data.title} (${STATE[verdict]})`,
       pubDate: snack.data.date,
       link: commitPath(slug),
       description: snack.data.take,

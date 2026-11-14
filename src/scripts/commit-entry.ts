@@ -19,6 +19,8 @@ interface NavigationLike {
   currentEntry: { index: number } | null;
 }
 
+import "./commit-behind";
+
 const root = document.documentElement;
 const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
 const samePage = (a: string, b: string) => a.replace(/\/$/, "") === b.replace(/\/$/, "");
