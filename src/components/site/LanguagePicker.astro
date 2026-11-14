@@ -8,7 +8,9 @@ interface Props {
 }
 const { locale } = Astro.props;
 const t = useTranslations(locale);
-const path = stripLocale(Astro.url.pathname);
+const stripped = stripLocale(Astro.url.pathname);
+// The 404 page only exists in English, so its language links go to each locale's home page.
+const path = /^\/404(\.html)?\/?$/.test(stripped) ? "/" : stripped;
 ---
 
 <nav aria-label={t("language")} class="flex font-mono text-xs">
