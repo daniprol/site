@@ -15,9 +15,20 @@
         // Storage can be blocked (private mode); fall back to the OS preference.
       }
       const prefersDark = matchMedia("(prefers-color-scheme: dark)").matches;
-      document.documentElement.dataset.theme = stored ?? (prefersDark ? "dark" : "light");
+      const theme = stored ?? (prefersDark ? "dark" : "light");
+      document.documentElement.dataset.theme = theme;
+      syncBar(theme);
+    };
+    // Keep the browser bar (theme-color) on the page background, including after a manual toggle.
+    const syncBar = (theme) => {
+      const color = theme === "dark" ? "#0f131b" : "#fbfdfe";
+      document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute("content", color));
     };
     apply();
     document.addEventListener("astro:after-swap", apply);
+    new MutationObserver(() => syncBar(document.documentElement.dataset.theme)).observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme"],
+    });
   })();
 </script>
