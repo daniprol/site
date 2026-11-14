@@ -36,4 +36,35 @@
   --container-column: 42rem;
 
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Spring motion (from the Studio theme), used by the theme toggle. ~4% overshoot; use with ~500ms. */
+  --ease-spring: linear(
+    0,
+    0.052,
+    0.173,
+    0.325,
+    0.482,
+    0.625,
+    0.748,
+    0.846,
+    0.92,
+    0.972,
+    1.006,
+    1.026,
+    1.036,
+    1.038,
+    1.036,
+    1.031,
+    1.026,
+    1.02,
+    1.014,
+    1.009,
+    1.006,
+    1.003,
+    1.001,
+    1
+  );
+  --duration-fast: 160ms;
+  --duration-base: 240ms;
+  --duration-spring: 520ms;
 }

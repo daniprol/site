@@ -9,7 +9,7 @@ interface Props {
 const { items, locale } = Astro.props;
 ---
 
-<ul class="-mx-3">
+<ul class="-mx-3" data-pagefind-ignore>
   {items.map((project) => (
     <li>
       <a
