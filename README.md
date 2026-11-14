@@ -1,6 +1,6 @@
 # site
 
-Personal site, blog and portfolio of Daniel Prol. Built with [Astro](https://astro.build), fully static, deployed to Cloudflare.
+Personal site, blog and portfolio of Daniel Prol. Built with [Astro](https://astro.build), fully static, deployed to Cloudflare and GitHub Pages.
 
 ## Quick start
 
@@ -44,6 +44,13 @@ src/
   i18n/                 Locales and interface strings
   styles/               tokens.css (the theme), global.css, prose.css
 ```
+
+## Deploys
+
+- **Cloudflare Workers** builds every push: `main` goes to production, other branches get a preview URL. Configured in `wrangler.jsonc`.
+- **GitHub Pages** (`.github/workflows/pages.yml`) publishes `main` after the CI workflow passes. It's a project site, so it lives under `/site/`: the workflow sets `SITE_URL` and `SITE_BASE`, which `astro.config.ts` reads.
+
+Because of that base path, never hard-code an internal link like `href="/writing"`. Use `localePath(locale, "/writing")` for pages and `withBase("/rss.xml")` for files (both from `@/i18n`). The Pages workflow link-checks the build under `/site/`, so a missed one fails the deploy. To try it locally: `SITE_BASE=/site pnpm build`.
 
 ## Languages
 

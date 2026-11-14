@@ -1,7 +1,7 @@
 ---
 import { getRelativeLocaleUrl } from "astro:i18n";
 
-import { LOCALES, stripLocale, type Locale } from "@/i18n";
+import { LOCALES, stripLocale, withBase, type Locale } from "@/i18n";
 import { site } from "@/site.config";
 
 interface Props {
@@ -30,5 +30,5 @@ const basePath = stripLocale(Astro.url.pathname);
 <meta property="og:url" content={canonical} />
 <meta property="og:locale" content={locale} />
 <meta name="twitter:card" content="summary_large_image" />
-<link rel="alternate" type="application/rss+xml" title={`${site.name} · Writing`} href="/rss.xml" />
-<link rel="alternate" type="application/rss+xml" title={`${site.name} · Snacks`} href="/snacks/rss.xml" />
+<link rel="alternate" type="application/rss+xml" title={`${site.name} · Writing`} href={withBase("/rss.xml")} />
+<link rel="alternate" type="application/rss+xml" title={`${site.name} · Snacks`} href={withBase("/snacks/rss.xml")} />
