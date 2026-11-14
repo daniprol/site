@@ -1,7 +1,7 @@
 ---
 import { render } from "astro:content";
 
-import { DEFAULT_LOCALE, LOCALES, type Locale } from "@/i18n";
+import { DEFAULT_LOCALE, LOCALES, localePath, type Locale } from "@/i18n";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { getProjects, type Project } from "@/lib/content";
 
@@ -20,7 +20,12 @@ const { Content } = await render(project);
 const { title, summary, stack, repo, url, year } = project.data;
 ---
 
-<BaseLayout locale={locale} title={title} description={summary} canonicalPath={`/projects/${project.id}`}>
+<BaseLayout
+  locale={locale}
+  title={title}
+  description={summary}
+  canonicalPath={localePath(DEFAULT_LOCALE, `/projects/${project.id}`)}
+>
   <article class="mt-10 sm:mt-16">
     <header class="mb-10 sm:mb-12">
       <p class="flex flex-wrap gap-x-2 font-mono text-xs text-muted">

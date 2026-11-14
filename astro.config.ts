@@ -11,7 +11,10 @@ import remarkMath from "remark-math";
 import { DEFAULT_LOCALE, LOCALES } from "./src/i18n/config";
 
 export default defineConfig({
-  site: "https://example.com", // TODO: replace with the real domain
+  // Cloudflare builds use the defaults. The GitHub Pages workflow sets both: SITE_URL to the Pages origin and
+  // SITE_BASE to the project path ("/site"). Internal links get the base through withBase/localePath in src/i18n.
+  site: process.env.SITE_URL ?? "https://example.com", // TODO: replace with the real domain
+  base: process.env.SITE_BASE ?? "/",
   output: "static",
   trailingSlash: "ignore",
 

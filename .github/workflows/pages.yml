@@ -1,0 +1,70 @@
+# Publishes the site to GitHub Pages after CI passes on main, alongside the Cloudflare Workers deploy.
+# One-time setup: Settings → Pages → Build and deployment → Source: "GitHub Actions".
+name: GitHub Pages
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  # Manual re-run from the Actions tab, e.g. after enabling Pages.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time; let a running deploy finish rather than cancel it halfway.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    # Only for a green CI run of a push to main (not a PR whose branch happens to be called main).
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # Build exactly the commit CI checked, even if main has moved on since.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - id: pages
+        uses: actions/configure-pages@v5
+      - run: pnpm install --frozen-lockfile
+      - name: Build
+        run: pnpm build
+        env:
+          # e.g. https://daniprol.github.io and /site for a project site; a custom domain gives an empty base.
+          SITE_URL: ${{ steps.pages.outputs.origin }}
+          SITE_BASE: ${{ steps.pages.outputs.base_path || '/' }}
+      # Mount the build under the base path so the offline check catches any link that skips withBase().
+      - name: Stage for link check
+        run: mkdir -p "_check${BASE_PATH}" && cp -r dist/. "_check${BASE_PATH}/"
+        env:
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+      - name: Check links
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: --offline --root-dir "$PWD/_check" --no-progress "_check/**/*.html"
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

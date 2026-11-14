@@ -1,6 +1,7 @@
 import rss from "@astrojs/rss";
 import type { APIContext } from "astro";
 
+import { withBase } from "@/i18n";
 import { getSnacks } from "@/lib/content";
 import { site } from "@/site.config";
 
@@ -9,11 +10,11 @@ export async function GET(context: APIContext) {
   return rss({
     title: `${site.name} · Snacks`,
     description: "Short first impressions of tools, apps and models.",
-    site: context.site ?? "",
+    site: new URL(withBase("/"), context.site ?? "https://example.com"),
     items: snacks.map((snack) => ({
       title: `${snack.data.title} (${snack.data.verdict})`,
       pubDate: snack.data.date,
-      link: `/snacks/#${snack.id}`,
+      link: withBase(`/snacks/#${snack.id}`),
       content: snack.body ?? "",
     })),
   });

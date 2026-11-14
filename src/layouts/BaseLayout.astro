@@ -9,7 +9,7 @@ import Header from "@/components/site/Header.astro";
 import SearchDialog from "@/components/site/SearchDialog.astro";
 import Seo from "@/components/site/Seo.astro";
 import ThemeScript from "@/components/site/ThemeScript.astro";
-import type { Locale } from "@/i18n";
+import { withBase, type Locale } from "@/i18n";
 
 interface Props {
   locale: Locale;
@@ -26,10 +26,10 @@ const { locale, ...seo } = Astro.props;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" href="/favicon.ico" sizes="32x32" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href={withBase("/favicon.ico")} sizes="32x32" />
+    <link rel="icon" href={withBase("/favicon.svg")} type="image/svg+xml" />
+    <link rel="apple-touch-icon" href={withBase("/apple-touch-icon.png")} />
+    <link rel="manifest" href={withBase("/manifest.webmanifest")} />
     <!-- Browser bar matches the page background. ThemeScript keeps it in sync with the toggle. -->
     <meta name="theme-color" content="#fbfdfe" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0f131b" media="(prefers-color-scheme: dark)" />

@@ -88,14 +88,24 @@ const t = useTranslations(Astro.props.locale);
     excerpt: string;
   }
   interface Pagefind {
+    options: (opts: { baseUrl: string }) => Promise<void>;
     search: (q: string) => Promise<{ results: { data: () => Promise<Result> }[] }>;
   }
+
+  // "/" on Cloudflare, "/site/" on GitHub Pages.
+  const base = import.meta.env.BASE_URL.replace(/\/?$/, "/");
 
   let pagefind: Promise<Pagefind | null> | undefined;
   const load = () => {
     // Built by `pagefind --site dist`; missing in `astro dev`. The path is built at runtime so Vite leaves it alone.
-    const url = ["", "pagefind", "pagefind.js"].join("/");
-    pagefind ??= import(/* @vite-ignore */ url).catch(() => null);
+    const url = [base.slice(0, -1), "pagefind", "pagefind.js"].join("/");
+    pagefind ??= import(/* @vite-ignore */ url)
+      .then(async (engine: Pagefind) => {
+        // Pagefind indexes dist/ as the site root, so result URLs need the base put back.
+        await engine.options({ baseUrl: base });
+        return engine;
+      })
+      .catch(() => null);
     return pagefind;
   };
 
