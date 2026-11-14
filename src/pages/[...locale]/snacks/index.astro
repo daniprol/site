@@ -1,6 +1,7 @@
 ---
 import ActivityGrid from "@/components/commits/ActivityGrid.astro";
 import CommitHistory from "@/components/commits/CommitHistory.astro";
+import TitleGraph from "@/components/commits/TitleGraph.astro";
 import PageHeader from "@/components/ui/PageHeader.astro";
 import { localeParams, useTranslations } from "@/i18n";
 import BaseLayout from "@/layouts/BaseLayout.astro";
@@ -14,9 +15,15 @@ const commits = await getCommits();
 ---
 
 <BaseLayout locale={locale} title={t("commits.title")} description={t("commits.description")}>
-  <PageHeader title={t("commits.title")} description={t("commits.description")} />
-  <ActivityGrid items={commits} locale={locale} />
-  <div class="mt-7">
-    <CommitHistory items={commits} locale={locale} />
+  <PageHeader title={t("commits.title")} description={t("commits.description")}>
+    <TitleGraph items={commits} />
+  </PageHeader>
+  <CommitHistory items={commits} locale={locale} />
+  <div class="mt-12">
+    <ActivityGrid items={commits} locale={locale} />
   </div>
 </BaseLayout>
+
+<script>
+  import "@/scripts/commit-entry";
+</script>

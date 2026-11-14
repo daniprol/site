@@ -1,0 +1,95 @@
+---
+/**
+ * The history turned on its side, at the top of an entry page: time runs left to right, the current
+ * entry sits in the middle and its neighbours peek in at the edges. Every neighbour is a link, so
+ * it works without JavaScript; the page script slides the strip when you swipe or use the keys.
+ */
+import { localePath, type Locale } from "@/i18n";
+import { BASE_BRANCH, commitPath, type Commit } from "@/lib/commits";
+
+interface Props {
+  /** All commits, newest first. */
+  commits: Commit[];
+  current: Commit;
+  locale: Locale;
+}
+const { commits, current, locale } = Astro.props;
+
+/** Neighbours rendered on each side. Two would fill the strip; the third covers the slide. */
+const REACH = 3;
+const SLOT = 160;
+const CAP = 72;
+
+const at = commits.indexOf(current);
+// Oldest on the left: commits are newest first, so walk the window backwards.
+const window = commits.slice(Math.max(0, at - REACH), at + REACH + 1).reverse();
+const hasRoot = at + REACH >= commits.length - 1;
+const hasHead = at - REACH <= 0;
+const olderShown = window.findIndex((commit) => commit === current);
+const before = (hasRoot ? CAP : 0) + olderShown * SLOT + SLOT / 2;
+---
+
+<nav class="cm-strip" aria-label={BASE_BRANCH} data-cm-strip>
+  <ol class="cm-strip-track" style={`--before:${before}px`}>
+    {hasRoot && (
+      <li class="cm-cap" aria-hidden="true">
+        <svg viewBox="0 0 72 60">
+          <path class="trunk" d="M40 46H72" />
+          <circle class="root" cx="40" cy="46" r="4" />
+        </svg>
+        <span class="cm-slot-label">git init</span>
+      </li>
+    )}
+    {window.map((commit, i) => {
+      const { verdict, title } = commit.snack.data;
+      const offset = i - olderShown;
+      const isCurrent = offset === 0;
+      const Tag = isCurrent ? "span" : "a";
+      return (
+        <li>
+          <Tag
+            class="cm-slot group"
+            data-verdict={verdict}
+            data-offset={offset}
+            aria-current={isCurrent ? "page" : undefined}
+            href={isCurrent ? undefined : localePath(locale, commitPath(commit.slug))}
+          >
+            <svg viewBox="0 0 160 60" aria-hidden="true">
+              <path class="trunk" d="M0 46H160" />
+              <path d="M18 46C42 46 40 16 64 16H80" />
+              {verdict !== "maybe" && (
+                <>
+                  <path d="M80 16H90C114 16 112 46 132 46" />
+                  <circle class="ring" cx="134" cy="46" r="4" />
+                </>
+              )}
+              {verdict === "drop" && (
+                <>
+                  <circle class="ring" cx="151" cy="46" r="5.5" />
+                  <path class="cross" d="M148.9 43.9l4.2 4.2m0-4.2l-4.2 4.2" />
+                </>
+              )}
+            </svg>
+            <span
+              class="cm-dot"
+              data-cm-vt
+              style={isCurrent ? `view-transition-name:cm-node-${commit.slug}` : undefined}
+            />
+            <span class="cm-slot-label">
+              <span class="num">#{commit.number}</span> <span class="marker-hover">{title}</span>
+            </span>
+          </Tag>
+        </li>
+      );
+    })}
+    {hasHead && (
+      <li class="cm-cap" aria-hidden="true">
+        <svg viewBox="0 0 72 60">
+          <path class="trunk" d="M0 46H26" />
+          <circle class="head" cx="32" cy="46" r="5" />
+        </svg>
+        <span class="cm-slot-label">{BASE_BRANCH}</span>
+      </li>
+    )}
+  </ol>
+</nav>

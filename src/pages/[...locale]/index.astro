@@ -6,7 +6,7 @@ import ProjectList from "@/components/ui/ProjectList.astro";
 import Section from "@/components/ui/Section.astro";
 import { localeParams, localePath, useTranslations } from "@/i18n";
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import { getCommits } from "@/lib/commits";
+import { SECTION_PATH, getCommits } from "@/lib/commits";
 import { getPosts, getProjects } from "@/lib/content";
 import { site } from "@/site.config";
 
@@ -35,7 +35,7 @@ const projects = (await getProjects()).filter((p) => p.data.featured).slice(0, 3
     <PostList items={posts} locale={locale} />
   </Section>
 
-  <Section title={t("home.latestCommits")} href={localePath(locale, "/commits")} linkLabel={t("home.viewAll")}>
+  <Section title={t("home.latestCommits")} href={localePath(locale, SECTION_PATH)} linkLabel={t("home.viewAll")}>
     <CommitList items={commits} locale={locale} />
   </Section>
 

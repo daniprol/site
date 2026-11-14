@@ -1,0 +1,46 @@
+---
+/**
+ * The graph under the section title: the latest entries as branches off one horizontal trunk,
+ * oldest on the left, HEAD on the right. Drawn from the real data, so it changes with every entry.
+ * Decorative: the list below carries the same information as text.
+ */
+import type { Commit } from "@/lib/commits";
+
+interface Props {
+  /** All commits, newest first. */
+  items: Commit[];
+}
+const { items } = Astro.props;
+
+const MAX = 14;
+const STEP = 44;
+const LEAD = 14;
+const shown = items.slice(0, MAX).reverse();
+const fromStart = items.length <= MAX;
+const width = LEAD + shown.length * STEP + 18;
+---
+
+<div class="cm-titlegraph" aria-hidden="true">
+  <svg viewBox={`0 0 ${width} 34`} width={width} height="34" style={`--len:${width}`}>
+    <path class="trunk" d={`M${fromStart ? 5 : 0} 25H${width - 12}`}></path>
+    {fromStart && <circle class="root" cx="5" cy="25" r="3" />}
+    {shown.map((commit, i) => {
+      const x = LEAD + i * STEP;
+      const { verdict } = commit.snack.data;
+      return (
+        <g data-verdict={verdict} style={`--i:${i}`}>
+          <path class="branch" d={`M${x} 25C${x + 7} 25 ${x + 6} 9 ${x + 13} 9H${x + 16}`} />
+          {verdict !== "maybe" && (
+            <>
+              <path class="branch" d={`M${x + 16} 9H${x + 19}C${x + 26} 9 ${x + 25} 25 ${x + 32} 25`} />
+              <circle class="ring" cx={x + 32} cy="25" r="2.6" />
+            </>
+          )}
+          {verdict === "drop" && <path class="cross" d={`M${x + 36.5} 22.5l5 5m0-5l-5 5`} />}
+          <circle class:list={["node", { hollow: verdict === "maybe" }]} cx={x + 16} cy="9" r="3.6" />
+        </g>
+      );
+    })}
+    <circle class="head" cx={width - 7} cy="25" r="4.5"></circle>
+  </svg>
+</div>

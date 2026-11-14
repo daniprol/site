@@ -7,6 +7,13 @@ import { getSnacks, type Snack } from "./content";
 export type Verdict = Snack["data"]["verdict"];
 export const VERDICTS = ["keep", "maybe", "drop"] as const satisfies readonly Verdict[];
 
+/**
+ * Where the section lives. The look is a commit history, but the name must not suggest these are
+ * real GitHub commits. To rename the section, change this, the folder in src/pages, and the
+ * "commits.title" strings in src/i18n/ui.ts.
+ */
+export const SECTION_PATH = "/snacks";
+
 /** The branch every kept tool is merged into. */
 export const BASE_BRANCH = "toolbox";
 
@@ -52,11 +59,14 @@ export async function getCommits(): Promise<Commit[]> {
   });
   const seen = new Set<string>();
   for (const { slug, snack } of commits) {
-    if (seen.has(slug)) throw new Error(`Two snacks share the URL /commits/${slug}. Rename ${snack.id}.`);
+    if (seen.has(slug)) throw new Error(`Two snacks share the URL ${SECTION_PATH}/${slug}. Rename ${snack.id}.`);
     seen.add(slug);
   }
   return commits;
 }
+
+/** Path of one entry, before the locale prefix: "/snacks/ghostty". */
+export const commitPath = (slug: string) => `${SECTION_PATH}/${slug}`;
 
 export function countByVerdict(commits: Commit[]): Record<Verdict, number> {
   const counts: Record<Verdict, number> = { keep: 0, maybe: 0, drop: 0 };
@@ -79,13 +89,3 @@ export function fillHtml(template: string, parts: Record<string, string>): strin
 }
 
 export const refHtml = (text: string) => `<code class="ref">${text}</code>`;
-
-/** View transition for a pull request page: it rises in like a panel and drops away on the way back. */
-const ease = "cubic-bezier(0.22, 1, 0.36, 1)";
-const rise = { name: "cm-panel-in", duration: "440ms", easing: ease, fillMode: "both" } as const;
-const drop = { name: "cm-panel-out", duration: "200ms", easing: "ease-in", fillMode: "both" } as const;
-const fadeOut = { name: "cm-fade-out", duration: "140ms", easing: "ease-in", fillMode: "both" } as const;
-export const panelTransition = {
-  forwards: { old: fadeOut, new: rise },
-  backwards: { old: drop, new: rise },
-};

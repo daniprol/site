@@ -5,10 +5,13 @@
  */
 @layer components {
   .cm-history,
+  .cm-titlegraph,
   .pr {
     --cm-line: color-mix(in oklch, var(--color-fg) 17%, var(--color-bg));
     --cm-main-x: 10px;
     --cm-rail: 40px;
+    /* How far above the bottom of the screen the drawing HEAD rides while you scroll. */
+    --cm-tip: 26svh;
   }
   [data-verdict="keep"] {
     --cm-tone: var(--color-keep);
@@ -178,7 +181,7 @@
   }
   .cm-head::before,
   .cm-month::before,
-  .cm-row::before,
+  .cm-graph::before,
   .cm-root::before {
     content: "";
     position: absolute;
@@ -197,7 +200,8 @@
   /* Rings on the trunk: HEAD at the top, a tick per month, the first commit at the bottom. */
   .cm-head::after,
   .cm-month::after,
-  .cm-root::after {
+  .cm-root::after,
+  .cm-tip::after {
     content: "";
     position: absolute;
     left: calc(var(--cm-main-x) + 1px);
@@ -209,15 +213,29 @@
     border-radius: 50%;
     background: var(--color-bg);
   }
-  .cm-head::after {
+  .cm-head::after,
+  .cm-tip::after {
     width: 12px;
     height: 12px;
     border-color: var(--color-fg);
-    box-shadow: 0 0 0 3px var(--color-mark-strong);
+    background: var(--color-logo-dot);
+    box-shadow: 0 0 0 3px var(--color-bg);
   }
   .cm-root::after {
     border-color: var(--color-muted);
     background: var(--color-muted);
+  }
+  /* HEAD as a pen: it rides down the trunk while you scroll. Only shown where scroll can drive it. */
+  .cm-tip {
+    display: none;
+    position: sticky;
+    z-index: 2;
+    top: calc(100svh - var(--cm-tip));
+    height: 0;
+    pointer-events: none;
+  }
+  .cm-tip::after {
+    top: 0;
   }
   .cm-head,
   .cm-root {
@@ -244,56 +262,70 @@
     align-items: baseline;
     justify-content: space-between;
     gap: 1rem;
-    padding-block: 1.1rem 0.35rem;
+    padding-block: 1.1rem 0.2rem;
   }
   .cm-month::after {
-    top: calc(50% + 0.4rem);
+    top: calc(50% + 0.45rem);
   }
 
+  /*
+   * A row's graph, time running upwards. The branch leaves the trunk at the bottom, carries the
+   * commit (the dot, level with the title), and for merged and reverted entries lands back on the
+   * trunk above it.
+   */
   .cm-row {
-    min-height: 78px;
+    min-height: 104px;
   }
-  /* On the home page the history is an excerpt, so the trunk fades out instead of ending. */
-  .cm-excerpt .cm-row:last-child::before {
-    background: linear-gradient(var(--cm-line) 40%, transparent);
+  .cm-graph {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: var(--cm-rail);
+    pointer-events: none;
+  }
+  .cm-branch,
+  .cm-slot svg,
+  .cm-cap svg,
+  .cm-titlegraph svg {
+    fill: none;
+    stroke: var(--cm-tone);
+    stroke-width: 2;
+    stroke-linecap: round;
   }
   .cm-branch {
     position: absolute;
     left: 0;
     top: 0;
     width: 40px;
-    height: 78px;
+    height: 104px;
     overflow: visible;
-    fill: none;
-    stroke: var(--cm-tone);
-    stroke-width: 2;
-    stroke-linecap: round;
-    pointer-events: none;
   }
-  .cm-branch .dashed {
-    stroke-dasharray: 1.5 5;
+  :is(.cm-branch, .cm-slot, .cm-titlegraph) .ring {
+    fill: var(--color-bg);
   }
-  .cm-branch .node {
-    fill: var(--cm-tone);
-    stroke: var(--color-bg);
-    stroke-width: 2.5;
-    transform-box: fill-box;
-    transform-origin: center;
+  .cm-dot {
+    position: absolute;
+    left: 27px;
+    top: 40px;
+    width: 13px;
+    height: 13px;
+    margin: -6.5px 0 0 -6.5px;
+    border-radius: 50%;
+    background: var(--cm-tone);
+    box-shadow: 0 0 0 2.5px var(--color-bg);
     transition: scale var(--duration-base) var(--ease-spring);
   }
-  .cm-branch .node.hollow {
-    fill: var(--color-bg);
-    stroke: var(--cm-tone);
-    stroke-width: 2;
+  :is(.cm-row, .cm-slot)[data-verdict="maybe"] .cm-dot {
+    border: 2px solid var(--cm-tone);
+    background: var(--color-bg);
   }
-  .cm-branch .join {
-    fill: var(--cm-tone);
-    stroke: none;
+  /* On the home page the history is an excerpt, so the trunk fades out instead of ending. */
+  .cm-excerpt .cm-row:last-child .cm-graph::before {
+    background: linear-gradient(var(--cm-line) 40%, transparent);
   }
   .cm-link {
     display: block;
     margin-right: -0.75rem;
-    padding: 0.85rem 0.75rem 0.9rem 0.5rem;
+    padding: 1.7rem 0.75rem 0.7rem 0.5rem;
     border-radius: 0.5rem;
     transition: background-color var(--duration-fast);
   }
@@ -301,8 +333,9 @@
   .cm-link:focus-visible {
     background: var(--color-surface);
   }
-  .cm-row:has(.cm-link:hover) .node,
-  .cm-row:has(.cm-link:focus-visible) .node {
+  .cm-row:has(.cm-link:hover) .cm-dot,
+  .cm-row:has(.cm-link:focus-visible) .cm-dot,
+  a.cm-slot:hover .cm-dot {
     scale: 1.25;
   }
   .cm-top {
@@ -345,6 +378,122 @@
     color: var(--color-accent);
   }
 
+  /* ---------- The graph under the section title ---------- */
+  .cm-titlegraph {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1.1rem;
+    overflow: hidden;
+  }
+  .cm-titlegraph svg {
+    flex: none;
+    margin-right: auto;
+    overflow: visible;
+  }
+  :is(.cm-titlegraph, .cm-slot, .cm-cap) .trunk {
+    stroke: var(--cm-line);
+  }
+  :is(.cm-titlegraph, .cm-cap) .root {
+    fill: var(--color-muted);
+    stroke: none;
+  }
+  :is(.cm-titlegraph, .cm-cap) .head {
+    fill: var(--color-logo-dot);
+    stroke: var(--color-fg);
+  }
+  .cm-titlegraph .node {
+    fill: var(--cm-tone);
+    stroke: var(--color-bg);
+    stroke-width: 1.5;
+  }
+  .cm-titlegraph .node.hollow {
+    fill: var(--color-bg);
+    stroke: var(--cm-tone);
+    stroke-width: 2;
+  }
+  .cm-titlegraph g {
+    stroke: var(--cm-tone);
+    stroke-width: 1.75;
+  }
+
+  /* ---------- The history on its side, at the top of an entry ---------- */
+  .cm-strip {
+    --slot: 160px;
+    margin-top: 0.25rem;
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+    view-transition-name: cm-strip;
+  }
+  .cm-strip-track {
+    display: flex;
+    width: max-content;
+    /* Percentages here are of the strip's width, so this centres the current slot. */
+    margin-left: calc(50% - var(--before));
+    transition: translate 520ms var(--ease-out-soft);
+    will-change: translate;
+  }
+  .cm-slot,
+  .cm-cap {
+    position: relative;
+    display: block;
+    width: var(--slot);
+    padding-bottom: 0.35rem;
+  }
+  .cm-cap {
+    width: 72px;
+  }
+  .cm-slot svg,
+  .cm-cap svg {
+    display: block;
+    width: 100%;
+    height: 60px;
+    overflow: visible;
+  }
+  .cm-slot .cm-dot {
+    left: 80px;
+    top: 16px;
+  }
+  .cm-slot-label {
+    display: block;
+    padding-inline: 0.5rem;
+    overflow: hidden;
+    color: var(--color-muted);
+    font-size: 0.8rem;
+    line-height: 1.5;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .cm-cap .cm-slot-label,
+  .cm-slot-label .num {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+  }
+  .cm-cap .cm-slot-label {
+    padding-inline: 0;
+  }
+  .cm-cap:first-child .cm-slot-label {
+    text-align: right;
+    translate: 14px 0;
+  }
+  .cm-cap:last-child .cm-slot-label {
+    text-align: left;
+    translate: 8px 0;
+  }
+  .cm-slot[aria-current] .cm-slot-label {
+    color: var(--color-fg);
+    font-weight: 700;
+  }
+  /* Neighbours stay quiet until you reach for them. */
+  a.cm-slot {
+    opacity: 0.55;
+    transition: opacity var(--duration-base);
+  }
+  a.cm-slot:hover,
+  a.cm-slot:focus-visible {
+    opacity: 1;
+  }
+
   /* ---------- Pull request page ---------- */
   .pr-crumb {
     display: flex;
@@ -355,8 +504,16 @@
     font-size: 0.76rem;
     color: var(--color-muted);
   }
+  .pr {
+    /* Vertical scrolling stays with the browser; sideways swipes go to the page script. */
+    touch-action: pan-y;
+    overflow-x: clip;
+  }
+  .pr-panel {
+    view-transition-name: cm-panel;
+  }
   .pr-title {
-    margin-top: 0.6rem;
+    margin-top: 1rem;
     font-size: 1.9rem;
     font-weight: 700;
     line-height: 1.15;
@@ -798,28 +955,79 @@
 
   /* ---------- Motion ---------- */
   @media (prefers-reduced-motion: no-preference) {
-    /* History: each branch draws out of the trunk, then its commit lands. */
-    .cm-branch .draw {
-      stroke-dasharray: 1;
-      animation: cm-draw 620ms var(--ease-out-soft) backwards;
-      animation-delay: calc(min(var(--i), 8) * 55ms + 80ms);
+    /*
+     * The history is drawn as you scroll. A line across the screen, --cm-tip above the bottom edge,
+     * is where HEAD is writing: each piece of trunk and each branch is unveiled as it crosses that
+     * line, its commit lands a moment later, and the text takes its ink.
+     */
+    @supports (animation-timeline: view()) {
+      .cm-tip {
+        display: block;
+      }
+      .cm-history:has(.cm-tip) .cm-head::after {
+        display: none;
+      }
+      .cm-graph,
+      .cm-head::before,
+      .cm-month::before,
+      .cm-root::before {
+        animation: cm-unveil linear both;
+        animation-timeline: view(block 0% var(--cm-tip));
+        animation-range: entry 0% entry 100%;
+      }
+      .cm-month::after,
+      .cm-root::after {
+        animation: cm-land linear both;
+        animation-timeline: view(block 0% var(--cm-tip));
+        animation-range: entry 55% entry 110%;
+      }
+      .cm-row .cm-dot {
+        animation: cm-land linear both;
+        animation-timeline: view(block 0% var(--cm-tip));
+        animation-range: entry 0% entry 320%;
+      }
+      .cm-link,
+      .cm-month > *,
+      .cm-root > * {
+        animation: cm-ink linear both;
+        animation-timeline: view(block 0% var(--cm-tip));
+        animation-range: entry 0% entry 72px;
+      }
     }
-    .cm-branch .dashed,
-    .cm-branch .join {
-      animation: cm-fade 300ms ease-out backwards;
-      animation-delay: calc(min(var(--i), 8) * 55ms + 420ms);
+    /* Without scroll-driven animation, the same drawing plays once on arrival. */
+    @supports not (animation-timeline: view()) {
+      .cm-graph {
+        animation: cm-unveil 520ms var(--ease-out-soft) backwards;
+        animation-delay: calc(min(var(--i), 8) * 70ms + 80ms);
+      }
+      .cm-row .cm-dot {
+        animation: cm-land var(--duration-spring) linear backwards;
+        animation-delay: calc(min(var(--i), 8) * 70ms + 260ms);
+      }
     }
-    .cm-branch .node {
-      animation: cm-pop var(--duration-spring) var(--ease-spring) backwards;
-      animation-delay: calc(min(var(--i), 8) * 55ms + 300ms);
+
+    /* The title graph draws itself once, left to right. */
+    .cm-titlegraph .trunk {
+      stroke-dasharray: var(--len);
+      animation: cm-trunk 900ms var(--ease-out-soft) backwards;
     }
-    .cm-branch .cross {
-      animation: cm-fade 200ms ease-out backwards;
-      animation-delay: calc(min(var(--i), 8) * 55ms + 520ms);
+    .cm-titlegraph g {
+      animation: cm-fade 320ms ease-out backwards;
+      animation-delay: calc(var(--i) * 45ms + 160ms);
     }
-    /* Pull request: the state lands once, after the page has arrived. */
+    .cm-titlegraph .head {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: cm-pop var(--duration-spring) var(--ease-spring) 820ms backwards;
+    }
+
+    /* Entry page: the state lands once, after the page has arrived. */
     .cm-pill[data-variant="solid"] {
       animation: cm-pop var(--duration-spring) var(--ease-spring) 260ms backwards;
+    }
+    /* Opening an entry: the strip grows outwards from the commit that just flew up into it. */
+    html:not([data-cm-dir="older"], [data-cm-dir="newer"]) .cm-strip {
+      animation: cm-strip-open 700ms var(--ease-out-soft) 120ms backwards;
     }
     /* The verdict box settles in as it scrolls into view, where the browser can link motion to scroll. */
     @supports (animation-timeline: view()) {
@@ -837,9 +1045,41 @@
   }
 }
 
-@keyframes cm-draw {
+@keyframes cm-unveil {
   from {
-    stroke-dashoffset: 1;
+    clip-path: inset(0 -12px 100% -12px);
+  }
+  to {
+    clip-path: inset(0 -12px 0 -12px);
+  }
+}
+@keyframes cm-land {
+  from {
+    scale: 0;
+  }
+  35% {
+    scale: 0;
+  }
+  75% {
+    scale: 1.3;
+  }
+}
+@keyframes cm-ink {
+  from {
+    opacity: 0.36;
+  }
+}
+@keyframes cm-trunk {
+  from {
+    stroke-dashoffset: var(--len);
+  }
+}
+@keyframes cm-strip-open {
+  from {
+    clip-path: inset(0 50% 0 50%);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
   }
 }
 @keyframes cm-fade {
@@ -865,7 +1105,53 @@
     rotate: -12deg;
   }
 }
-/* View transitions between the history and a pull request: the page rises in like a panel. */
+
+/*
+ * View transitions. The page script puts the direction of travel on <html data-cm-dir>.
+ *   open / close    list <-> entry: the commit's dot and title fly between the row and the page
+ *   older / newer   entry <-> entry: the page slides sideways and the strip glides with it
+ */
+::view-transition-new(cm-panel) {
+  animation: cm-panel-in 460ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+::view-transition-old(cm-panel) {
+  animation: cm-panel-out 200ms ease-in both;
+}
+::view-transition-old(cm-strip) {
+  animation: cm-fade-out 160ms ease-in both;
+}
+/* Between entries the dot and title belong to the sliding page and strip, so they stop flying. */
+html:is([data-cm-dir="older"], [data-cm-dir="newer"]) [data-cm-vt] {
+  view-transition-name: none !important;
+}
+/* The strip is live, not a snapshot: the script slides the real thing. */
+html:is([data-cm-dir="older"], [data-cm-dir="newer"])::view-transition-old(cm-strip) {
+  display: none;
+}
+html:is([data-cm-dir="older"], [data-cm-dir="newer"])::view-transition-new(cm-strip) {
+  animation: none;
+}
+/* The page's box does not travel; the old and new pictures do. */
+html:is([data-cm-dir="older"], [data-cm-dir="newer"])::view-transition-group(cm-panel) {
+  animation: none;
+}
+html[data-cm-dir="older"]::view-transition-old(cm-panel) {
+  animation: cm-slide-out-right 200ms ease-in both;
+}
+html[data-cm-dir="older"]::view-transition-new(cm-panel) {
+  animation: cm-slide-in-left 460ms cubic-bezier(0.22, 1, 0.36, 1) 70ms both;
+}
+html[data-cm-dir="newer"]::view-transition-old(cm-panel) {
+  animation: cm-slide-out-left 200ms ease-in both;
+}
+html[data-cm-dir="newer"]::view-transition-new(cm-panel) {
+  animation: cm-slide-in-right 460ms cubic-bezier(0.22, 1, 0.36, 1) 70ms both;
+}
+/* The flying dot and title keep their shape instead of cross-fading two sizes. */
+::view-transition-group(*) {
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 @keyframes cm-panel-in {
   from {
     opacity: 0;
@@ -881,5 +1167,36 @@
 @keyframes cm-fade-out {
   to {
     opacity: 0;
+  }
+}
+/* --cm-drag is where a swipe left the page, so it carries on from under the finger. */
+@keyframes cm-slide-out-right {
+  from {
+    translate: var(--cm-drag, 0px) 0;
+  }
+  to {
+    opacity: 0;
+    translate: calc(var(--cm-drag, 0px) + 64px) 0;
+  }
+}
+@keyframes cm-slide-out-left {
+  from {
+    translate: var(--cm-drag, 0px) 0;
+  }
+  to {
+    opacity: 0;
+    translate: calc(var(--cm-drag, 0px) - 64px) 0;
+  }
+}
+@keyframes cm-slide-in-left {
+  from {
+    opacity: 0;
+    translate: -64px 0;
+  }
+}
+@keyframes cm-slide-in-right {
+  from {
+    opacity: 0;
+    translate: 64px 0;
   }
 }

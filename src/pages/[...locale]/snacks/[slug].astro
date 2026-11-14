@@ -1,0 +1,207 @@
+---
+/**
+ * One entry, laid out like a pull request: a strip of the history on its side, title and state,
+ * the review as the opening comment, pros and cons as a diff, and the verdict as the merge box.
+ * Plain HTML first; the script at the bottom adds swipe, keys and the sliding strip.
+ */
+import { render } from "astro:content";
+
+import DiffBlock from "@/components/commits/DiffBlock.astro";
+import GraphStrip from "@/components/commits/GraphStrip.astro";
+import StateIcon from "@/components/commits/StateIcon.astro";
+import StatePill from "@/components/commits/StatePill.astro";
+import Logo from "@/components/site/Logo.astro";
+import DateTime from "@/components/ui/DateTime.astro";
+import { DEFAULT_LOCALE, LOCALES, localePath, useTranslations, type Locale } from "@/i18n";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import {
+  BASE_BRANCH,
+  SECTION_PATH,
+  commitPath,
+  fillHtml,
+  getCommits,
+  readingSeconds,
+  refHtml,
+  type Commit,
+} from "@/lib/commits";
+import { formatDate, isoDate } from "@/lib/format";
+import { site } from "@/site.config";
+
+export async function getStaticPaths() {
+  const commits = await getCommits();
+  return LOCALES.flatMap((locale) =>
+    commits.map((commit, index) => ({
+      params: { locale: locale === DEFAULT_LOCALE ? undefined : locale, slug: commit.slug },
+      props: { locale, commit, commits, newer: commits[index - 1], older: commits[index + 1] },
+    })),
+  );
+}
+
+interface Props {
+  locale: Locale;
+  commit: Commit;
+  commits: Commit[];
+  newer: Commit | undefined;
+  older: Commit | undefined;
+}
+const { locale, commit, commits, newer, older } = Astro.props;
+const t = useTranslations(locale);
+const { snack, slug, number, sha, branch, host } = commit;
+const { title, take, verdict, kind, date, pros, cons, url } = snack.data;
+const { Content } = await render(snack);
+
+const who = site.socials.github.split("/").at(-1) ?? site.shortName;
+const parts = {
+  who: `<b>${who}</b>`,
+  base: refHtml(BASE_BRANCH),
+  head: refHtml(branch),
+  sha: refHtml(sha),
+  date: `<time datetime="${isoDate(date)}">${formatDate(date, locale, "short")}</time>`,
+};
+const hasDiff = pros.length + cons.length > 0;
+const description = take ?? `${title}: ${t(`commits.state.${verdict}`)}.`;
+const listHref = localePath(locale, SECTION_PATH);
+---
+
+<BaseLayout
+  locale={locale}
+  title={`${title} · ${t("commits.title")}`}
+  description={description}
+  canonicalPath={locale === DEFAULT_LOCALE ? undefined : localePath(DEFAULT_LOCALE, commitPath(slug))}
+>
+  <article class="pr mt-6 sm:mt-12" data-verdict={verdict} data-cm-entry>
+    <nav class="pr-crumb" aria-label={t("commits.title")}>
+      <a
+        href={listHref}
+        class="group -ml-2 inline-flex min-h-11 items-center gap-2 px-2 hover:text-fg"
+        data-cm-nav="up"
+      >
+        <span aria-hidden="true">←</span>
+        <span class="marker-hover">{t("commits.back")}</span>
+        <kbd class="kbd" aria-hidden="true">
+          esc
+        </kbd>
+      </a>
+      <span aria-hidden="true">
+        {BASE_BRANCH} / #{number}
+      </span>
+    </nav>
+
+    <GraphStrip commits={commits} current={commit} locale={locale} />
+
+    <div class="pr-panel">
+      <header>
+        <h1 class="pr-title">
+          <span data-cm-vt style={`view-transition-name:cm-title-${slug}`}>
+            {title}
+          </span>{" "}
+          <span class="pr-num">#{number}</span>
+        </h1>
+        {take && <p class="pr-take">{take}</p>}
+        <p class="pr-status">
+          <StatePill verdict={verdict} locale={locale} variant="solid" />
+          <span set:html={fillHtml(t(`commits.headline.${verdict}`), parts)} />
+        </p>
+        <nav class="pr-tabs" aria-label={title}>
+          <a href="#conversation" aria-current="true">
+            {t("commits.tab.conversation")}
+          </a>
+          {hasDiff && (
+            <a href="#files">
+              {t("commits.tab.files")}
+              <span class="pr-count">{pros.length + cons.length}</span>
+            </a>
+          )}
+        </nav>
+      </header>
+
+      <div class="pr-timeline">
+        <section id="conversation" class="pr-comment">
+          <span class="pr-avatar" aria-hidden="true">
+            <Logo markOnly />
+          </span>
+          <div class="pr-box">
+            <p class="pr-comment-head">
+              <span class="pr-mini" aria-hidden="true">
+                <Logo markOnly class="h-full w-full" />
+              </span>
+              <span class="who" set:html={fillHtml(t("commits.commented"), parts)} />
+              <span class="pr-label">{kind}</span>
+            </p>
+            <div class="pr-body">
+              <div class="prose-site prose" lang="en">
+                <Content />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {hasDiff && (
+          <DiffBlock file={`${BASE_BRANCH}/${slug}.md`} hunk={title} pros={pros} cons={cons} locale={locale} />
+        )}
+
+        <p class="pr-event">
+          <span class="pr-badge" aria-hidden="true">
+            <StateIcon verdict={verdict} />
+          </span>
+          <span>
+            <Fragment set:html={fillHtml(t(`commits.event.${verdict}`), parts)} />
+            <span aria-hidden="true"> · </span>
+            <DateTime date={date} locale={locale} format="short" />
+            <span aria-hidden="true"> · </span>
+            {t("commits.readTime", { n: readingSeconds(snack.body) })}
+          </span>
+        </p>
+
+        <aside class="pr-box pr-merge" aria-label={t(`commits.state.${verdict}`)}>
+          <span class="pr-merge-tile" aria-hidden="true">
+            <StateIcon verdict={verdict} />
+          </span>
+          <p>
+            <strong class="pr-merge-title block">{t(`commits.state.${verdict}`)}</strong>
+            <span class="pr-merge-text block">{t(`commits.box.${verdict}`)}</span>
+          </p>
+          {url && host && (
+            <a class="pr-visit" href={url} rel="noopener">
+              {t("commits.visit", { host })}
+              <span aria-hidden="true">↗</span>
+            </a>
+          )}
+        </aside>
+      </div>
+
+      {(older || newer) && (
+        <nav class="pr-nav" aria-label={t("commits.title")}>
+          {older ? (
+            <a href={localePath(locale, commitPath(older.slug))} class="group" data-cm-nav="older">
+              <span class="dir">
+                <span aria-hidden="true">←</span> {t("commits.older")} · #{older.number}
+                <kbd class="kbd" aria-hidden="true">
+                  j
+                </kbd>
+              </span>
+              <span class="marker-hover mt-1 inline font-semibold">{older.snack.data.title}</span>
+            </a>
+          ) : (
+            <span class="hidden sm:block" />
+          )}
+          {newer && (
+            <a href={localePath(locale, commitPath(newer.slug))} class="group newer" data-cm-nav="newer">
+              <span class="dir">
+                <kbd class="kbd" aria-hidden="true">
+                  k
+                </kbd>
+                {t("commits.newer")} · #{newer.number} <span aria-hidden="true">→</span>
+              </span>
+              <span class="marker-hover mt-1 inline font-semibold">{newer.snack.data.title}</span>
+            </a>
+          )}
+        </nav>
+      )}
+    </div>
+  </article>
+</BaseLayout>
+
+<script>
+  import "@/scripts/commit-entry";
+</script>

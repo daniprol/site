@@ -35,17 +35,22 @@ from 1280px; section numbers hang in the left margin from 1024px.
 ## Motion
 
 Only the highlighter: it sweeps in under links and titles on hover (0.45s ease-out), and the logo
-curve redraws on hover. View transitions morph post titles. On /commits the branches draw out of the trunk on load, and a
-pull request rises in like a panel. All disabled by reduced-motion.
+curve redraws on hover. View transitions morph post titles. On /snacks the history is drawn as you scroll: HEAD rides
+down the trunk and each branch appears as it passes. Opening an entry flies its commit dot into the
+strip; swiping (or ← →) slides the strip and the page together. Everything starts from the finished
+state, so no JavaScript, no scroll-timeline support or reduced motion all show the still version. All disabled by reduced-motion.
 
 ## Signature details
 
 1. **Highlighter** — current nav item, the intro's key phrase, `**bold**` in posts, hover on every list.
 2. **Plotted mark** — two axes and a curve ending on a yellow point (logo and favicon).
 3. **Proof furniture** — numbered `§` headings, blockquotes as "Note." asides, a `<Callout kind="definition|lemma|note">` MDX component (About opens with _Definition 1 (Daniel Prol)_), and a ∎ tombstone at the end of each post.
-4. **Commits** — the short reviews are a git history at /commits. Each one branches off the trunk:
-   it rejoins (merged = keep), stays out (open = maybe) or stops at a cross (reverted = drop). Picking
-   one opens `/commits/<slug>` as a pull request: the review is the opening comment, pros and cons
-   are a diff, the verdict is the merge box. Chrome stays small, mono and muted so the text leads.
-   Proof colours and our own icons only; nothing borrowed from GitHub's artwork.
+4. **Snacks as commits** — the short reviews are a git history at /snacks, with time running up.
+   Each one is a branch off the trunk, true to real git: merged (keep) lands back on the trunk as a
+   merge commit, reverted (drop) is merged and then followed by a red revert commit, open (maybe)
+   ends at its commit. A small graph of the latest entries sits under the title. Picking one opens
+   `/snacks/<slug>` as a pull request: the same history on its side as a strip at the top, the review
+   as the opening comment, pros and cons as a diff, the verdict as the merge box. Chrome stays small,
+   mono and muted so the text leads. Proof colours and our own icons; nothing from GitHub's artwork,
+   and the section is not called "Commits" so nobody takes these for real ones.
 5. **Pipeline as composition** — the stepper's nodes fill along a track, labelled f₁…f₄.
