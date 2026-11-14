@@ -80,6 +80,8 @@ const t = useTranslations(Astro.props.locale);
 </style>
 
 <script>
+  import { navigate } from "astro:transitions/client";
+
   interface Result {
     url: string;
     meta: { title?: string };
@@ -146,8 +148,16 @@ const t = useTranslations(Astro.props.locale);
       e.preventDefault();
       dialog.close();
     };
-    // Close on navigation, and on a click on the backdrop.
-    list.onclick = (e) => (e.target as Element).closest("a") && dialog.close();
+    // Follow a result ourselves: clicked inside the open modal dialog, the router fetched the page
+    // but never swapped it in. Closing the dialog first, then navigating, works.
+    list.onclick = (e) => {
+      const link = (e.target as Element).closest("a");
+      if (!link || e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+      e.preventDefault();
+      dialog.close();
+      void navigate(link.href);
+    };
+    // Close on a click on the backdrop.
     dialog.onclick = (e) => e.target === dialog && dialog.close();
     document.querySelectorAll<HTMLButtonElement>("[data-search-open]").forEach((button) => {
       button.hidden = false;
