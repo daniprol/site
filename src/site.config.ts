@@ -21,15 +21,14 @@ export const site = {
 
 /**
  * Comments on posts and snacks, stored in the GitHub Discussions of this repo through giscus (https://giscus.app).
- * TODO: enable Discussions on the repo, install the giscus app, then copy repoId and categoryId from the
- * configurator at https://giscus.app (they look like "R_kgDO…" and "DIC_kwDO…").
+ * IDs come from the configurator at https://giscus.app.
  * While either ID is empty, no comments section is rendered.
  */
 export const giscus: { repo: string; repoId: string; category: string; categoryId: string } = {
   repo: "daniprol/site",
-  repoId: "", // TODO: giscus data-repo-id
-  category: "Comments", // The Discussions category to create; an Announcements-type one lets only you start threads.
-  categoryId: "", // TODO: giscus data-category-id
+  repoId: "R_kgDOVgooTA",
+  category: "Announcements", // Announcements-type: only Dani and giscus can start threads.
+  categoryId: "DIC_kwDOVgooTM4DLJ9x",
 };
 
 /** Shown on the About page. TODO: confirm schools and dates. */
