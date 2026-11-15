@@ -1,0 +1,38 @@
+/* The state pill (Merged / Open / Reverted) and its icon (StatePill.astro, StateIcon.astro). */
+@layer components {
+  /* ---------- State pill and icon ---------- */
+  .cm-icon {
+    width: 1em;
+    height: 1em;
+    flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .cm-icon .solid {
+    fill: currentColor;
+    stroke: none;
+  }
+  .cm-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    padding: 0.18em 0.6em 0.18em 0.45em;
+    border-radius: 999px;
+    background: color-mix(in oklch, var(--cm-tone) 13%, transparent);
+    color: var(--cm-tone);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    line-height: 1.5;
+    white-space: nowrap;
+  }
+  .cm-pill[data-variant="solid"] {
+    padding: 0.36em 0.85em 0.36em 0.65em;
+    background: var(--cm-tone);
+    color: var(--color-bg);
+    font-size: 0.8rem;
+  }
+}

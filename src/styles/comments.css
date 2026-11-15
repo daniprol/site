@@ -1,7 +1,10 @@
 /*
  * The comments island (src/components/comments), drawn as GitHub draws a pull-request conversation, in
  * Proof's colours. Boxes, headers, notch and avatars use the same measures as the snack pages' own timeline
- * (.pr-* in commits.css), so on a snack the visitors' comments read as part of it.
+ * (.pr-* in commits/entry.css), so on a snack the visitors' comments read as part of it.
+ *
+ * Sections: containers, a conversation item, GitHub's rendered Markdown, reactions, replies, the editor,
+ * sign-in, buttons, and the loading skeleton. Every class starts with .cx- ("comments").
  */
 @layer components {
   /* ---------- Containers ---------- */

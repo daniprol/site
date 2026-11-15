@@ -1,0 +1,132 @@
+/* /toolbox: what is merged today, as the file list of a repository. */
+@layer components {
+  /* ---------- The toolbox: what is merged today, as the file list of a repository ---------- */
+  .tb {
+    border: 1px solid var(--color-border);
+    border-radius: 0.6rem;
+    overflow: hidden;
+  }
+  .tb-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.3rem 0.75rem;
+    padding: 0.7rem 0.9rem;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+  }
+  .tb-bar .cm-chip {
+    background: var(--color-bg);
+  }
+  .tb-history {
+    margin-left: auto;
+  }
+  .tb-kind,
+  .tb-side-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 500;
+  }
+  .tb-kind {
+    padding: 0.85rem 0.9rem 0.3rem;
+    color: var(--color-muted);
+  }
+  .tb-folder + .tb-folder {
+    border-top: 1px solid var(--color-border);
+  }
+  .tb-folder ul {
+    padding-bottom: 0.4rem;
+  }
+  :is(.tb-kind, .tb-side-title) .n {
+    color: var(--color-muted);
+    font-size: 0.72rem;
+  }
+  .tb-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.05rem 1rem;
+    align-items: baseline;
+    padding: 0.55rem 0.9rem;
+    transition: background-color var(--duration-fast);
+  }
+  .tb-row:hover,
+  .tb-row:focus-visible {
+    background: var(--color-surface);
+  }
+  .tb-name {
+    font-weight: 650;
+  }
+  .tb-name::before {
+    content: "";
+    display: inline-block;
+    width: 0.5em;
+    height: 0.5em;
+    margin-right: 0.6em;
+    border-radius: 50%;
+    background: var(--cm-tone);
+    vertical-align: 0.12em;
+  }
+  [data-verdict="maybe"] .tb-name::before {
+    background: none;
+    box-shadow: inset 0 0 0 2px var(--cm-tone);
+  }
+  [data-verdict="drop"] .tb-name {
+    text-decoration: line-through;
+    text-decoration-color: var(--color-muted);
+  }
+  .tb-take {
+    grid-column: 1 / -1;
+    padding-left: 1.1em;
+    color: var(--color-muted);
+    font-size: 0.93rem;
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
+  .tb-date {
+    grid-area: 1 / 2;
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    white-space: nowrap;
+  }
+  @media (min-width: 40rem) {
+    .tb-row {
+      grid-template-columns: 10.5rem minmax(0, 1fr) auto;
+    }
+    .tb-take {
+      grid-column: 2;
+      padding-left: 0;
+    }
+    .tb-date {
+      grid-area: 1 / 3;
+    }
+  }
+  .tb-side {
+    margin-top: 2.25rem;
+  }
+  .tb-side-title {
+    color: var(--color-fg);
+    font-size: 0.86rem;
+    font-weight: 650;
+  }
+  .tb-side-title .cm-icon {
+    color: var(--cm-tone);
+  }
+  .tb-side-note {
+    margin-top: 0.15rem;
+    color: var(--color-muted);
+    font-size: 0.93rem;
+  }
+  .tb-side ul {
+    margin: 0.6rem -0.9rem 0;
+  }
+  .tb-side .tb-row {
+    border-radius: 0.5rem;
+  }
+}

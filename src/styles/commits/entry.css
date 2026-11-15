@@ -1,0 +1,639 @@
+/*
+ * An entry page, /snacks/<slug>, drawn as a pull request (.pr-*). In order:
+ *   header, tabs and crumb          snacks/[slug].astro
+ *   the conversation timeline       TimelineComment.astro
+ *   pictures and the viewer         ZoomImage.astro, Lightbox.astro
+ *   the diff of pros and cons       DiffBlock.astro (also used by the compare page)
+ *   timeline events and follow-ups  TimelineEvent.astro
+ *   the merge box                   MergeBox.astro
+ *   older / newer links             EntryNav.astro
+ */
+@layer components {
+  /* ---------- Pull request page ---------- */
+  .pr-crumb {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    color: var(--color-muted);
+  }
+  .pr {
+    /* Vertical scrolling stays with the browser; sideways swipes go to the page script. */
+    touch-action: pan-y;
+    overflow-x: clip;
+  }
+  .pr-panel {
+    view-transition-name: cm-panel;
+  }
+  .pr-title {
+    margin-top: 1rem;
+    font-size: 1.9rem;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+  .pr-num {
+    color: var(--color-muted);
+    font-weight: 300;
+    letter-spacing: 0;
+  }
+  .pr-take {
+    margin-top: 0.7rem;
+    color: var(--color-muted);
+    font-size: 1.1rem;
+    line-height: 1.55;
+    text-wrap: pretty;
+  }
+  .pr-status {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.7rem;
+    margin-top: 1.1rem;
+    color: var(--color-muted);
+    font-size: 0.86rem;
+    line-height: 1.5;
+  }
+  .pr-status b,
+  .pr-event b,
+  .pr-comment-head b {
+    color: var(--color-fg);
+    font-weight: 650;
+  }
+  .pr code.ref {
+    padding: 0.1em 0.42em;
+    border-radius: 0.3rem;
+    background: var(--color-accent-soft);
+    color: var(--color-accent);
+    font-family: var(--font-mono);
+    font-size: 0.9em;
+    white-space: nowrap;
+  }
+  .pr-tabs {
+    display: flex;
+    gap: 0.25rem;
+    margin-top: 1.1rem;
+    border-bottom: 1px solid var(--color-border);
+    font-size: 0.9rem;
+  }
+  .pr-tabs > a {
+    display: inline-flex;
+    white-space: nowrap;
+    align-items: center;
+    gap: 0.45em;
+    min-height: 2.75rem;
+    margin-bottom: -1px;
+    padding-inline: 0.7rem;
+    border-bottom: 2px solid transparent;
+    color: var(--color-muted);
+    transition:
+      color var(--duration-fast),
+      border-color var(--duration-fast);
+  }
+  .pr-tabs > a:first-child {
+    margin-left: -0.7rem;
+  }
+  .pr-tabs > a:hover {
+    color: var(--color-fg);
+    border-bottom-color: var(--color-border);
+  }
+  .pr-tabs > a[aria-current] {
+    border-bottom-color: var(--color-logo-dot);
+    color: var(--color-fg);
+    font-weight: 650;
+  }
+  .pr-share {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+  }
+  .pr-count {
+    padding: 0.05em 0.5em;
+    border-radius: 999px;
+    background: var(--color-surface);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 500;
+  }
+
+  /* The conversation: one thread line behind everything, boxes sit on top of it. */
+  .pr-timeline {
+    --thread-x: 15px;
+    position: relative;
+    isolation: isolate;
+    margin-top: 1.5rem;
+  }
+  .pr-timeline::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    left: var(--thread-x);
+    top: 1rem;
+    bottom: 1rem;
+    width: 2px;
+    background: var(--cm-line);
+  }
+  .pr-avatar {
+    display: none;
+  }
+  .pr-box {
+    border: 1px solid var(--color-border);
+    border-radius: 0.6rem;
+    background: var(--color-bg);
+    scroll-margin-top: 1rem;
+  }
+  .pr-comment-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 0.9rem;
+    border-bottom: 1px solid var(--color-border);
+    border-radius: 0.6rem 0.6rem 0 0;
+    background: var(--color-surface);
+    color: var(--color-muted);
+    font-size: 0.82rem;
+    line-height: 1.4;
+  }
+  .pr-comment-head .who {
+    flex: 1;
+    min-width: 0;
+  }
+  .pr-mini {
+    width: 1.35rem;
+    height: 1.35rem;
+    flex: none;
+    color: var(--color-fg);
+  }
+  .pr-label {
+    padding: 0.08em 0.6em;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--color-bg);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    white-space: nowrap;
+  }
+  .pr-body {
+    padding: 0.4rem 0.95rem 0.6rem;
+  }
+  .pr-body > .prose-site > :first-child {
+    margin-top: 0.75em;
+  }
+  .pr-body > .prose-site > :last-child {
+    margin-bottom: 0.75em;
+  }
+  .pr-body .prose-site :where(img),
+  .cm-zoom img {
+    border-radius: 0.5rem;
+  }
+  /* Pictures: a main one above the text, a row of thumbnails under it. All open in the viewer. */
+  .cm-zoom {
+    display: block;
+    border-radius: 0.5rem;
+    cursor: zoom-in;
+  }
+  .cm-zoom img {
+    display: block;
+    width: 100%;
+    height: auto;
+    transition:
+      filter var(--duration-fast),
+      scale var(--duration-base) var(--ease-out-soft);
+  }
+  html.cm-js .pr-body .prose-site :where(img) {
+    cursor: zoom-in;
+  }
+  .pr-cover {
+    margin-block: 0.95rem 0.4rem;
+  }
+  .pr-cover figcaption {
+    margin-top: 0.5rem;
+    color: var(--color-muted);
+    font-size: 0.86rem;
+  }
+  .pr-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(5.5rem, 1fr));
+    gap: 0.5rem;
+    margin-block: 0.4rem 0.9rem;
+  }
+  .pr-gallery .cm-zoom {
+    overflow: hidden;
+  }
+  .pr-gallery img {
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    object-position: top left;
+  }
+  .pr-gallery .cm-zoom:hover img {
+    scale: 1.04;
+    filter: brightness(1.05);
+  }
+
+  /* The viewer */
+  .cm-lightbox {
+    width: 100vw;
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--color-fg);
+    overflow: hidden;
+    touch-action: none;
+  }
+  .cm-lightbox::backdrop {
+    background: color-mix(in oklch, var(--color-bg) 88%, transparent);
+    backdrop-filter: blur(10px);
+  }
+  .cm-lightbox figure {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    justify-items: center;
+    gap: 0.75rem;
+    height: 100%;
+    margin: 0;
+    padding: 3.75rem max(1rem, env(safe-area-inset-right)) max(1.25rem, env(safe-area-inset-bottom))
+      max(1rem, env(safe-area-inset-left));
+  }
+  .cm-lightbox img {
+    align-self: center;
+    max-width: min(100%, 72rem);
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    border-radius: 0.6rem;
+    box-shadow: 0 30px 80px -30px color-mix(in srgb, var(--color-fg) 45%, transparent);
+    cursor: zoom-out;
+  }
+  .cm-lightbox figcaption {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.9rem;
+    max-width: 42rem;
+    min-height: 1.5rem;
+    font-size: 0.95rem;
+    text-align: center;
+    text-wrap: pretty;
+  }
+  .cm-lightbox .count {
+    flex: none;
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+  }
+  .cm-lightbox button {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+    background: var(--color-bg);
+    color: var(--color-fg);
+    cursor: pointer;
+    transition: background-color var(--duration-fast);
+  }
+  .cm-lightbox button:hover {
+    background: var(--color-surface);
+  }
+  .cm-lightbox button svg {
+    width: 1rem;
+    height: 1rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .cm-lightbox .close {
+    top: max(0.6rem, env(safe-area-inset-top));
+    right: max(0.75rem, env(safe-area-inset-right));
+  }
+  .cm-lightbox .prev,
+  .cm-lightbox .next {
+    top: 50%;
+    translate: 0 -50%;
+  }
+  .cm-lightbox .prev {
+    left: max(0.75rem, env(safe-area-inset-left));
+  }
+  .cm-lightbox .next {
+    right: max(0.75rem, env(safe-area-inset-right));
+  }
+  /* On phones you swipe between pictures, so the arrows step out of the way. */
+  @media (hover: none) {
+    .cm-lightbox .prev,
+    .cm-lightbox .next {
+      display: none;
+    }
+  }
+
+  @media (min-width: 40rem) {
+    .pr-title {
+      font-size: 2.4rem;
+    }
+    .pr-timeline {
+      --thread-x: 19px;
+    }
+    .pr-comment {
+      display: grid;
+      grid-template-columns: 40px minmax(0, 1fr);
+      gap: 0.9rem;
+    }
+    .pr-avatar {
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--color-border);
+      border-radius: 50%;
+      background: var(--color-bg);
+      color: var(--color-fg);
+    }
+    .pr-avatar svg {
+      width: 26px;
+      height: 26px;
+    }
+    .pr-mini {
+      display: none;
+    }
+    .pr-body {
+      padding: 0.5rem 1.25rem 0.75rem;
+    }
+    .pr-comment-head {
+      position: relative;
+      padding-inline: 1.25rem;
+    }
+    /* The speech-bubble notch pointing at the avatar. */
+    .pr-comment-head::before {
+      content: "";
+      position: absolute;
+      left: -6px;
+      top: 14px;
+      width: 10px;
+      height: 10px;
+      rotate: 45deg;
+      border: solid var(--color-border);
+      border-width: 0 0 1px 1px;
+      background: var(--color-surface);
+    }
+    .pr-files,
+    .pr-merge {
+      margin-left: calc(40px + 0.9rem);
+    }
+  }
+
+  /* Diff: pros are added lines, cons are removed lines. */
+  .pr-files {
+    margin-top: 1.25rem;
+    overflow: hidden;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    line-height: 1.55;
+  }
+  .pr-files-head {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.5rem 0.9rem;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-surface);
+  }
+  .pr-files-head .name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 500;
+  }
+  .pr-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    font-weight: 600;
+  }
+  .pr-stat .add {
+    color: var(--color-keep);
+  }
+  .pr-stat .del {
+    color: var(--color-drop);
+  }
+  .pr-squares {
+    display: inline-flex;
+    gap: 2px;
+  }
+  .pr-squares i {
+    width: 8px;
+    height: 8px;
+    border-radius: 1.5px;
+    background: var(--color-border);
+  }
+  .pr-squares .add {
+    background: var(--color-keep);
+  }
+  .pr-squares .del {
+    background: var(--color-drop);
+  }
+  .pr-hunk {
+    padding: 0.25rem 0.9rem;
+    background: var(--color-accent-soft);
+    color: var(--color-muted);
+    font-size: 0.74rem;
+  }
+  .pr-lines li {
+    display: grid;
+    grid-template-columns: 2.1rem 1.1rem minmax(0, 1fr);
+    padding-right: 0.9rem;
+    --tone: var(--color-keep);
+    background: color-mix(in oklch, var(--tone) 11%, var(--color-bg));
+  }
+  .pr-lines li.del {
+    --tone: var(--color-drop);
+  }
+  .pr-lines .no {
+    padding: 0.28rem 0.5rem 0.28rem 0;
+    background: color-mix(in oklch, var(--tone) 20%, var(--color-bg));
+    color: var(--color-muted);
+    font-size: 0.7rem;
+    line-height: 1.8;
+    text-align: right;
+    user-select: none;
+  }
+  .pr-lines .sign {
+    padding-block: 0.28rem;
+    color: var(--tone);
+    font-weight: 700;
+    text-align: center;
+    user-select: none;
+  }
+  .pr-lines .text {
+    padding-block: 0.28rem;
+    overflow-wrap: anywhere;
+  }
+
+  /* A timeline event: a badge on the thread line and one sentence. */
+  .pr-event {
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr);
+    align-items: center;
+    gap: 0.6rem;
+    padding-block: 1.1rem;
+    color: var(--color-muted);
+    font-size: 0.84rem;
+    line-height: 1.5;
+  }
+  .pr-badge {
+    display: grid;
+    place-items: center;
+    width: 32px;
+    height: 32px;
+    border: 2px solid var(--color-bg);
+    border-radius: 50%;
+    background: color-mix(in oklch, var(--cm-tone) 16%, var(--color-bg));
+    color: var(--cm-tone);
+    font-size: 1rem;
+  }
+  @media (min-width: 40rem) {
+    .pr-event {
+      grid-template-columns: 40px minmax(0, 1fr);
+      gap: 0.9rem;
+    }
+    .pr-badge {
+      margin-inline: 4px;
+    }
+  }
+
+  /* A follow-up: one line on why the verdict changed, then the event that changed it. */
+  .pr-note {
+    margin-block: 0.75em;
+    text-wrap: pretty;
+  }
+  .pr-update {
+    scroll-margin-top: 5rem;
+  }
+  .pr-update:target .pr-box {
+    border-color: var(--color-fg);
+  }
+  .pr-compare {
+    margin-top: 0.9rem;
+    font-size: 0.86rem;
+    text-align: right;
+  }
+
+  /* The verdict, as the merge box at the end of a pull request. */
+  .pr-merge {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 0.25rem 0.85rem;
+    padding: 0.9rem;
+    border-color: color-mix(in oklch, var(--cm-tone) 55%, var(--color-border));
+  }
+  .pr-merge-tile {
+    display: grid;
+    place-items: center;
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 0.55rem;
+    background: var(--cm-tone);
+    color: var(--color-bg);
+    font-size: 1.35rem;
+  }
+  .pr-merge-title {
+    font-weight: 700;
+    line-height: 1.3;
+  }
+  .pr-merge-text {
+    color: var(--color-muted);
+    font-size: 0.92rem;
+    line-height: 1.4;
+  }
+  .pr-visit {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4em;
+    min-height: 2.75rem;
+    margin-top: 0.6rem;
+    padding-inline: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    background: var(--color-surface);
+    font-size: 0.92rem;
+    font-weight: 600;
+    transition:
+      border-color var(--duration-fast),
+      background-color var(--duration-fast);
+  }
+  .pr-visit:hover {
+    border-color: var(--color-fg);
+    background: var(--color-bg);
+  }
+  @media (min-width: 40rem) {
+    .pr-merge {
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      padding: 1rem 1.1rem;
+    }
+    .pr-visit {
+      grid-column: 3;
+      grid-row: 1;
+      margin-top: 0;
+    }
+  }
+
+  .pr-nav {
+    display: grid;
+    gap: 0.5rem;
+    margin-top: 2.5rem;
+  }
+  @media (min-width: 40rem) {
+    .pr-nav {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .pr-nav a {
+    display: block;
+    padding: 0.7rem 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    transition: background-color var(--duration-fast);
+  }
+  .pr-nav a:hover {
+    background: var(--color-surface);
+  }
+  .pr-nav .dir {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    color: var(--color-muted);
+  }
+  .pr-nav .newer {
+    text-align: right;
+  }
+  .pr-nav .newer .dir {
+    justify-content: flex-end;
+  }
+  /* Keyboard hints only where there is a keyboard. */
+  .pr-nav .kbd,
+  .pr-crumb .kbd {
+    display: none;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    .pr-nav .kbd,
+    .pr-crumb .kbd {
+      display: inline-block;
+    }
+  }
+}

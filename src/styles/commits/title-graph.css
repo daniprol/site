@@ -1,0 +1,70 @@
+/* The graph in the /snacks title (TitleGraph.astro). */
+@layer components {
+  /* ---------- The graph in the section title ---------- */
+  /* The trunk runs out of the title along its baseline and ends at HEAD. */
+  .cm-titlerow {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.4em;
+  }
+  .cm-titlegraph {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    /* Lifts the trunk (9px above the bottom of the drawing) onto the baseline of the title. */
+    margin-bottom: calc(var(--cm-title-drop, 0.31em) - 9px);
+    line-height: 0;
+  }
+  .cm-titlegraph::before {
+    content: "";
+    position: absolute;
+    inset: auto 11px 8px 0;
+    height: 2px;
+    border-radius: 1px;
+    background: var(--cm-line);
+    transform-origin: left;
+  }
+  .cm-titlegraph-clip {
+    display: flex;
+    justify-content: flex-end;
+    overflow: hidden;
+  }
+  /* When there are more entries than fit, the oldest fade out next to the title. */
+  .cm-titlegraph.is-full .cm-titlegraph-clip {
+    mask-image: linear-gradient(90deg, transparent, #000 2.5rem);
+  }
+  @media (max-width: 39.99rem) {
+    .cm-titlegraph.is-long .cm-titlegraph-clip {
+      mask-image: linear-gradient(90deg, transparent, #000 2.5rem);
+    }
+  }
+  .cm-titlegraph svg {
+    position: relative;
+    flex: none;
+  }
+  :is(.cm-titlegraph, .cm-slot, .cm-cap) .trunk {
+    stroke: var(--cm-line);
+  }
+  :is(.cm-titlegraph, .cm-cap) .root {
+    fill: var(--color-muted);
+    stroke: none;
+  }
+  :is(.cm-titlegraph, .cm-cap) .head {
+    fill: var(--color-logo-dot);
+    stroke: var(--color-fg);
+  }
+  .cm-titlegraph .node {
+    fill: var(--cm-tone);
+    stroke: var(--color-bg);
+    stroke-width: 1.5;
+  }
+  .cm-titlegraph .node.hollow {
+    fill: var(--color-bg);
+    stroke: var(--cm-tone);
+    stroke-width: 2;
+  }
+  .cm-titlegraph g {
+    stroke: var(--cm-tone);
+    stroke-width: 1.75;
+  }
+}
