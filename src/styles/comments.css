@@ -311,10 +311,11 @@
   .cx-notice {
     position: fixed;
     z-index: 50;
-    left: 50%;
+    inset-inline: 1rem;
     bottom: max(1rem, env(safe-area-inset-bottom));
-    translate: -50% 0;
-    max-width: calc(100vw - 2rem);
+    width: fit-content;
+    max-width: 28rem;
+    margin-inline: auto;
     padding: 0.6rem 1rem;
     border: 1px solid color-mix(in oklch, var(--color-drop) 45%, var(--color-border));
     border-radius: 0.5rem;
