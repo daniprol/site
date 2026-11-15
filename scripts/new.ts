@@ -29,7 +29,7 @@ const templates = {
   },
   snack: {
     path: join("src/content/snacks", `${today}-${slug}.md`),
-    body: `---\ntitle: ${title}\ndate: ${today}\nkind: app # model | app | cli | library | service | hardware\nverdict: maybe # keep | maybe | drop\nurl: https://\n---\n\n`,
+    body: `---\ntitle: ${title}\ndate: ${today}\nkind: app # model | app | cli | library | service | hardware\nverdict: maybe # keep (merged) | maybe (open) | drop (reverted)\n# updates: [{ date: 2026-01-31, verdict: keep, note: "Why I changed my mind." }]\ntake: TODO one line\npros: []\ncons: []\n# cover: { src: ./images/x.png, alt: "" }\n# gallery: [{ src: ./images/y.png, alt: "", caption: "" }]\nurl: https://\n---\n\n`,
   },
   project: {
     path: join("src/content/projects", `${slug}.mdx`),

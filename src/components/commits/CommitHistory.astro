@@ -1,0 +1,117 @@
+---
+/**
+ * The full history: a filter by state, then every entry and every later change of verdict, grouped
+ * by month along one trunk. The script marks what is new since the reader's last visit.
+ * The filter is radio buttons plus CSS :has(), so it works without JavaScript.
+ */
+import { localePath, useTranslations, type Locale } from "@/i18n";
+import {
+  BASE_BRANCH,
+  VERDICTS,
+  countByVerdict,
+  TOOLBOX_PATH,
+  historyEvents,
+  type Commit,
+  type HistoryEvent,
+} from "@/lib/commits";
+import { formatMonth, isoDate } from "@/lib/format";
+
+import CommitRow from "./CommitRow.astro";
+import FollowUpRow from "./FollowUpRow.astro";
+import StateIcon from "./StateIcon.astro";
+
+interface Props {
+  items: Commit[];
+  locale: Locale;
+}
+const { items, locale } = Astro.props;
+const t = useTranslations(locale);
+const counts = countByVerdict(items);
+
+const events = historyEvents(items);
+interface Row {
+  event: HistoryEvent;
+  index: number;
+  seq: number;
+}
+const groups: { key: string; label: string; rows: Row[] }[] = [];
+events.forEach((event, index) => {
+  const key = isoDate(event.date).slice(0, 7);
+  let group = groups.at(-1);
+  if (group?.key !== key) {
+    group = { key, label: formatMonth(event.date, locale), rows: [] };
+    groups.push(group);
+  }
+  group.rows.push({ event, index, seq: events.length - index });
+});
+const first = items.at(-1);
+---
+
+<div
+  class="cm-history"
+  data-pagefind-ignore
+  data-cm-history
+  data-total={events.length}
+  data-behind-one={t("commits.behind.one")}
+  data-behind-many={t("commits.behind.many")}
+  data-you={t("commits.you")}
+  data-last-visit={t("commits.lastVisit")}
+  data-new={t("commits.new")}
+>
+  <fieldset class="cm-filter">
+    <legend class="sr-only">{t("commits.filter")}</legend>
+    <label>
+      <input class="sr-only" type="radio" name="cm-state" value="all" checked />
+      {t("commits.all")}
+      <span class="n">{items.length}</span>
+    </label>
+    {VERDICTS.map((verdict) => (
+      <label data-verdict={verdict}>
+        <input class="sr-only" type="radio" name="cm-state" value={verdict} />
+        <StateIcon verdict={verdict} />
+        {t(`commits.state.${verdict}`)}
+        <span class="n">{counts[verdict]}</span>
+      </label>
+    ))}
+  </fieldset>
+
+  <p class="cm-head mt-3">
+    <a class="cm-chip" href={localePath(locale, TOOLBOX_PATH)}>
+      {BASE_BRANCH}
+    </a>
+    <span>HEAD</span>
+    <span class="cm-pen" aria-hidden="true"></span>
+    <span class="cm-behind" hidden data-cm-behind>
+      <span data-cm-behind-text></span>
+      <button type="button" class="cm-pull" data-cm-pull title={t("commits.pull")}>
+        git pull
+      </button>
+    </span>
+  </p>
+  {groups.map((group) => (
+    <section class="cm-group">
+      <h2 class="cm-month">
+        <span class="eyebrow">{group.label}</span>
+        <span class="font-mono text-xs font-normal text-muted">{group.rows.length}</span>
+        <span class="cm-pen" aria-hidden="true"></span>
+      </h2>
+      <ol>
+        {group.rows.map(({ event, index, seq }) =>
+          event.update ? (
+            <FollowUpRow commit={event.commit} update={event.update} locale={locale} index={index} seq={seq} />
+          ) : (
+            <CommitRow commit={event.commit} locale={locale} index={index} seq={seq} />
+          ),
+        )}
+      </ol>
+    </section>
+  ))}
+  {first && (
+    <p class="cm-root">
+      <span class="cm-pen" aria-hidden="true"></span>
+      <span>git init</span>
+      <span aria-hidden="true">·</span>
+      <time datetime={isoDate(first.snack.data.date)}>{formatMonth(first.snack.data.date, locale)}</time>
+    </p>
+  )}
+</div>

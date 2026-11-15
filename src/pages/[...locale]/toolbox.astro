@@ -1,0 +1,105 @@
+---
+/**
+ * The toolbox: everything currently merged, laid out like the file list of a repository, one
+ * folder per kind. Under it, what is still on a branch and what was taken out.
+ */
+import StateIcon from "@/components/commits/StateIcon.astro";
+import DateTime from "@/components/ui/DateTime.astro";
+import PageHeader from "@/components/ui/PageHeader.astro";
+import { localeParams, localePath, useTranslations } from "@/i18n";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { BASE_BRANCH, SECTION_PATH, commitPath, getCommits, type Commit } from "@/lib/commits";
+import { formatDate } from "@/lib/format";
+
+export const getStaticPaths = localeParams;
+
+const { locale } = Astro.props;
+const t = useTranslations(locale);
+const commits = await getCommits();
+
+const merged = commits.filter((commit) => commit.verdict === "keep");
+const open = commits.filter((commit) => commit.verdict === "maybe");
+const reverted = commits.filter((commit) => commit.verdict === "drop");
+
+const byKind = new Map<string, Commit[]>();
+for (const commit of merged) {
+  const { kind } = commit.snack.data;
+  byKind.set(kind, [...(byKind.get(kind) ?? []), commit]);
+}
+const folders = [...byKind].sort(([a, x], [b, y]) => y.length - x.length || a.localeCompare(b));
+const lastMerge = merged.map((commit) => commit.decided).sort((a, b) => b.getTime() - a.getTime())[0];
+const count = (n: number) => (n === 1 ? t("toolbox.tools.one") : t("toolbox.tools.many", { n }));
+/** The line that explains the state today: the latest follow-up, or the one-liner of the entry. */
+const reason = (commit: Commit) => commit.updates.at(-1)?.note ?? commit.snack.data.take;
+const sides = [
+  { key: "open", verdict: "maybe", items: open },
+  { key: "reverted", verdict: "drop", items: reverted },
+] as const;
+---
+
+<BaseLayout locale={locale} title={t("toolbox.title")} description={t("toolbox.description")}>
+  <PageHeader title={t("toolbox.title")} description={t("toolbox.description")} />
+
+  <section class="tb" data-verdict="keep" data-pagefind-ignore>
+    <p class="tb-bar">
+      <span class="cm-chip">{BASE_BRANCH}</span>
+      <span>{count(merged.length)}</span>
+      {lastMerge && <span>{t("toolbox.lastMerge", { date: formatDate(lastMerge, locale, "short") })}</span>}
+      <a class="cm-textlink tb-history" href={localePath(locale, SECTION_PATH)}>
+        {t("toolbox.history")}
+      </a>
+    </p>
+    {folders.map(([kind, items]) => (
+      <div class="tb-folder">
+        <h2 class="tb-kind">
+          <span>{kind}/</span>
+          <span class="n">{items.length}</span>
+        </h2>
+        <ul>
+          {items.map((commit) => (
+            <li>
+              <a class="tb-row group" href={localePath(locale, commitPath(commit.slug))}>
+                <span class="tb-name">
+                  <span class="marker-hover">{commit.snack.data.title}</span>
+                </span>
+                <span class="tb-take">{commit.snack.data.take}</span>
+                <span class="tb-date">
+                  <DateTime date={commit.decided} locale={locale} format="short" />
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </section>
+
+  {sides.map(
+    ({ key, verdict, items }) =>
+      items.length > 0 && (
+        <section class="tb-side" data-verdict={verdict} data-pagefind-ignore>
+          <h2 class="tb-side-title">
+            <StateIcon verdict={verdict} />
+            {t(`toolbox.${key}`)}
+            <span class="n">{items.length}</span>
+          </h2>
+          <p class="tb-side-note">{t(`toolbox.${key}.note`)}</p>
+          <ul>
+            {items.map((commit) => (
+              <li>
+                <a class="tb-row group" href={localePath(locale, commitPath(commit.slug))}>
+                  <span class="tb-name">
+                    <span class="marker-hover">{commit.snack.data.title}</span>
+                  </span>
+                  <span class="tb-take">{reason(commit)}</span>
+                  <span class="tb-date">
+                    <DateTime date={commit.decided} locale={locale} format="short" />
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ),
+  )}
+</BaseLayout>
