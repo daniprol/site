@@ -12,8 +12,11 @@ interface Props {
 }
 const { items } = Astro.props;
 
+/** Most entries drawn. */
 const MAX = 12;
+/** Horizontal space per entry, in SVG units. */
 const STEP = 44;
+/** Space before the first entry. */
 const LEAD = 6;
 const shown = items.slice(0, MAX).reverse();
 const width = LEAD + shown.length * STEP + 18;

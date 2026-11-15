@@ -1,0 +1,43 @@
+---
+/**
+ * The verdict at the end of an entry (snacks/[slug].astro), drawn like the merge box at the bottom of a pull
+ * request: the state, a sentence on what it means, and a link to the tool's own site.
+ */
+import { localePath, useTranslations, type Locale } from "@/i18n";
+import { TOOLBOX_PATH, type Verdict } from "@/lib/commits";
+
+import StateIcon from "./StateIcon.astro";
+
+interface Props {
+  verdict: Verdict;
+  locale: Locale;
+  /** The tool's own site, and its host name for the link text. */
+  url: string | undefined;
+  host: string | undefined;
+}
+const { verdict, locale, url, host } = Astro.props;
+const t = useTranslations(locale);
+---
+
+<aside class="pr-box pr-merge" aria-label={t(`commits.state.${verdict}`)}>
+  <span class="pr-merge-tile" aria-hidden="true">
+    <StateIcon verdict={verdict} />
+  </span>
+  <p>
+    <strong class="pr-merge-title block">{t(`commits.state.${verdict}`)}</strong>
+    <span class="pr-merge-text block">
+      {t(`commits.box.${verdict}`)}{" "}
+      {verdict === "keep" && (
+        <a class="cm-textlink" href={localePath(locale, TOOLBOX_PATH)}>
+          {t("toolbox.link")}
+        </a>
+      )}
+    </span>
+  </p>
+  {url && host && (
+    <a class="pr-visit" href={url} rel="noopener">
+      {t("commits.visit", { host })}
+      <span aria-hidden="true">↗</span>
+    </a>
+  )}
+</aside>

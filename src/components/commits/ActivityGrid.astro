@@ -1,7 +1,9 @@
 ---
 /**
  * A year of commits as a grid of days, one column per week. A day with a commit takes the colour
- * of its state and points at its row in the list on the same page (the row is #s-<slug>). Phones show the last 26 weeks, wider screens the full year.
+ * of its state and points at its row in the list on the same page (the row is #s-<slug>). Phones show the
+ * last 26 weeks, wider screens the full year. Used on /snacks; scripts/commits/activity-grid.ts adds the
+ * scrolling and highlighting.
  */
 import { useTranslations, type Locale } from "@/i18n";
 import type { Commit } from "@/lib/commits";
@@ -14,6 +16,7 @@ interface Props {
 const { items, locale } = Astro.props;
 const t = useTranslations(locale);
 
+/** Columns: a year, plus the current week. */
 const WEEKS = 53;
 const DAY = 86_400_000;
 /** Weeks hidden on phones; must match --off in commits.css. */

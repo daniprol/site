@@ -1,6 +1,9 @@
 /**
- * All content queries live here, so pages never call getCollection directly.
- * Drafts are visible in `astro dev` and hidden in production builds.
+ * All content queries live here, so pages never call getCollection directly. Runs at build time only.
+ *
+ * The collections and their frontmatter schemas are defined in src/content.config.ts. `getCollection` reads
+ * every file of a collection and returns typed entries ({ id, data, body }); `render(entry)` in a page turns
+ * one into HTML. Drafts are visible in `astro dev` and hidden in production builds.
  */
 import { getCollection, type CollectionEntry } from "astro:content";
 
@@ -40,15 +43,25 @@ export async function getSeries(series: string) {
   return all.sort((a, b) => a.data.date.getTime() - b.data.date.getTime());
 }
 
+/** Snacks, newest first. */
 export async function getSnacks() {
   return (await getCollection("snacks", isPublished)).sort(byDateDesc);
 }
 
+/** Projects in their `order`, lowest first. */
 export async function getProjects() {
   return (await getCollection("projects")).sort((a, b) => a.data.order - b.data.order);
 }
 
-/** Rough reading time from the raw body, at 230 words per minute. */
+const WORDS_PER_MINUTE = 230;
+
+/** Rough reading time of a post in whole minutes (at least 1), from its raw body. */
 export function readingTime(body = ""): number {
-  return Math.max(1, Math.round(body.split(/\s+/).length / 230));
+  return Math.max(1, Math.round(body.split(/\s+/).length / WORDS_PER_MINUTE));
+}
+
+/** Rough reading time of a snack in seconds, rounded to tens (at least 10), from its raw body. */
+export function readingSeconds(body = ""): number {
+  const words = body.split(/\s+/).filter(Boolean).length;
+  return Math.max(10, Math.round((words / WORDS_PER_MINUTE) * 6) * 10);
 }

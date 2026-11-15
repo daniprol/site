@@ -3,6 +3,8 @@
  * The full history: a filter by state, then every entry and every later change of verdict, grouped
  * by month along one trunk. The script marks what is new since the reader's last visit.
  * The filter is radio buttons plus CSS :has(), so it works without JavaScript.
+ * Used on /snacks; the "N commits behind" marks come from scripts/commits/behind.ts, which reads the
+ * data-* attributes on the root element.
  */
 import { localePath, useTranslations, type Locale } from "@/i18n";
 import {
@@ -31,9 +33,12 @@ const counts = countByVerdict(items);
 const events = historyEvents(items);
 interface Row {
   event: HistoryEvent;
+  /** Position from the top, for the drawing animation's stagger. */
   index: number;
+  /** Position from the bottom (1 = oldest row), stable as new rows are added on top. */
   seq: number;
 }
+// Group the rows by month ("2026-11"), keeping the newest-first order.
 const groups: { key: string; label: string; rows: Row[] }[] = [];
 events.forEach((event, index) => {
   const key = isoDate(event.date).slice(0, 7);

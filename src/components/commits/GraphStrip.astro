@@ -17,7 +17,9 @@ const { commits, current, locale } = Astro.props;
 
 /** Neighbours rendered on each side. Two would fill the strip; the third covers the slide. */
 const REACH = 3;
+/** Width of one entry's slot, in px; matches the 160-wide SVG in each slot. */
 const SLOT = 160;
+/** Width of the "git init" and HEAD ends of the strip. */
 const CAP = 72;
 
 const at = commits.indexOf(current);
@@ -26,6 +28,7 @@ const window = commits.slice(Math.max(0, at - REACH), at + REACH + 1).reverse();
 const hasRoot = at + REACH >= commits.length - 1;
 const hasHead = at - REACH <= 0;
 const olderShown = window.findIndex((commit) => commit === current);
+// How far the current entry's centre is from the strip's left edge; CSS uses it to centre the strip.
 const before = (hasRoot ? CAP : 0) + olderShown * SLOT + SLOT / 2;
 ---
 

@@ -12,7 +12,9 @@ interface Props {
 const { file, hunk, pros, cons, locale } = Astro.props;
 const t = useTranslations(locale);
 const total = pros.length + cons.length;
+/** GitHub's five-square bar that shows the share of added and removed lines. */
 const SQUARES = 5;
+// Green squares: in proportion to the pros, but at least one for any pros and one red for any cons.
 const added = Math.max(
   pros.length ? 1 : 0,
   Math.min(SQUARES - (cons.length ? 1 : 0), Math.round((SQUARES * pros.length) / total)),

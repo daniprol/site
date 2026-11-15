@@ -14,6 +14,7 @@ export interface ShareTarget {
   template: string;
 }
 
+/** The networks offered, in the order the panel shows them. */
 export const SHARE_TARGETS: ShareTarget[] = [
   {
     key: "whatsapp",
@@ -52,6 +53,10 @@ export const SHARE_TARGETS: ShareTarget[] = [
   },
 ];
 
+/**
+ * Fills a target's template with the page's address and title. Used at build time (ShareButton.astro) and
+ * again in the browser (scripts/share.ts) with the address the reader is really on.
+ */
 export function shareHref(template: string, url: string, text: string): string {
   return template.replace("{url}", encodeURIComponent(url)).replace("{text}", encodeURIComponent(text));
 }
