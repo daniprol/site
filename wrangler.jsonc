@@ -1,12 +1,28 @@
-// Cloudflare Workers config. The site is fully static: no Worker code, only assets from ./dist.
+// Cloudflare Workers config. Pages are static assets from ./dist; only /api/* runs the Worker in worker/,
+// which serves the comments (see worker/src/contract.ts).
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "site",
-  "compatibility_date": "2026-11-02",
+  "main": "worker/src/index.ts",
+  "compatibility_date": "2026-10-30",
   // Required by `wrangler preview`, which builds the preview link for each non-main branch.
   "previews": {},
   "assets": {
     "directory": "./dist",
+    "binding": "ASSETS",
     "not_found_handling": "404-page",
+    "run_worker_first": ["/api/*"],
+  },
+  "observability": { "enabled": true },
+  // Not secret. The secrets (GITHUB_APP_PRIVATE_KEY, GITHUB_APP_CLIENT_SECRET, SESSION_KEY) are set with
+  // `wrangler secret put`, or in .dev.vars for local development; see worker/README.md.
+  "vars": {
+    "GITHUB_REPOSITORY": "daniprol/site",
+    "GITHUB_REPOSITORY_ID": "R_kgDOVgooTA",
+    // The "Announcements" category: only maintainers and the app can start discussions there.
+    "GITHUB_DISCUSSION_CATEGORY_ID": "DIC_kwDOVgooTM4DLJ9x",
+    "GITHUB_APP_ID": "", // TODO: the app's App ID
+    "GITHUB_APP_CLIENT_ID": "", // TODO: the app's Client ID
+    "GITHUB_APP_INSTALLATION_ID": "", // TODO: from github.com/settings/installations/<id>
   },
 }

@@ -25,6 +25,18 @@ export default tseslint.config(
     },
   },
   {
+    files: ["worker/**/*.ts"],
+    languageOptions: { globals: globals.serviceworker },
+  },
+  {
+    files: ["src/components/comments/**/*.tsx"],
+    plugins: { "react-hooks": reactHooks, "jsx-a11y": jsxA11y },
+    rules: {
+      ...reactHooks.configs.recommended.rules,
+      ...jsxA11y.flatConfigs.recommended.rules,
+    },
+  },
+  {
     files: ["scripts/**", "*.config.{js,ts}"],
     languageOptions: { globals: globals.node },
   },

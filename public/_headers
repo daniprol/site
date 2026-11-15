@@ -5,7 +5,3 @@
 
 /_astro/*
   Cache-Control: public, max-age=31536000, immutable
-
-# giscus loads the comment theme (and the fonts it points at) from inside its iframe on giscus.app.
-/giscus/*
-  Access-Control-Allow-Origin: https://giscus.app

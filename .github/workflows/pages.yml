@@ -46,6 +46,8 @@ jobs:
           # e.g. https://daniprol.github.io and /site for a project site; a custom domain gives an empty base.
           SITE_URL: ${{ steps.pages.outputs.origin }}
           SITE_BASE: ${{ steps.pages.outputs.base_path || '/' }}
+          # Comments run on the Cloudflare Worker, which GitHub Pages does not have: leave them out.
+          COMMENTS: "false"
       # Mount the build under the base path so the offline check catches any link that skips withBase().
       - name: Stage for link check
         run: mkdir -p "_check${BASE_PATH}" && cp -r dist/. "_check${BASE_PATH}/"

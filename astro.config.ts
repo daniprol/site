@@ -4,7 +4,7 @@ import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
 import expressiveCode from "astro-expressive-code";
-import { defineConfig, fontProviders } from "astro/config";
+import { defineConfig, envField, fontProviders } from "astro/config";
 import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
 
@@ -17,6 +17,14 @@ export default defineConfig({
   base: process.env.SITE_BASE ?? "/",
   output: "static",
   trailingSlash: "ignore",
+
+  env: {
+    schema: {
+      // Comments need the Worker's /api/*, which only the Cloudflare deploy has. The GitHub Pages build sets
+      // COMMENTS=false, and pages then render no comments section at all.
+      COMMENTS: envField.boolean({ context: "server", access: "public", default: true }),
+    },
+  },
 
   i18n: {
     locales: [...LOCALES],
@@ -110,5 +118,7 @@ export default defineConfig({
 
   vite: {
     plugins: [tailwindcss()],
+    // `astro dev` has no Worker: send /api/* to `wrangler dev` (pnpm preview) on its default port.
+    server: { proxy: { "/api": "http://localhost:8787" } },
   },
 });
