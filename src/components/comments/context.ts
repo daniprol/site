@@ -12,8 +12,11 @@ export interface CommentsContextValue {
   viewer: Viewer | null;
   /** Posts a comment, or a reply to the top-level comment `replyTo`, and adds it to the thread. */
   submit: (body: string, replyTo?: string) => Promise<void>;
-  /** Adds or removes the visitor's reaction on a comment or reply, and updates its counts. */
-  react: (subjectId: string, content: ReactionContent, remove: boolean) => Promise<void>;
+  /**
+   * Adds or removes the visitor's reaction on a comment or reply. The counts change at once and roll back,
+   * with a notice, if GitHub refuses.
+   */
+  react: (subjectId: string, content: ReactionContent, remove: boolean) => void;
 }
 
 export const CommentsContext = createContext<CommentsContextValue | null>(null);

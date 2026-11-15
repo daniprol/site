@@ -251,7 +251,7 @@
       background-color var(--duration-fast),
       border-color var(--duration-fast);
   }
-  .cx-reaction:hover:not(:disabled) {
+  .cx-reaction:hover {
     border-color: var(--color-accent);
     background: var(--color-accent-soft);
   }
@@ -263,9 +263,6 @@
   .cx-reaction-count {
     font-family: var(--font-mono);
     font-size: 0.78rem;
-  }
-  .cx-reaction:disabled {
-    cursor: progress;
   }
   .cx-picker {
     position: relative;
@@ -308,6 +305,26 @@
   .cx-picker-menu button:hover,
   .cx-picker-menu button:focus-visible {
     background: var(--color-accent-soft);
+  }
+
+  /* A short-lived notice, e.g. a reaction GitHub refused. */
+  .cx-notice {
+    position: fixed;
+    z-index: 50;
+    left: 50%;
+    bottom: max(1rem, env(safe-area-inset-bottom));
+    translate: -50% 0;
+    max-width: calc(100vw - 2rem);
+    padding: 0.6rem 1rem;
+    border: 1px solid color-mix(in oklch, var(--color-drop) 45%, var(--color-border));
+    border-radius: 0.5rem;
+    background: var(--color-bg);
+    box-shadow: 0 8px 24px color-mix(in oklch, var(--color-fg) 14%, transparent);
+    color: var(--color-drop);
+    font-size: 0.88rem;
+  }
+  .cx-notice[hidden] {
+    display: none;
   }
 
   /* ---------- Replies, inside the comment's box ---------- */

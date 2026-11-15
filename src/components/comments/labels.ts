@@ -20,6 +20,7 @@ export const LABEL_KEYS = [
   "deleted",
   "hidden",
   "addReaction",
+  "reactionFailed",
   "reply",
   "cancel",
   "write",
