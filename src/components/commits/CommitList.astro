@@ -1,0 +1,24 @@
+---
+/** A short stretch of the history, for the home page: the trunk, the latest commits, no filter. */
+import type { Locale } from "@/i18n";
+import { BASE_BRANCH, type Commit } from "@/lib/commits";
+
+import CommitRow from "./CommitRow.astro";
+
+interface Props {
+  items: Commit[];
+  locale: Locale;
+}
+const { items, locale } = Astro.props;
+---
+
+<div class="cm-history cm-excerpt" data-pagefind-ignore>
+  <p class="cm-head">
+    <span class="cm-chip">{BASE_BRANCH}</span>
+  </p>
+  <ol>
+    {items.map((commit, index) => (
+      <CommitRow commit={commit} locale={locale} index={index} />
+    ))}
+  </ol>
+</div>

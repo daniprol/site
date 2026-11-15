@@ -1,0 +1,72 @@
+---
+/**
+ * One entry in the history. The whole row links to its page.
+ * The graph beside it follows real git, with time running upwards:
+ *   merged   the branch forks, gets its commit, and lands on the trunk as a merge commit
+ *   reverted the same, followed by a revert commit on the trunk
+ *   open     the branch ends at its commit and has not rejoined
+ * The graph draws the verdict of that day; the pill shows the verdict today.
+ */
+import DateTime from "@/components/ui/DateTime.astro";
+import { localePath, useTranslations, type Locale } from "@/i18n";
+import { commitPath, readingSeconds, type Commit } from "@/lib/commits";
+
+import StatePill from "./StatePill.astro";
+
+interface Props {
+  commit: Commit;
+  locale: Locale;
+  /** Position in the list, used to stagger the drawing where scroll-driven animation is missing. */
+  index: number;
+  /** Position in the whole history, 1 for the oldest row. Left out on the home page. */
+  seq?: number;
+}
+const { commit, locale, index, seq } = Astro.props;
+const t = useTranslations(locale);
+const { snack, slug, sha, verdict, firstVerdict } = commit;
+const { title, take, kind, date } = snack.data;
+// The graph shows what happened that day. A later change of verdict has its own row further up.
+const changed = firstVerdict !== verdict;
+---
+
+<li class="cm-row" id={`s-${slug}`} data-verdict={verdict} data-seq={seq} style={`--i:${index}`}>
+  <span class="cm-pen" aria-hidden="true"></span>
+  <span class="cm-graph" data-verdict={firstVerdict} aria-hidden="true">
+    <svg class="cm-branch" viewBox="0 0 40 104">
+      <path d="M11 102C11 86 27 88 27 72V40"></path>
+      {firstVerdict === "keep" && (
+        <>
+          <path d="M27 40C27 27 11 29 11 16" />
+          <circle class="ring" cx="11" cy="14" r="4" />
+        </>
+      )}
+      {firstVerdict === "drop" && (
+        <>
+          <path d="M27 40C27 30 11 33 11 23" />
+          <circle class="ring" cx="11" cy="21" r="4" />
+          <circle class="ring" cx="11" cy="7" r="5.5" />
+          <path class="cross" d="M8.9 4.9l4.2 4.2m0-4.2l-4.2 4.2" />
+        </>
+      )}
+      {firstVerdict === "maybe" && changed && <path class="later" d="M27 32V8" />}
+    </svg>
+    <span class="cm-dot" data-cm-vt style={`view-transition-name:cm-node-${slug}`}></span>
+  </span>
+  <a class="cm-link group" href={localePath(locale, commitPath(slug))}>
+    <div class="cm-top">
+      <h3 class="cm-title">
+        <span class="marker-hover" data-cm-vt style={`view-transition-name:cm-title-${slug}`}>
+          {title}
+        </span>
+      </h3>
+      <StatePill verdict={verdict} locale={locale} />
+    </div>
+    {take && <p class="cm-take">{take}</p>}
+    <p class="cm-meta">
+      <span class="cm-sha">{sha}</span>
+      <span>{kind}</span>
+      <DateTime date={date} locale={locale} format="short" />
+      <span>{t("commits.readTime", { n: readingSeconds(snack.body) })}</span>
+    </p>
+  </a>
+</li>

@@ -31,7 +31,7 @@ src/
   site.config.ts        Name, links, nav, experience, education
   content/              All writing. No layout code here.
     posts/<slug>/index.mdx   A post; translations sit next to it as es.mdx / gl.mdx
-    snacks/<date>-<slug>.md  One short review per file
+    snacks/<date>-<slug>.md  One short review per file, shown at /snacks/<slug>
     projects/<slug>.md       One case study per file
   pages/[...locale]/    Routes. One file serves /, /es/ and /gl/
   layouts/              BaseLayout (page shell), PostLayout

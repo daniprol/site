@@ -25,17 +25,39 @@ const posts = defineCollection({
     }),
 });
 
-/** Snacks: short, informal first impressions of tools, apps and models. One file per entry. */
+/**
+ * Snacks: short, informal first impressions of tools, apps and models. One file per entry.
+ * The site shows them as a commit history (/snacks): keep = merged, maybe = open, drop = reverted.
+ */
 const snacks = defineCollection({
   loader: glob({ base: "./src/content/snacks", pattern: "**/*.{md,mdx}" }),
-  schema: z.object({
-    title: z.string(),
-    date: z.coerce.date(),
-    kind: z.enum(["model", "app", "cli", "library", "service", "hardware"]),
-    verdict: z.enum(["keep", "maybe", "drop"]),
-    url: z.url().optional(),
-    draft: z.boolean().default(false),
-  }),
+  schema: ({ image }) => {
+    const picture = z.object({ src: image(), alt: z.string(), caption: z.string().optional() });
+    const verdict = z.enum(["keep", "maybe", "drop"]);
+    return z.object({
+      title: z.string(),
+      date: z.coerce.date(),
+      kind: z.enum(["model", "app", "cli", "library", "service", "hardware"]),
+      /** The call on the day of writing. Later changes of mind go in `updates`. */
+      verdict,
+      /**
+       * Follow-ups, oldest first: the day the verdict changed (or was confirmed) and a line on why.
+       * The entry shows the latest one as its state, and each update gets its own row in the history.
+       */
+      updates: z.array(z.object({ date: z.coerce.date(), verdict, note: z.string() })).default([]),
+      /** The one-line opinion, shown as the commit message in the history. */
+      take: z.string().optional(),
+      /** Shown as the added (+) and removed (−) lines of the diff. */
+      pros: z.array(z.string()).default([]),
+      cons: z.array(z.string()).default([]),
+      /** The main picture, shown above the text. Paths are relative to the file: ./images/x.png */
+      cover: picture.optional(),
+      /** A few more pictures, shown as a row of thumbnails under the text. */
+      gallery: z.array(picture).default([]),
+      url: z.url().optional(),
+      draft: z.boolean().default(false),
+    });
+  },
 });
 
 /** Portfolio case studies. */

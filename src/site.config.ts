@@ -13,7 +13,7 @@ export const site = {
   },
   nav: [
     { key: "nav.writing", href: "/writing" },
-    { key: "nav.snacks", href: "/snacks" },
+    { key: "nav.commits", href: "/snacks" },
     { key: "nav.projects", href: "/projects" },
     { key: "nav.about", href: "/about" },
   ],

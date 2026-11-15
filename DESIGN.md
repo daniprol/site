@@ -35,12 +35,35 @@ from 1280px; section numbers hang in the left margin from 1024px.
 ## Motion
 
 Only the highlighter: it sweeps in under links and titles on hover (0.45s ease-out), and the logo
-curve redraws on hover. View transitions morph post titles. All disabled by reduced-motion.
+curve redraws on hover. View transitions morph post titles. On /snacks the history is drawn as you scroll: HEAD rides
+down the trunk and each branch appears as it passes. Opening an entry flies its commit dot into the
+strip; swiping (or ← →) slides the strip and the page together. Everything starts from the finished
+state, so no JavaScript, no scroll-timeline support or reduced motion all show the still version. All disabled by reduced-motion.
 
 ## Signature details
 
 1. **Highlighter** — current nav item, the intro's key phrase, `**bold**` in posts, hover on every list.
 2. **Plotted mark** — two axes and a curve ending on a yellow point (logo and favicon).
 3. **Proof furniture** — numbered `§` headings, blockquotes as "Note." asides, a `<Callout kind="definition|lemma|note">` MDX component (About opens with _Definition 1 (Daniel Prol)_), and a ∎ tombstone at the end of each post.
-4. **Snacks as set membership** — ∈ keep, ≈ maybe, ∉ drop, with a legend on /snacks.
+4. **Snacks as commits** — the short reviews are a git history at /snacks, with time running up.
+   Each one is a branch off the trunk, true to real git: merged (keep) lands back on the trunk as a
+   merge commit, reverted (drop) is merged and then followed by a red revert commit, open (maybe)
+   ends at its commit. The trunk runs out of the section title along its baseline, with the latest entries on it. Picking one opens
+   `/snacks/<slug>` as a pull request: the same history on its side as a strip at the top, the review
+   as the opening comment, pros and cons as a diff, the verdict as the merge box. Chrome stays small,
+   mono and muted so the text leads. An entry can have a main picture and a small gallery; every
+   picture opens in a viewer. The activity grid points at rows in the list instead of leaving the page. Proof colours and our own icons; nothing from GitHub's artwork,
+   and the section is not called "Commits" so nobody takes these for real ones.
+   - **Verdicts change.** `updates` in the frontmatter records a later verdict and a line on why. The
+     entry shows the latest one, and each update is its own short row in the history.
+   - **"You are N commits behind."** The reader's browser remembers the newest row it has seen and
+     marks what was added since, with their own ref on the trunk and a `git pull` to clear it.
+     Nothing is sent anywhere. Preview it with `/snacks?behind=3`.
+   - **Share.** One "Share" button (`ShareButton.astro`) opens a panel with the link, Copy and the
+     networks as plain links. Posts show coloured icons; snacks use the layout of a clone panel, with
+     tabs for what gets copied. It is a `<details>`, so it opens without JavaScript.
+   - **Toolbox** (`/toolbox`) lists what is merged today, by kind, then open and reverted.
+   - **Compare** (`/snacks/compare?a=…&b=…`) puts two entries side by side as a split diff.
+   - **Share images.** Every entry gets a 1200 × 630 card at `/snacks/og/<slug>.png`, built by
+     `src/lib/share-card.ts`. They need the real domain in `astro.config.ts` to resolve when shared.
 5. **Pipeline as composition** — the stepper's nodes fill along a track, labelled f₁…f₄.

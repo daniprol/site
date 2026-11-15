@@ -1,12 +1,13 @@
 ---
+import CommitList from "@/components/commits/CommitList.astro";
 import MarkedText from "@/components/ui/MarkedText.astro";
 import PostList from "@/components/ui/PostList.astro";
 import ProjectList from "@/components/ui/ProjectList.astro";
 import Section from "@/components/ui/Section.astro";
-import SnackList from "@/components/ui/SnackList.astro";
 import { localeParams, localePath, useTranslations } from "@/i18n";
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import { getPosts, getProjects, getSnacks } from "@/lib/content";
+import { SECTION_PATH, getCommits } from "@/lib/commits";
+import { getPosts, getProjects } from "@/lib/content";
 import { site } from "@/site.config";
 
 export const getStaticPaths = localeParams;
@@ -14,7 +15,7 @@ export const getStaticPaths = localeParams;
 const { locale } = Astro.props;
 const t = useTranslations(locale);
 const posts = (await getPosts(locale)).slice(0, 3);
-const snacks = (await getSnacks()).slice(0, 5);
+const commits = (await getCommits()).slice(0, 4);
 const projects = (await getProjects()).filter((p) => p.data.featured).slice(0, 3);
 ---
 
@@ -34,8 +35,8 @@ const projects = (await getProjects()).filter((p) => p.data.featured).slice(0, 3
     <PostList items={posts} locale={locale} />
   </Section>
 
-  <Section title={t("home.latestSnacks")} href={localePath(locale, "/snacks")} linkLabel={t("home.viewAll")}>
-    <SnackList items={snacks} locale={locale} />
+  <Section title={t("home.latestCommits")} href={localePath(locale, SECTION_PATH)} linkLabel={t("home.viewAll")}>
+    <CommitList items={commits} locale={locale} />
   </Section>
 
   <Section title={t("home.selectedProjects")} href={localePath(locale, "/projects")} linkLabel={t("home.viewAll")}>
