@@ -1,7 +1,11 @@
 /**
- * The comments island: a page's GitHub discussion drawn as a pull-request conversation. It hydrates when it
- * scrolls into view (client:visible); until the thread arrives it shows a skeleton, which is also what the
- * static HTML contains. Everything goes through /api/* on the site's Worker, which talks to GitHub.
+ * The comments island: a page's GitHub discussion drawn as a pull-request conversation.
+ *
+ * An "island" is an interactive React component inside an otherwise static Astro page. CommentsSection.astro
+ * renders it with `client:visible`, so the HTML is built ahead of time and React only downloads and takes
+ * over ("hydrates") when the section scrolls into view. Until the thread arrives it shows a skeleton, which
+ * is also what the static HTML contains. Every request goes to /api/* on the site's Worker (see api.ts),
+ * which talks to GitHub.
  *
  * Two layouts:
  * - "standalone" (posts): its own timeline, with a header bar and the comment box at the end.
@@ -11,6 +15,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
+import { AccountLine } from "./AccountLine";
 import {
   CommentsError,
   fetchThread,
@@ -18,8 +23,6 @@ import {
   postComment,
   postReaction,
   signOut,
-  type Comment,
-  type Reaction,
   type ReactionContent,
   type Thread,
   type Viewer,
@@ -30,28 +33,34 @@ import { CommentsContext, type CommentsContextValue } from "./context";
 import { fill, type Labels } from "./labels";
 import { applyReaction } from "./reactions";
 import { Skeleton } from "./Skeleton";
+import { foldComments, mapReactions, withComment } from "./thread";
+import { useNotice } from "./useNotice";
 
 interface Props {
   /** The page's path without base or locale, e.g. "writing/how-foliq-works". */
   term: string;
+  /** BCP 47 tag for dates, e.g. "en-GB". */
   localeTag: string;
+  /** The interface text, already translated on the server (see labels.ts). */
   labels: Labels;
   layout: "standalone" | "timeline";
   /** id of the element that takes the comment box in the "timeline" layout. */
   composerSlot?: string;
 }
 
-type State = { status: "loading" } | { status: "error" } | { status: "ready"; thread: Thread };
+type LoadState = { status: "loading" } | { status: "error" } | { status: "ready"; thread: Thread };
 
-/** Long threads show their first and last comments, with "Load more…" for the ones in between. */
-const HEAD = 2;
-const TAIL = 3;
-const LOAD_STEP = 10;
+/** How many more hidden comments each click on "Load more…" shows. */
+const LOAD_MORE_STEP = 10;
 
-export default function Comments({ term, localeTag, labels, layout, composerSlot }: Props) {
-  const [state, setState] = useState<State>({ status: "loading" });
+export default function CommentsIsland({ term, localeTag, labels, layout, composerSlot }: Props) {
+  const [state, setState] = useState<LoadState>({ status: "loading" });
   const [viewer, setViewer] = useState<Viewer | null>(null);
-  const [revealed, setRevealed] = useState(0);
+  /** How many comments hidden behind "Load more…" the reader has revealed. */
+  const [revealedCount, setRevealedCount] = useState(0);
+  const [notice, setNotice] = useNotice();
+
+  /* ---------- Loading ---------- */
 
   const load = useCallback(
     () =>
@@ -75,13 +84,15 @@ export default function Comments({ term, localeTag, labels, layout, composerSlot
     void load();
   };
 
+  /* ---------- Changes made by the visitor ---------- */
+
   /** Applies a change to the loaded thread. */
-  const update = useCallback((change: (thread: Thread) => Thread) => {
+  const updateThread = useCallback((change: (thread: Thread) => Thread) => {
     setState((current) => (current.status === "ready" ? { status: "ready", thread: change(current.thread) } : current));
   }, []);
 
   /** Runs a signed-in action; if the session has ended, shows the sign-in prompt again. */
-  const asViewer = useCallback(async <T,>(action: () => Promise<T>): Promise<T> => {
+  const runSignedIn = useCallback(async <T,>(action: () => Promise<T>): Promise<T> => {
     try {
       return await action();
     } catch (error) {
@@ -92,51 +103,53 @@ export default function Comments({ term, localeTag, labels, layout, composerSlot
 
   const submit = useCallback(
     async (body: string, replyTo?: string) => {
-      const comment = await asViewer(() => postComment({ term, body, replyTo }));
-      update((thread) => withComment(thread, comment, replyTo));
+      const comment = await runSignedIn(() => postComment({ term, body, replyTo }));
+      updateThread((thread) => withComment(thread, comment, replyTo));
     },
-    [asViewer, term, update],
+    [runSignedIn, term, updateThread],
   );
-
-  /** A short message at the bottom of the screen, e.g. when a reaction could not be saved. */
-  const [notice, setNotice] = useState<string | null>(null);
-  useEffect(() => {
-    if (!notice) return;
-    const timer = setTimeout(() => setNotice(null), 5000);
-    return () => clearTimeout(timer);
-  }, [notice]);
 
   /**
    * Reactions are optimistic: the counts change at once, then GitHub's answer replaces them, or the change is
-   * rolled back if GitHub refuses. Requests for one comment run one after another, so quick clicks cannot
-   * overtake each other, and only the last one's answer is applied.
+   * rolled back if GitHub refuses. Requests for one comment run one after another (each waits for the
+   * previous promise in `reactionQueues`), so quick clicks cannot overtake each other, and only the last
+   * one's answer is applied.
    */
   const reactionQueues = useRef(new Map<string, Promise<void>>());
   const react = useCallback(
     (subjectId: string, content: ReactionContent, remove: boolean) => {
-      update((thread) => mapReactions(thread, subjectId, (reactions) => applyReaction(reactions, content, remove)));
+      updateThread((thread) =>
+        mapReactions(thread, subjectId, (reactions) => applyReaction(reactions, content, remove)),
+      );
 
       const queues = reactionQueues.current;
       const request: Promise<void> = (queues.get(subjectId) ?? Promise.resolve()).then(async () => {
         try {
-          const reactions = await asViewer(() => postReaction({ term, subjectId, content, remove }));
-          if (queues.get(subjectId) === request) update((thread) => mapReactions(thread, subjectId, () => reactions));
+          const reactions = await runSignedIn(() => postReaction({ term, subjectId, content, remove }));
+          if (queues.get(subjectId) === request)
+            updateThread((thread) => mapReactions(thread, subjectId, () => reactions));
         } catch {
-          update((thread) => mapReactions(thread, subjectId, (current) => applyReaction(current, content, !remove)));
+          updateThread((thread) =>
+            mapReactions(thread, subjectId, (current) => applyReaction(current, content, !remove)),
+          );
           setNotice(labels.reactionFailed);
         }
       });
       queues.set(subjectId, request);
     },
-    [asViewer, labels.reactionFailed, term, update],
+    [runSignedIn, labels.reactionFailed, term, updateThread, setNotice],
   );
 
+  // Shared with every component below through React context, so it is not passed down by hand.
   const context = useMemo<CommentsContextValue>(
     () => ({ labels, localeTag, viewer, submit, react }),
     [labels, localeTag, viewer, submit, react],
   );
 
+  /* ---------- Rendering ---------- */
+
   const standalone = layout === "standalone";
+  // `document` only exists in the browser; during the build this runs without one.
   const slot =
     !standalone && composerSlot && typeof document !== "undefined" ? document.getElementById(composerSlot) : null;
 
@@ -153,24 +166,19 @@ export default function Comments({ term, localeTag, labels, layout, composerSlot
   }
 
   const { thread } = state;
-  const { head, hidden, tail } = fold(thread.comments, revealed);
-  const offsite = thread.commentCount - thread.comments.length;
+  const { head, hidden, tail } = foldComments(thread.comments, revealedCount);
+  // Comments past the first hundred are only on GitHub.
+  const offsiteCount = thread.commentCount - thread.comments.length;
 
+  // The comment box and the account line: at the end of the list, or in the page's slot (timeline layout).
   const footer = (
     <>
       <Composer />
-      <p className="cx-account">
-        {viewer && (
-          <>
-            {fill(labels.signedInAs, { login: viewer.login })} ·{" "}
-            <button type="button" className="cx-link" onClick={() => void signOut().then(() => setViewer(null))}>
-              {labels.signOut}
-            </button>
-          </>
-        )}
-        {viewer && thread.url && " · "}
-        {thread.url && <a href={thread.url}>{labels.viewOnGitHub} ↗</a>}
-      </p>
+      <AccountLine
+        viewer={viewer}
+        threadUrl={thread.url}
+        onSignOut={() => void signOut().then(() => setViewer(null))}
+      />
     </>
   );
 
@@ -189,7 +197,7 @@ export default function Comments({ term, localeTag, labels, layout, composerSlot
         ))}
         {hidden > 0 && (
           <div className="cx-hidden-items">
-            <button type="button" onClick={() => setRevealed(revealed + LOAD_STEP)}>
+            <button type="button" onClick={() => setRevealedCount(revealedCount + LOAD_MORE_STEP)}>
               <span>{fill(labels.hiddenItems, { n: hidden })}</span>
               <strong>{labels.loadMore}</strong>
             </button>
@@ -198,9 +206,9 @@ export default function Comments({ term, localeTag, labels, layout, composerSlot
         {tail.map((comment) => (
           <CommentCard key={comment.id} comment={comment} />
         ))}
-        {offsite > 0 && thread.url && (
+        {offsiteCount > 0 && thread.url && (
           <a className="cx-more cx-more-thread" href={thread.url}>
-            {fill(labels.moreOnGitHub, { n: offsite })}
+            {fill(labels.moreOnGitHub, { n: offsiteCount })}
           </a>
         )}
         {standalone && footer}
@@ -210,44 +218,8 @@ export default function Comments({ term, localeTag, labels, layout, composerSlot
         {notice}
       </p>
 
+      {/* A portal renders React content into a DOM element outside this component: here, the page's slot. */}
       {slot && createPortal(<div className="cx-thread cx-composer-area">{footer}</div>, slot)}
     </CommentsContext>
   );
-}
-
-/** Splits the comments into those shown before the "Load more" marker, how many it hides, and those after. */
-function fold(comments: Comment[], revealed: number) {
-  const hidden = Math.max(0, comments.length - HEAD - TAIL - revealed);
-  // Hiding a single comment saves nothing: show it.
-  if (hidden <= 1) return { head: comments, hidden: 0, tail: [] };
-  return {
-    head: comments.slice(0, HEAD + revealed),
-    hidden,
-    tail: comments.slice(comments.length - TAIL),
-  };
-}
-
-/** The thread with a just-posted comment added: at the end, or under the comment it replies to. */
-function withComment(thread: Thread, comment: Comment, replyTo?: string): Thread {
-  if (!replyTo) {
-    return { ...thread, commentCount: thread.commentCount + 1, comments: [...thread.comments, comment] };
-  }
-  return {
-    ...thread,
-    comments: thread.comments.map((parent) =>
-      parent.id === replyTo
-        ? { ...parent, replies: [...parent.replies, comment], replyCount: parent.replyCount + 1 }
-        : parent,
-    ),
-  };
-}
-
-/** The thread with one comment's or reply's reactions changed by `change`. */
-function mapReactions(thread: Thread, subjectId: string, change: (reactions: Reaction[]) => Reaction[]): Thread {
-  const apply = <T extends { id: string; reactions: Reaction[] }>(item: T): T =>
-    item.id === subjectId ? { ...item, reactions: change(item.reactions) } : item;
-  return {
-    ...thread,
-    comments: thread.comments.map((comment) => ({ ...apply(comment), replies: comment.replies.map(apply) })),
-  };
 }

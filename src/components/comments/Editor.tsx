@@ -18,6 +18,10 @@ interface Props {
   focusOnOpen?: boolean;
 }
 
+/** GitHub's own limit on a comment's length (the Worker checks it too). */
+const MAX_COMMENT_LENGTH = 65_536;
+
+/** The Preview tab: nothing yet, waiting for GitHub, or the rendered HTML of `text`. */
 type Preview = { status: "idle" } | { status: "loading" } | { status: "ready"; text: string; html: string };
 
 export function Editor({ placeholder, submitLabel, onSubmit, onCancel, focusOnOpen = false }: Props) {
@@ -31,6 +35,7 @@ export function Editor({ placeholder, submitLabel, onSubmit, onCancel, focusOnOp
 
   const showPreview = async () => {
     setTab("preview");
+    // Nothing to render, or the preview already shows this exact text.
     if (!body.trim() || (preview.status === "ready" && preview.text === body)) return;
     setPreview({ status: "loading" });
     try {
@@ -86,7 +91,7 @@ export function Editor({ placeholder, submitLabel, onSubmit, onCancel, focusOnOp
               id={fieldId}
               value={body}
               placeholder={placeholder}
-              maxLength={65_536}
+              maxLength={MAX_COMMENT_LENGTH}
               disabled={posting}
               // eslint-disable-next-line jsx-a11y/no-autofocus -- see focusOnOpen
               autoFocus={focusOnOpen}

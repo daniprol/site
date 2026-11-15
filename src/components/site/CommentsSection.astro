@@ -1,7 +1,8 @@
 ---
 /**
- * Comments on posts and snacks. The conversation itself is the React island in src/components/comments,
- * which loads it from the site's Worker (/api/*) once it scrolls into view.
+ * The comments section on posts (PostLayout) and snacks (snacks/[slug].astro). The conversation itself is
+ * the React island in src/components/comments/CommentsIsland.tsx, which loads it from the site's Worker
+ * (/api/*) once it scrolls into view: `client:visible` below is what tells Astro to hydrate it then.
  *
  * - layout="standalone" (posts): a "Comments" section of its own.
  * - layout="timeline" (snacks): comments that sit inside the page's PR timeline; the page also renders an
@@ -9,10 +10,13 @@
  *
  * Each page's thread is keyed on its path without base or locale ("writing/<slug>"), so every language
  * shares one. Builds without the Worker (GitHub Pages) set COMMENTS=false and get nothing at all.
+ *
+ * COMMENTS comes from `astro:env/server`: a typed build-time environment variable declared in
+ * astro.config.ts (`env.schema`).
  */
 import { COMMENTS } from "astro:env/server";
 
-import CommentsIsland from "@/components/comments/Comments";
+import CommentsIsland from "@/components/comments/CommentsIsland";
 import { LABEL_KEYS, type Labels } from "@/components/comments/labels";
 import { stripLocale, useTranslations, type Locale } from "@/i18n";
 import { LOCALE_TAGS } from "@/lib/format";
@@ -25,6 +29,7 @@ interface Props {
 
 const { locale, layout = "standalone", composerSlot } = Astro.props;
 const t = useTranslations(locale);
+// The thread's key: "/es/writing/foo/" -> "writing/foo". The home page would be "" and becomes "index".
 const term = stripLocale(Astro.url.pathname).replace(/^\/+|\/+$/g, "") || "index";
 // Placeholders such as {n} stay in; the island fills them.
 const labels = Object.fromEntries(LABEL_KEYS.map((key) => [key, t(`comments.${key}`)])) as Labels;

@@ -1,48 +1,13 @@
 /**
- * GitHub's reactions: a smiley in each comment's header that opens the eight reactions GitHub offers, and a
- * row of pills under the body, one per reaction in use, highlighted when it includes you. Clicking a pill adds
- * or takes back your reaction. Signed-out visitors are sent to sign in first.
+ * The smiley button in a comment's header. It opens a small menu with the eight reactions GitHub offers;
+ * picking one adds (or takes back) the visitor's reaction. Signed-out visitors are sent to sign in first.
  */
 import { useEffect, useRef, useState } from "react";
 
-import { signInUrl, type Reaction, type ReactionContent } from "./api";
+import type { Reaction, ReactionContent } from "./api";
 import { useComments } from "./context";
-import { hasReacted, REACTION_EMOJI, REACTION_ORDER } from "./reactions";
-
-/**
- * Adds or takes back the visitor's reaction. The counts change at once (see `react` in Comments.tsx);
- * signed-out visitors are sent to sign in first.
- */
-function useReactionToggle(subjectId: string, reactions: Reaction[]) {
-  const { viewer, react } = useComments();
-  return (content: ReactionContent) => {
-    if (viewer) react(subjectId, content, hasReacted(reactions, content));
-    else window.location.href = signInUrl();
-  };
-}
-
-/** The pills under a comment, one per reaction in use. Nothing when there are none. */
-export function ReactionPills({ subjectId, reactions }: { subjectId: string; reactions: Reaction[] }) {
-  const toggle = useReactionToggle(subjectId, reactions);
-  if (reactions.length === 0) return null;
-
-  return (
-    <div className="cx-reactions">
-      {reactions.map(({ content, count, viewerHasReacted }) => (
-        <button
-          key={content}
-          type="button"
-          className="cx-reaction"
-          aria-pressed={viewerHasReacted}
-          onClick={() => toggle(content)}
-        >
-          <span>{REACTION_EMOJI[content]}</span>
-          <span className="cx-reaction-count">{count}</span>
-        </button>
-      ))}
-    </div>
-  );
-}
+import { REACTION_EMOJI, REACTION_ORDER } from "./reactions";
+import { useReactionToggle } from "./useReactionToggle";
 
 /** The smiley in a comment's header, which opens the eight reactions GitHub offers. */
 export function ReactionPicker({ subjectId, reactions }: { subjectId: string; reactions: Reaction[] }) {
@@ -51,11 +16,12 @@ export function ReactionPicker({ subjectId, reactions }: { subjectId: string; re
   return <PickerMenu label={labels.addReaction} onPick={toggle} />;
 }
 
+/** The button and its menu of emoji, which closes like GitHub's on a click elsewhere or on Escape. */
 function PickerMenu({ label, onPick }: { label: string; onPick: (content: ReactionContent) => void }) {
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
 
-  // Close on a click elsewhere or on Escape, like GitHub's menu.
+  // While the menu is open, listen on the whole document for a click outside it or the Escape key.
   useEffect(() => {
     if (!open) return;
     const onPointerDown = (event: PointerEvent) => {

@@ -2,6 +2,7 @@
  * The interface text the comments island needs, picked from src/i18n/ui.ts on the server and passed in as a
  * prop, so the island does not ship every translation. `{name}` placeholders are filled with `fill`.
  */
+/** The keys under "comments." in src/i18n/ui.ts that the island uses. */
 export const LABEL_KEYS = [
   "countOne",
   "countMany",
@@ -40,5 +41,6 @@ export const LABEL_KEYS = [
 
 export type Labels = Record<(typeof LABEL_KEYS)[number], string>;
 
+/** Fills `{name}` placeholders: fill("{n} comments", { n: 3 }) -> "3 comments". Unknown names stay as they are. */
 export const fill = (text: string, values: Record<string, string | number>) =>
   text.replace(/\{(\w+)\}/g, (match, name: string) => String(values[name] ?? match));

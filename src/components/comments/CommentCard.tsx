@@ -6,10 +6,11 @@ import { useState } from "react";
 
 import type { Comment, Reply } from "./api";
 import { Avatar } from "./Avatar";
-import { ReplyComposer } from "./Composer";
 import { useComments } from "./context";
 import { fill } from "./labels";
-import { ReactionPicker, ReactionPills } from "./Reactions";
+import { ReactionPicker } from "./ReactionPicker";
+import { ReactionPills } from "./ReactionPills";
+import { ReplyComposer } from "./ReplyComposer";
 import { fullDate, timeAgo } from "./time";
 
 /** Replies shown before "Show N more replies". */
@@ -22,15 +23,16 @@ const GHOST = {
   url: "https://github.com/ghost",
 };
 
+/** A top-level comment with its replies (folded after VISIBLE_REPLIES) and the field to reply. */
 export function CommentCard({ comment }: { comment: Comment }) {
   const { labels } = useComments();
-  const [allReplies, setAllReplies] = useState(false);
+  const [showAllReplies, setShowAllReplies] = useState(false);
   const author = comment.author ?? GHOST;
 
-  const replies = allReplies ? comment.replies : comment.replies.slice(0, VISIBLE_REPLIES);
-  const folded = comment.replies.length - replies.length;
+  const replies = showAllReplies ? comment.replies : comment.replies.slice(0, VISIBLE_REPLIES);
+  const foldedCount = comment.replies.length - replies.length;
   // Replies past the first hundred are only on GitHub.
-  const offsite = comment.replyCount - comment.replies.length;
+  const offsiteCount = comment.replyCount - comment.replies.length;
 
   return (
     <article className="cx-item" id={`comment-${comment.id}`}>
@@ -43,14 +45,14 @@ export function CommentCard({ comment }: { comment: Comment }) {
           {replies.map((reply) => (
             <ReplyItem key={reply.id} reply={reply} />
           ))}
-          {folded > 0 && (
-            <button type="button" className="cx-more" onClick={() => setAllReplies(true)}>
-              {fill(labels.moreReplies, { n: folded })}
+          {foldedCount > 0 && (
+            <button type="button" className="cx-more" onClick={() => setShowAllReplies(true)}>
+              {fill(labels.moreReplies, { n: foldedCount })}
             </button>
           )}
-          {allReplies && offsite > 0 && (
+          {showAllReplies && offsiteCount > 0 && (
             <a className="cx-more" href={comment.url}>
-              {fill(labels.moreOnGitHub, { n: offsite })}
+              {fill(labels.moreOnGitHub, { n: offsiteCount })}
             </a>
           )}
           <ReplyComposer replyTo={comment.id} />
@@ -60,6 +62,7 @@ export function CommentCard({ comment }: { comment: Comment }) {
   );
 }
 
+/** One reply, smaller, inside its parent's box. */
 function ReplyItem({ reply }: { reply: Reply }) {
   const author = reply.author ?? GHOST;
   return (
@@ -73,9 +76,14 @@ function ReplyItem({ reply }: { reply: Reply }) {
   );
 }
 
+/**
+ * "dani commented 3 days ago", with the Author badge and the reaction picker. `notch` is the top-level
+ * comment's version: a grey header bar with a small avatar, for narrow screens where the big one is hidden.
+ */
 function CommentHead({ reply, notch = false }: { reply: Reply; notch?: boolean }) {
   const { labels, localeTag } = useComments();
   const author = reply.author ?? GHOST;
+  // The translated sentence has the time in the middle ("{when}"), so split it around the <time> link.
   const [before, after] = labels.commented.split("{when}");
 
   return (
@@ -100,6 +108,7 @@ function CommentHead({ reply, notch = false }: { reply: Reply; notch?: boolean }
   );
 }
 
+/** The comment's text and reactions, or a short note if it was deleted or hidden by a moderator. */
 function CommentBody({ reply }: { reply: Reply }) {
   const { labels } = useComments();
 

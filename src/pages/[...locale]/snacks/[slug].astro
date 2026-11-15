@@ -12,7 +12,7 @@ import Lightbox from "@/components/commits/Lightbox.astro";
 import StateIcon from "@/components/commits/StateIcon.astro";
 import StatePill from "@/components/commits/StatePill.astro";
 import ZoomImage from "@/components/commits/ZoomImage.astro";
-import Comments from "@/components/site/Comments.astro";
+import CommentsSection from "@/components/site/CommentsSection.astro";
 import Logo from "@/components/site/Logo.astro";
 import ShareButton from "@/components/site/ShareButton.astro";
 import DateTime from "@/components/ui/DateTime.astro";
@@ -220,7 +220,7 @@ const listHref = localePath(locale, SECTION_PATH);
           </>
         ))}
 
-        <Comments locale={locale} layout="timeline" composerSlot="comments-composer" />
+        <CommentsSection locale={locale} layout="timeline" composerSlot="comments-composer" />
 
         <aside class="pr-box pr-merge" aria-label={t(`commits.state.${verdict}`)}>
           <span class="pr-merge-tile" aria-hidden="true">
