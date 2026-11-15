@@ -2,6 +2,9 @@
 
 Personal site, blog and portfolio of Daniel Prol. Built with [Astro](https://astro.build), fully static, deployed to Cloudflare and GitHub Pages.
 
+New to the code? Start with the [code tour](docs/ARCHITECTURE.md): a map of the folders, how pages, content,
+languages, the Snacks section and comments fit together, and how to add things.
+
 ## Quick start
 
 ```sh
@@ -40,9 +43,13 @@ src/
     site/               Header, Footer, theme and language switchers, SEO
     mdx/                Components posts may use: Sidenote, Figure
     diagrams/           Interactive React islands for posts
+    commits/            The Snacks section: history, entry page, compare
+    comments/           The comments island
   lib/                  Content queries and formatting. Pages never call getCollection directly.
   i18n/                 Locales and interface strings
   styles/               tokens.css (the theme), global.css, prose.css
+  scripts/              Browser scripts (share panel, Snacks pages)
+worker/                 The comments backend: a Cloudflare Worker for /api/* (see worker/README.md)
 ```
 
 ## Deploys
