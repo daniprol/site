@@ -1,7 +1,7 @@
 ---
 // KaTeX styles only load on pages that can contain math.
 import "katex/dist/katex.min.css";
-import Comments from "@/components/site/Comments.astro";
+import CommentsSection from "@/components/site/CommentsSection.astro";
 import ShareButton from "@/components/site/ShareButton.astro";
 import DateTime from "@/components/ui/DateTime.astro";
 import { localePath, useTranslations, type Locale } from "@/i18n";
@@ -96,7 +96,7 @@ const next = index >= 0 ? parts[index + 1] : undefined;
       </nav>
     )}
   </article>
-  <Comments locale={locale} />
+  <CommentsSection locale={locale} />
 </BaseLayout>
 
 <style>

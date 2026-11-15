@@ -1,4 +1,7 @@
-/** What every part of the comments island needs, without passing it down by hand. */
+/**
+ * What every part of the comments island needs, without passing it down by hand. React context lets
+ * CommentsIsland provide these once; any component below reads them with `useComments()`.
+ */
 import { createContext, useContext } from "react";
 
 import type { ReactionContent, Viewer } from "./api";

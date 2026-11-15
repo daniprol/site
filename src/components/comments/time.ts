@@ -8,6 +8,7 @@ const UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
   ["minute", 60],
 ];
 
+/** "3 days ago" (or "in 2 hours"), using the largest unit that fits. */
 export function timeAgo(iso: string, localeTag: string, now = Date.now()): string {
   const seconds = (Date.parse(iso) - now) / 1000;
   const format = new Intl.RelativeTimeFormat(localeTag, { numeric: "auto" });
@@ -17,5 +18,6 @@ export function timeAgo(iso: string, localeTag: string, now = Date.now()): strin
   return format.format(0, "minute");
 }
 
+/** "15 November 2026 at 10:30", for the tooltip on the relative time. */
 export const fullDate = (iso: string, localeTag: string) =>
   new Date(iso).toLocaleString(localeTag, { dateStyle: "long", timeStyle: "short" });
