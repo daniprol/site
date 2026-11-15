@@ -1,0 +1,440 @@
+/*!
+ * Proof (light) for giscus. Adapted from giscus's light theme (GitHub's own colours, bordered) and custom_example.css
+ * (MIT, https://github.com/giscus/giscus), which build on GitHub's Primer primitives
+ * (MIT License, Copyright (c) 2018 GitHub Inc., https://github.com/primer/primitives/blob/main/LICENSE).
+ *
+ * Colours mirror src/styles/tokens.css; keep them in step when the tokens change.
+ * giscus loads this file from inside its iframe on https://giscus.app, so it and the fonts next to it
+ * need Access-Control-Allow-Origin (public/_headers). Font URLs are relative to this file, so the
+ * GitHub Pages base path needs no special case.
+ */
+
+@font-face {
+  font-family: "Atkinson Hyperlegible Next";
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url("fonts/atkinson-hyperlegible-next-latin-wght-normal.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Atkinson Hyperlegible Mono";
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url("fonts/atkinson-hyperlegible-mono-latin-wght-normal.woff2") format("woff2");
+}
+
+html {
+  --font-family-sans: "Atkinson Hyperlegible Next", system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-family-monospace: "Atkinson Hyperlegible Mono", ui-monospace, monospace;
+}
+
+main {
+  /* Proof tokens */
+  --proof-bg: oklch(0.992 0.003 250);
+  --proof-surface: oklch(0.966 0.008 255);
+  --proof-code-bg: oklch(0.976 0.006 255);
+  --proof-border: oklch(0.905 0.012 260);
+  --proof-fg: oklch(0.255 0.04 268);
+  --proof-muted: oklch(0.5 0.03 265);
+  --proof-accent: oklch(0.49 0.2 266);
+  --proof-accent-soft: oklch(0.945 0.03 266);
+  --proof-mark: oklch(0.93 0.16 104 / 0.9);
+  --proof-mark-strong: oklch(0.9 0.18 102);
+  --proof-keep: oklch(0.5 0.13 155);
+  --proof-maybe: oklch(0.55 0.12 70);
+  --proof-drop: oklch(0.54 0.18 25);
+  --proof-on-accent: oklch(0.992 0.003 250);
+
+  /* Code: the same GitHub palette expressive-code uses on the site. */
+  --color-prettylights-syntax-comment: #6e7781;
+  --color-prettylights-syntax-constant: #0550ae;
+  --color-prettylights-syntax-entity: #8250df;
+  --color-prettylights-syntax-storage-modifier-import: #24292f;
+  --color-prettylights-syntax-entity-tag: #116329;
+  --color-prettylights-syntax-keyword: #cf222e;
+  --color-prettylights-syntax-string: #0a3069;
+  --color-prettylights-syntax-variable: #953800;
+  --color-prettylights-syntax-brackethighlighter-unmatched: #82071e;
+  --color-prettylights-syntax-invalid-illegal-text: #f6f8fa;
+  --color-prettylights-syntax-invalid-illegal-bg: #82071e;
+  --color-prettylights-syntax-carriage-return-text: #f6f8fa;
+  --color-prettylights-syntax-carriage-return-bg: #cf222e;
+  --color-prettylights-syntax-string-regexp: #116329;
+  --color-prettylights-syntax-markup-list: #3b2300;
+  --color-prettylights-syntax-markup-heading: #0550ae;
+  --color-prettylights-syntax-markup-italic: #24292f;
+  --color-prettylights-syntax-markup-bold: #24292f;
+  --color-prettylights-syntax-markup-deleted-text: #82071e;
+  --color-prettylights-syntax-markup-deleted-bg: #ffebe9;
+  --color-prettylights-syntax-markup-inserted-text: #116329;
+  --color-prettylights-syntax-markup-inserted-bg: #dafbe1;
+  --color-prettylights-syntax-markup-changed-text: #953800;
+  --color-prettylights-syntax-markup-changed-bg: #ffd8b5;
+  --color-prettylights-syntax-markup-ignored-text: #eaeef2;
+  --color-prettylights-syntax-markup-ignored-bg: #0550ae;
+  --color-prettylights-syntax-meta-diff-range: #8250df;
+  --color-prettylights-syntax-brackethighlighter-angle: #57606a;
+  --color-prettylights-syntax-sublimelinter-gutter-mark: #8c959f;
+  --color-prettylights-syntax-constant-other-reference-link: #0a3069;
+
+  /* Buttons: quiet outlines like the site's own; the primary one is the cobalt pen. */
+  --color-btn-text: var(--proof-fg);
+  --color-btn-bg: var(--proof-bg);
+  --color-btn-border: var(--proof-border);
+  --color-btn-shadow: 0 0 transparent;
+  --color-btn-inset-shadow: 0 0 transparent;
+  --color-btn-hover-bg: var(--proof-surface);
+  --color-btn-hover-border: var(--proof-border);
+  --color-btn-active-bg: var(--proof-accent-soft);
+  --color-btn-active-border: var(--proof-accent);
+  --color-btn-selected-bg: var(--proof-accent-soft);
+  --color-btn-primary-text: var(--proof-on-accent);
+  --color-btn-primary-bg: var(--proof-accent);
+  --color-btn-primary-border: var(--proof-accent);
+  --color-btn-primary-shadow: 0 0 transparent;
+  --color-btn-primary-inset-shadow: 0 0 transparent;
+  --color-btn-primary-hover-bg: color-mix(in oklch, var(--proof-accent) 88%, var(--proof-fg));
+  --color-btn-primary-hover-border: color-mix(in oklch, var(--proof-accent) 88%, var(--proof-fg));
+  --color-btn-primary-selected-bg: var(--proof-accent);
+  --color-btn-primary-selected-shadow: 0 0 transparent;
+  --color-btn-primary-disabled-text: color-mix(in oklch, var(--proof-on-accent) 80%, transparent);
+  --color-btn-primary-disabled-bg: color-mix(in oklch, var(--proof-accent) 45%, transparent);
+  --color-btn-primary-disabled-border: transparent;
+  --color-action-list-item-default-hover-bg: var(--proof-surface);
+  --color-segmented-control-bg: var(--proof-surface);
+  --color-segmented-control-button-bg: var(--proof-bg);
+  --color-segmented-control-button-selected-border: var(--proof-border);
+
+  /* Ink and paper */
+  --color-fg-default: var(--proof-fg);
+  --color-fg-muted: var(--proof-muted);
+  --color-fg-subtle: color-mix(in oklch, var(--proof-muted) 70%, var(--proof-bg));
+  --color-canvas-default: var(--proof-bg);
+  --color-canvas-overlay: var(--proof-bg);
+  --color-canvas-inset: var(--proof-code-bg);
+  --color-canvas-subtle: var(--proof-surface);
+  --color-border-default: var(--proof-border);
+  --color-border-muted: color-mix(in oklch, var(--proof-border) 60%, var(--proof-bg));
+  --color-neutral-muted: color-mix(in oklch, var(--proof-muted) 20%, transparent);
+
+  /* Pen */
+  --color-accent-fg: var(--proof-accent);
+  --color-accent-emphasis: var(--proof-accent);
+  --color-accent-muted: color-mix(in oklch, var(--proof-accent) 40%, transparent);
+  --color-accent-subtle: var(--proof-accent-soft);
+
+  /* States use the verdict colours: keep, maybe, drop. */
+  --color-success-fg: var(--proof-keep);
+  --color-attention-fg: var(--proof-maybe);
+  --color-attention-muted: color-mix(in oklch, var(--proof-maybe) 40%, transparent);
+  --color-attention-subtle: var(--proof-mark);
+  --color-danger-fg: var(--proof-drop);
+  --color-danger-muted: color-mix(in oklch, var(--proof-drop) 40%, transparent);
+  --color-danger-subtle: color-mix(in oklch, var(--proof-drop) 10%, transparent);
+  --color-primer-shadow-inset: 0 0 transparent;
+  --color-scale-gray-1: var(--proof-surface);
+  --color-scale-gray-7: var(--proof-surface);
+  --color-scale-blue-1: var(--proof-accent-soft);
+  --color-scale-blue-8: var(--proof-accent-soft);
+
+  /*! Extensions from @primer/css/alerts/flash.scss */
+  --color-social-reaction-bg-hover: var(--proof-surface);
+  --color-social-reaction-bg-reacted-hover: var(--proof-mark);
+
+  color: var(--proof-fg);
+  line-height: 1.6;
+}
+
+main .pagination-loader-container {
+  background-image: url("https://github.com/images/modules/pulls/progressive-disclosure-line.svg");
+}
+
+main .gsc-loading-image {
+  background-image: url("https://github.githubassets.com/images/mona-loading-default.gif");
+}
+
+/*!
+ * Proof: a pull-request conversation. Avatars sit beside each comment, which is a bordered box with a
+ * header bar and a little arrow pointing at its author; a thin line joins them into a timeline.
+ * Radii and borders follow GitHub's (6px, 1px); colours and type are Proof's.
+ */
+
+:root {
+  color-scheme: light;
+}
+
+::selection {
+  background: var(--proof-mark-strong);
+  color: var(--proof-fg);
+}
+
+.gsc-main {
+  gap: 1.5rem;
+}
+
+/* Meta reads like the site's: small mono, muted. */
+.gsc-comments-count,
+.gsc-replies-count,
+.gsc-comments-count-separator,
+.gsc-reactions-count,
+.gsc-comment-replies-count,
+.gsc-comment-header time,
+.gsc-reply-header time {
+  font-family: var(--font-family-monospace);
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--proof-muted);
+}
+
+/* Boxes: comments and the new-comment form. */
+.gsc-comment > div,
+.gsc-comment-box:not(.gsc-comment-box-is-reply) {
+  border: 1px solid var(--proof-border);
+  border-radius: 6px;
+  background: var(--proof-bg);
+}
+
+/* Your own comments get a cobalt outline and header, like GitHub's author highlight. */
+.gsc-comment > .color-box-border-info {
+  border-color: color-mix(in oklch, var(--proof-accent) 55%, var(--proof-bg));
+}
+
+.gsc-comment-header {
+  min-height: 2.5rem;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--proof-border);
+  border-radius: 5px 5px 0 0;
+  background: var(--proof-surface);
+  color: var(--proof-muted);
+}
+
+.gsc-comment > .color-box-border-info > .gsc-comment-header {
+  border-bottom-color: color-mix(in oklch, var(--proof-accent) 30%, var(--proof-bg));
+  background: var(--proof-accent-soft);
+}
+
+.gsc-comment-author-avatar {
+  color: var(--proof-fg);
+}
+
+.gsc-comment-author-avatar span {
+  font-weight: 700;
+}
+
+.gsc-comment-content {
+  padding: 1rem;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+.gsc-comment-footer {
+  padding: 0 1rem 0.75rem;
+}
+
+/* From 30rem the avatar steps out of the box and the comments hang on a timeline. */
+@media (min-width: 30rem) {
+  .gsc-comment {
+    position: relative;
+    padding-left: 3.5rem;
+  }
+
+  .gsc-comment-author-avatar img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 9999px;
+    box-shadow: 0 0 0 1px var(--proof-border);
+  }
+
+  /* The arrow: a square turned 45°, with the header's fill and the box's border. */
+  .gsc-comment::before {
+    content: "";
+    position: absolute;
+    top: 0.85rem;
+    left: calc(3.5rem - 0.3rem);
+    z-index: 1;
+    width: 0.6rem;
+    height: 0.6rem;
+    border-bottom: 1px solid var(--proof-border);
+    border-left: 1px solid var(--proof-border);
+    background: var(--proof-surface);
+    transform: rotate(45deg);
+  }
+
+  .gsc-comment:has(> .color-box-border-info)::before {
+    border-color: color-mix(in oklch, var(--proof-accent) 55%, var(--proof-bg));
+    background: var(--proof-accent-soft);
+  }
+
+  .gsc-timeline {
+    position: relative;
+    z-index: 0;
+  }
+
+  .gsc-timeline::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: calc(3.5rem + 1rem);
+    z-index: -1;
+    width: 2px;
+    background: var(--proof-border);
+  }
+
+  /* The form lines up with the comment column. */
+  .gsc-comments > .gsc-comment-box {
+    width: calc(100% - 3.5rem);
+    margin-left: 3.5rem;
+  }
+}
+
+/* Replies: a review thread inside the comment. */
+.gsc-replies {
+  border-color: var(--proof-border);
+  border-radius: 0 0 5px 5px;
+  background: var(--proof-surface);
+}
+
+.gsc-reply-author-avatar img {
+  border-radius: 9999px;
+}
+
+.gsc-tl-line {
+  background: var(--proof-border);
+}
+
+.gsc-reply-box {
+  border-color: var(--proof-border);
+  border-radius: 0 0 5px 5px;
+  background: var(--proof-surface);
+}
+
+/* The form: tabs on a grey bar, a solid-bordered textarea. */
+.gsc-comment-box-tabs {
+  border-radius: 5px 5px 0 0;
+  border-color: var(--proof-border);
+  background: var(--proof-surface);
+}
+
+.gsc-comment-box-tabs .tabnav-tab {
+  border-color: transparent;
+  color: var(--proof-muted);
+}
+
+.gsc-comment-box-tabs .tabnav-tab[aria-selected="true"] {
+  border-color: var(--proof-border);
+  background: var(--proof-bg);
+  color: var(--proof-fg);
+}
+
+.gsc-comment-box-textarea {
+  border-color: var(--proof-border);
+  border-radius: 6px 6px 0 0;
+  background: var(--proof-code-bg);
+  color: var(--proof-fg);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+}
+
+.gsc-comment-box-textarea:focus {
+  border-color: var(--proof-accent);
+  outline: none;
+  background: var(--proof-bg);
+  box-shadow: 0 0 0 2px var(--proof-accent-soft);
+}
+
+.gsc-comment-box-textarea-extras {
+  border-color: var(--proof-border);
+  border-radius: 0 0 6px 6px;
+  background: var(--proof-surface);
+}
+
+/* Reactions: GitHub's pills; the ones you picked are washed in cobalt. */
+.gsc-social-reaction-summary-item {
+  height: 1.625rem;
+  padding: 0 0.5rem;
+  border-color: var(--proof-border);
+  border-radius: 9999px;
+  background: var(--proof-bg);
+}
+
+.gsc-social-reaction-summary-item:hover {
+  background: var(--proof-surface);
+}
+
+.gsc-social-reaction-summary-item.has-reacted {
+  border-color: var(--proof-accent);
+  background: var(--proof-accent-soft);
+}
+
+.gsc-social-reaction-summary-item-count {
+  font-family: var(--font-family-monospace);
+  color: var(--proof-fg);
+}
+
+.gsc-reactions-button {
+  border: 1px solid var(--proof-border);
+  border-radius: 9999px;
+  background: var(--proof-bg);
+}
+
+.gsc-reactions-popover {
+  border-color: var(--proof-border);
+  border-radius: 6px;
+  background: var(--proof-bg);
+  box-shadow: 0 8px 24px -12px color-mix(in oklch, var(--proof-fg) 30%, transparent);
+}
+
+.btn {
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.btn-primary {
+  font-weight: 700;
+}
+
+.gsc-pagination-button {
+  border-color: var(--proof-border);
+  border-radius: 6px;
+  background: var(--proof-bg);
+}
+
+.gsc-pagination-button:hover {
+  background: var(--proof-surface);
+}
+
+/* Links: the cobalt pen, with the highlighter on hover like the site's prose. */
+.markdown a {
+  color: var(--proof-accent);
+}
+
+.markdown a:hover {
+  text-decoration: none;
+  background: linear-gradient(var(--proof-mark), var(--proof-mark)) no-repeat 0 88% / 100% 0.45em;
+}
+
+.markdown code {
+  border-radius: 4px;
+  background: var(--proof-code-bg);
+}
+
+.markdown pre {
+  border: 1px solid var(--proof-border);
+  border-radius: 6px;
+  background: var(--proof-code-bg);
+}
+
+.markdown blockquote {
+  border-left-color: var(--proof-accent);
+  color: var(--proof-muted);
+}
+
+.gsc-homepage-bg {
+  background-color: var(--proof-bg);
+}

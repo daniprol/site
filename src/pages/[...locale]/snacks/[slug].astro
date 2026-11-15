@@ -12,6 +12,7 @@ import Lightbox from "@/components/commits/Lightbox.astro";
 import StateIcon from "@/components/commits/StateIcon.astro";
 import StatePill from "@/components/commits/StatePill.astro";
 import ZoomImage from "@/components/commits/ZoomImage.astro";
+import Comments from "@/components/site/Comments.astro";
 import Logo from "@/components/site/Logo.astro";
 import ShareButton from "@/components/site/ShareButton.astro";
 import DateTime from "@/components/ui/DateTime.astro";
@@ -280,6 +281,7 @@ const listHref = localePath(locale, SECTION_PATH);
       )}
     </div>
   </article>
+  <Comments locale={locale} />
   <Lightbox locale={locale} />
 </BaseLayout>
 
