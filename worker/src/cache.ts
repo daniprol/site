@@ -13,20 +13,22 @@ const TTL_SECONDS = 60;
 /** A stable key per term on this host, whatever else the request URL carried. */
 const keyFor = (origin: string, term: string) => new Request(`${origin}/api/comments?term=${encodeURIComponent(term)}`);
 
+export type CacheStatus = "HIT" | "MISS" | "BYPASS";
+
 export async function cachedThread(
   ctx: ExecutionContext,
   origin: string,
   term: string,
   load: () => Promise<Thread>,
-): Promise<Thread> {
+): Promise<{ thread: Thread; status: CacheStatus }> {
   const key = keyFor(origin, term);
   const hit = await caches.default.match(key);
-  if (hit) return hit.json<Thread>();
+  if (hit) return { thread: await hit.json<Thread>(), status: "HIT" };
 
   const thread = await load();
   const entry = Response.json(thread, { headers: { "Cache-Control": `public, max-age=${TTL_SECONDS}` } });
   ctx.waitUntil(caches.default.put(key, entry));
-  return thread;
+  return { thread, status: "MISS" };
 }
 
 export async function forgetThread(origin: string, term: string): Promise<void> {

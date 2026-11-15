@@ -220,6 +220,8 @@ const listHref = localePath(locale, SECTION_PATH);
           </>
         ))}
 
+        <Comments locale={locale} layout="timeline" composerSlot="comments-composer" />
+
         <aside class="pr-box pr-merge" aria-label={t(`commits.state.${verdict}`)}>
           <span class="pr-merge-tile" aria-hidden="true">
             <StateIcon verdict={verdict} />
@@ -249,6 +251,7 @@ const listHref = localePath(locale, SECTION_PATH);
             </a>
           </p>
         )}
+        <div id="comments-composer" />
       </div>
 
       {(older || newer) && (
@@ -281,7 +284,6 @@ const listHref = localePath(locale, SECTION_PATH);
       )}
     </div>
   </article>
-  <Comments locale={locale} />
   <Lightbox locale={locale} />
 </BaseLayout>
 

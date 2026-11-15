@@ -4,6 +4,7 @@
  */
 import { clearCookie, getSealedCookie, setSealedCookie } from "./cookies";
 import type { Env } from "./env";
+import { GitHubError } from "./github/client";
 import { refreshTokens, type GitHubUser, type UserTokens } from "./github/oauth";
 import { HttpError } from "./http";
 
@@ -38,4 +39,32 @@ export async function withFreshToken(env: Env, session: Session): Promise<{ sess
 
   const refreshed: Session = { ...session, ...(await refreshTokens(env, session.refreshToken)) };
   return { session: refreshed, cookie: await sessionCookie(env, refreshed) };
+}
+
+/** What a signed-in action returned, plus the session cookie to send back if the token was refreshed. */
+export interface ViewerResult<T> {
+  result: T;
+  cookie?: string;
+}
+
+/**
+ * Runs `action` with the signed-in visitor's GitHub token. Throws 401 when nobody is signed in, and signs the
+ * visitor out when GitHub no longer accepts their token (revoked on GitHub, or the refresh token ran out).
+ */
+export async function asViewer<T>(
+  request: Request,
+  env: Env,
+  action: (token: string) => Promise<T>,
+): Promise<ViewerResult<T>> {
+  const stored = await readSession(request, env);
+  if (!stored) throw new HttpError(401, "Sign in with GitHub first.");
+  try {
+    const { session, cookie } = await withFreshToken(env, stored);
+    return { result: await action(session.accessToken), cookie };
+  } catch (error) {
+    if (error instanceof GitHubError && error.status === 401) {
+      throw new HttpError(401, "Your GitHub sign-in has expired. Sign in again.", clearSessionCookie());
+    }
+    throw error;
+  }
 }

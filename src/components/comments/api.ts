@@ -1,7 +1,16 @@
 /** Typed calls to the comments API in worker/ (see worker/src/contract.ts for the routes). */
-import type { ApiError, PostCommentBody, PostedComment, SessionInfo, Thread } from "../../../worker/src/contract";
+import type {
+  ApiError,
+  PostCommentBody,
+  PostedComment,
+  PreviewResult,
+  ReactionBody,
+  ReactionsResult,
+  SessionInfo,
+  Thread,
+} from "../../../worker/src/contract";
 
-export type { Comment, ReactionContent, Reply, Thread, Viewer } from "../../../worker/src/contract";
+export type { Comment, Reaction, ReactionContent, Reply, Thread, Viewer } from "../../../worker/src/contract";
 
 /** An API failure, with a message from the Worker that can be shown as is. */
 export class CommentsError extends Error {
@@ -23,16 +32,25 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return data as T;
 }
 
+const post = <T>(path: string, body: unknown) =>
+  request<T>(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
 export const fetchThread = (term: string) => request<Thread>(`/api/comments?term=${encodeURIComponent(term)}`);
 
 export const fetchViewer = () => request<SessionInfo>("/api/session").then((session) => session.viewer);
 
 export const postComment = (body: PostCommentBody) =>
-  request<PostedComment>("/api/comments", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  }).then((posted) => posted.comment);
+  post<PostedComment>("/api/comments", body).then((posted) => posted.comment);
+
+export const postReaction = (body: ReactionBody) =>
+  post<ReactionsResult>("/api/reactions", body).then((result) => result.reactions);
+
+export const previewMarkdown = (text: string) =>
+  post<PreviewResult>("/api/markdown", { text }).then((result) => result.html);
 
 export const signOut = () => request<undefined>("/api/auth/logout", { method: "POST" });
 

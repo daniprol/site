@@ -19,14 +19,28 @@ const headers = (token: string) => ({
   "X-GitHub-Api-Version": "2022-11-28",
 });
 
-export async function rest<T>(token: string, path: string, init: { method?: string; body?: unknown } = {}): Promise<T> {
+interface RestInit {
+  method?: string;
+  body?: unknown;
+}
+
+export async function rest<T>(token: string, path: string, init: RestInit = {}): Promise<T> {
+  return (await restResponse(token, path, init)).json<T>();
+}
+
+/** For the few endpoints that answer with text rather than JSON, such as /markdown. */
+export async function restText(token: string, path: string, init: RestInit = {}): Promise<string> {
+  return (await restResponse(token, path, init)).text();
+}
+
+async function restResponse(token: string, path: string, init: RestInit): Promise<Response> {
   const response = await fetch(`${API}${path}`, {
     method: init.method ?? "GET",
     headers: { ...headers(token), ...(init.body ? { "Content-Type": "application/json" } : {}) },
     body: init.body ? JSON.stringify(init.body) : undefined,
   });
   if (!response.ok) throw new GitHubError(response.status, `GitHub ${path}: ${await response.text()}`);
-  return response.json<T>();
+  return response;
 }
 
 export async function graphql<T>(token: string, query: string, variables: Record<string, unknown>): Promise<T> {
