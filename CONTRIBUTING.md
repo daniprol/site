@@ -1,5 +1,7 @@
 # Contributing
 
+New here? The [code tour](docs/ARCHITECTURE.md) explains how the code is organised.
+
 - **Branches:** work on a branch and open a PR; Cloudflare posts a preview URL on each one.
 - **Hooks:** pre-commit formats and lints staged files; pre-push type-checks and builds. Don't skip them.
 - **Content:** use `pnpm new`. Frontmatter is validated at build time, so a typo fails the build with a clear message.
