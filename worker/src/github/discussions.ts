@@ -1,14 +1,25 @@
 /**
  * Comments as GitHub Discussions: one discussion per page, in one category, titled with the page's term.
- * Reading and creating discussions runs as the app; adding a comment runs as the signed-in visitor.
+ * Signed-out reads and creating discussions run as the app; signed-in reads, comments and reactions run as the
+ * visitor, so GitHub records them as theirs and reports which reactions are theirs.
  */
-import type { Comment, ReactionContent, Reply, Thread } from "../contract";
+import type { Comment, Reaction, ReactionContent, Reply, Thread } from "../contract";
 import { utf8 } from "../encoding";
 import type { Env } from "../env";
 import { graphql } from "./client";
 
 /** GitHub's cap per page of a connection. Threads longer than this link to GitHub for the rest. */
 const PAGE_SIZE = 100;
+
+const REACTION_FIELDS = /* GraphQL */ `
+  fragment ReactionFields on ReactionGroup {
+    content
+    viewerHasReacted
+    reactors {
+      totalCount
+    }
+  }
+`;
 
 const COMMENT_FIELDS = /* GraphQL */ `
   fragment CommentFields on DiscussionComment {
@@ -27,12 +38,10 @@ const COMMENT_FIELDS = /* GraphQL */ `
       url
     }
     reactionGroups {
-      content
-      reactors {
-        totalCount
-      }
+      ...ReactionFields
     }
   }
+  ${REACTION_FIELDS}
 `;
 
 interface CommentNode {
@@ -46,7 +55,13 @@ interface CommentNode {
   minimizedReason: string | null;
   authorAssociation: string;
   author: { login: string; avatarUrl: string; url: string } | null;
-  reactionGroups: { content: ReactionContent; reactors: { totalCount: number } }[];
+  reactionGroups: ReactionGroup[];
+}
+
+interface ReactionGroup {
+  content: ReactionContent;
+  viewerHasReacted: boolean;
+  reactors: { totalCount: number };
 }
 
 interface CommentWithReplies extends CommentNode {
@@ -196,6 +211,33 @@ const ADD_COMMENT = /* GraphQL */ `
   }
 `;
 
+/** Adds or removes the visitor's reaction on a comment or reply, and returns the subject's reactions after it. */
+export async function setReaction(
+  userToken: string,
+  subjectId: string,
+  content: ReactionContent,
+  remove: boolean,
+): Promise<Reaction[]> {
+  const mutation = remove ? "removeReaction" : "addReaction";
+  const data = await graphql<Record<string, { subject: { reactionGroups: ReactionGroup[] } }>>(
+    userToken,
+    /* GraphQL */ `
+      ${REACTION_FIELDS}
+      mutation ($subjectId: ID!, $content: ReactionContent!) {
+        ${mutation}(input: { subjectId: $subjectId, content: $content }) {
+          subject {
+            reactionGroups {
+              ...ReactionFields
+            }
+          }
+        }
+      }
+    `,
+    { subjectId, content },
+  );
+  return toReactions(data[mutation]?.subject.reactionGroups ?? []);
+}
+
 function toReply(node: CommentNode): Reply {
   return {
     id: node.id,
@@ -209,10 +251,18 @@ function toReply(node: CommentNode): Reply {
     minimized: node.isMinimized
       ? { reason: (node.minimizedReason ?? "hidden").toLowerCase().replace(/_/g, "-") }
       : null,
-    reactions: node.reactionGroups
-      .filter((group) => group.reactors.totalCount > 0)
-      .map((group) => ({ content: group.content, count: group.reactors.totalCount })),
+    reactions: toReactions(node.reactionGroups),
   };
+}
+
+function toReactions(groups: ReactionGroup[]): Reaction[] {
+  return groups
+    .filter((group) => group.reactors.totalCount > 0)
+    .map((group) => ({
+      content: group.content,
+      count: group.reactors.totalCount,
+      viewerHasReacted: group.viewerHasReacted,
+    }));
 }
 
 function toComment(node: CommentWithReplies): Comment {

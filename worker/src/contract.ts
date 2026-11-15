@@ -2,11 +2,15 @@
  * The comments API, as the browser sees it. Types only: the Worker produces these shapes and the
  * comments island (src/components/comments) consumes them.
  *
- *   GET  /api/comments?term=writing/foo  → Thread       (public, cached about a minute)
- *   POST /api/comments  PostCommentBody  → PostedComment (signed-in visitors only)
+ *   GET  /api/comments?term=writing/foo  → Thread         (cached about a minute; fresh for signed-in visitors)
+ *   POST /api/comments  PostCommentBody  → PostedComment  (signed-in visitors only, like every POST below)
+ *   POST /api/reactions ReactionBody     → ReactionsResult
+ *   POST /api/markdown  PreviewBody      → PreviewResult
  *   GET  /api/session                    → SessionInfo
  *   GET  /api/auth/login?return=/path    → redirect to GitHub, then back to /path signed in
  *   POST /api/auth/logout                → 204
+ *
+ * GET /api/comments sends X-Comments-Cache: HIT or MISS (edge cache), or BYPASS for signed-in visitors.
  *
  * A "term" is the page's path without base or locale ("writing/how-foliq-works"), so every language of a
  * page shares one thread. Each term has one GitHub discussion, titled with the term (as giscus did).
@@ -45,7 +49,14 @@ export interface Reply {
   /** Hidden by a moderator; the reason is GitHub's ("spam", "off-topic", …). */
   minimized: { reason: string } | null;
   /** Only reactions with at least one person, in GitHub's order. */
-  reactions: { content: ReactionContent; count: number }[];
+  reactions: Reaction[];
+}
+
+export interface Reaction {
+  content: ReactionContent;
+  count: number;
+  /** Whether the signed-in visitor is one of them (always false for signed-out reads). */
+  viewerHasReacted: boolean;
 }
 
 export interface Comment extends Reply {
@@ -72,6 +83,28 @@ export interface PostCommentBody {
 
 export interface PostedComment {
   comment: Comment;
+}
+
+export interface ReactionBody {
+  term: string;
+  /** The comment or reply to react to. */
+  subjectId: string;
+  content: ReactionContent;
+  /** true takes the visitor's reaction away again. */
+  remove: boolean;
+}
+
+export interface ReactionsResult {
+  reactions: Reaction[];
+}
+
+export interface PreviewBody {
+  /** GitHub-flavoured Markdown, rendered as it would be in this repository. */
+  text: string;
+}
+
+export interface PreviewResult {
+  html: string;
 }
 
 export interface Viewer {

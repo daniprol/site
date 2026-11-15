@@ -7,12 +7,14 @@ import type { Env } from "./env";
 import { GitHubError } from "./github/client";
 import { HttpError, json } from "./http";
 import { callback, getSession, login, logout } from "./routes/auth";
-import { getComments, postComment } from "./routes/comments";
+import { getComments, postComment, postReaction, previewMarkdown } from "./routes/comments";
 
 type Handler = (request: Request, env: Env, ctx: ExecutionContext) => Promise<Response>;
 
 const routes: Record<string, Partial<Record<string, Handler>>> = {
   "/api/comments": { GET: getComments, POST: postComment },
+  "/api/reactions": { POST: postReaction },
+  "/api/markdown": { POST: previewMarkdown },
   "/api/session": { GET: getSession },
   "/api/auth/login": { GET: login },
   "/api/auth/callback": { GET: callback },

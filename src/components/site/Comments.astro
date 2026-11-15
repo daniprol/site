@@ -1,10 +1,14 @@
 ---
 /**
- * The comments section under posts and snacks. The conversation itself is the React island in
- * src/components/comments, which loads it from the site's Worker (/api/*) once it scrolls into view.
+ * Comments on posts and snacks. The conversation itself is the React island in src/components/comments,
+ * which loads it from the site's Worker (/api/*) once it scrolls into view.
+ *
+ * - layout="standalone" (posts): a "Comments" section of its own.
+ * - layout="timeline" (snacks): comments that sit inside the page's PR timeline; the page also renders an
+ *   empty element with id `composerSlot` where the comment box goes.
  *
  * Each page's thread is keyed on its path without base or locale ("writing/<slug>"), so every language
- * shares one. Builds without the Worker (GitHub Pages) set COMMENTS=false and get no section at all.
+ * shares one. Builds without the Worker (GitHub Pages) set COMMENTS=false and get nothing at all.
  */
 import { COMMENTS } from "astro:env/server";
 
@@ -15,22 +19,37 @@ import { LOCALE_TAGS } from "@/lib/format";
 
 interface Props {
   locale: Locale;
+  layout?: "standalone" | "timeline";
+  composerSlot?: string;
 }
 
-const { locale } = Astro.props;
+const { locale, layout = "standalone", composerSlot } = Astro.props;
 const t = useTranslations(locale);
 const term = stripLocale(Astro.url.pathname).replace(/^\/+|\/+$/g, "") || "index";
 // Placeholders such as {n} stay in; the island fills them.
 const labels = Object.fromEntries(LABEL_KEYS.map((key) => [key, t(`comments.${key}`)])) as Labels;
+const standalone = layout === "standalone";
 ---
 
 {COMMENTS && (
-  <section id="comments" class="mt-16 scroll-mt-6 sm:mt-20" aria-labelledby="comments-title" data-pagefind-ignore>
-    <h2 id="comments-title" class="text-[1.05rem] font-bold tracking-tight">
+  <section
+    id="comments"
+    class:list={["scroll-mt-6", standalone ? "mt-16 sm:mt-20" : "cx-in-timeline"]}
+    aria-labelledby="comments-title"
+    data-pagefind-ignore
+  >
+    <h2 id="comments-title" class:list={standalone ? "text-[1.05rem] font-bold tracking-tight" : "sr-only"}>
       {t("comments.title")}
     </h2>
-    <div class="mt-4 min-h-40">
-      <CommentsIsland client:visible term={term} localeTag={LOCALE_TAGS[locale]} labels={labels} />
+    <div class:list={[standalone && "mt-4"]}>
+      <CommentsIsland
+        client:visible
+        term={term}
+        localeTag={LOCALE_TAGS[locale]}
+        labels={labels}
+        layout={layout}
+        composerSlot={composerSlot}
+      />
     </div>
   </section>
 )}

@@ -1,104 +1,78 @@
 /**
- * The box for writing a comment or a reply, styled like GitHub's. Signed-out visitors get a sign-in prompt
- * in its place. Ctrl/⌘ + Enter posts.
+ * Where visitors write: the "Add a comment" box at the end of the conversation, and the "Write a reply" field
+ * under each comment. Signed-out visitors get a sign-in button in their place.
  */
-import { useId, useState, type KeyboardEvent, type SubmitEvent } from "react";
+import { useState } from "react";
 
 import { signInUrl } from "./api";
-import { Avatar } from "./CommentCard";
+import { Avatar } from "./Avatar";
 import { useComments } from "./context";
+import { Editor } from "./Editor";
 
-interface Props {
-  /** Set for a reply box under a top-level comment. */
-  replyTo?: string;
-  /** Called after a successful post, and on Cancel (reply boxes only). */
-  onDone?: () => void;
-}
-
-export function Composer({ replyTo, onDone }: Props) {
+export function Composer() {
   const { labels, viewer, submit } = useComments();
-  const [body, setBody] = useState("");
-  const [posting, setPosting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const fieldId = useId();
-  const isReply = replyTo !== undefined;
 
   if (!viewer) {
     return (
-      <div className={isReply ? "cx-signin cx-signin-reply" : "cx-signin"}>
-        {!isReply && <p>{labels.signInPrompt}</p>}
-        <a className="cx-button" href={signInUrl()}>
+      <div className="cx-item">
+        <span className="cx-avatar cx-avatar-empty" aria-hidden="true">
           <GitHubMark />
-          {labels.signIn}
-        </a>
+        </span>
+        <div className="cx-box cx-signin">
+          <p>{labels.signInPrompt}</p>
+          <a className="cx-button cx-button-primary" href={signInUrl()}>
+            <GitHubMark />
+            {labels.signIn}
+          </a>
+        </div>
       </div>
     );
   }
 
-  const send = async () => {
-    if (!body.trim() || posting) return;
-    setPosting(true);
-    setError(null);
-    try {
-      await submit(body, replyTo);
-      setBody("");
-      onDone?.();
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : String(caught));
-    } finally {
-      setPosting(false);
-    }
-  };
+  return (
+    <div className="cx-item">
+      <Avatar src={viewer.avatarUrl} size={40} className="cx-avatar" />
+      <div className="cx-box">
+        <Editor placeholder={labels.placeholder} submitLabel={labels.submit} onSubmit={(body) => submit(body)} />
+      </div>
+    </div>
+  );
+}
 
-  const onSubmit = (event: SubmitEvent) => {
-    event.preventDefault();
-    void send();
-  };
+export function ReplyComposer({ replyTo }: { replyTo: string }) {
+  const { labels, viewer, submit } = useComments();
+  const [open, setOpen] = useState(false);
 
-  const onKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) void send();
-  };
+  if (!viewer) {
+    return (
+      <a className="cx-reply-field" href={signInUrl()}>
+        {labels.signInToReply}
+      </a>
+    );
+  }
 
-  const placeholder = isReply ? labels.replyPlaceholder : labels.placeholder;
+  if (!open) {
+    return (
+      <button type="button" className="cx-reply-field" onClick={() => setOpen(true)}>
+        <Avatar src={viewer.avatarUrl} size={24} className="cx-reply-avatar" />
+        <span>{labels.replyPlaceholder}</span>
+      </button>
+    );
+  }
 
   return (
-    <form className={isReply ? "cx-composer cx-composer-reply" : "cx-item cx-composer"} onSubmit={onSubmit}>
-      {!isReply && <Avatar src={viewer.avatarUrl} size={40} className="cx-avatar" />}
-      <div className="cx-box">
-        <label htmlFor={fieldId} className="sr-only">
-          {placeholder}
-        </label>
-        <textarea
-          id={fieldId}
-          value={body}
-          placeholder={placeholder}
-          rows={isReply ? 3 : 4}
-          maxLength={65_536}
-          disabled={posting}
-          // A reply box opens because the reader asked for it, so it can take focus.
-          // eslint-disable-next-line jsx-a11y/no-autofocus
-          autoFocus={isReply}
-          onChange={(event) => setBody(event.target.value)}
-          onKeyDown={onKeyDown}
-        />
-        <div className="cx-composer-foot">
-          <span className="cx-hint">{labels.markdown}</span>
-          {error && (
-            <span className="cx-error" role="alert">
-              {error}
-            </span>
-          )}
-          {isReply && (
-            <button type="button" className="cx-button cx-button-quiet" onClick={onDone}>
-              {labels.cancel}
-            </button>
-          )}
-          <button type="submit" className="cx-button cx-button-primary" disabled={posting || !body.trim()}>
-            {posting ? labels.submitting : isReply ? labels.reply : labels.submit}
-          </button>
-        </div>
-      </div>
-    </form>
+    <div className="cx-reply-editor">
+      <Editor
+        placeholder={labels.replyPlaceholder}
+        submitLabel={labels.reply}
+        focusOnOpen
+        onCancel={() => setOpen(false)}
+        onSubmit={async (body) => {
+          await submit(body, replyTo);
+          setOpen(false);
+        }}
+      />
+    </div>
   );
 }
 

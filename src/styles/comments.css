@@ -1,30 +1,51 @@
 /*
- * The comments island (src/components/comments), drawn as a GitHub pull-request conversation in Proof's colours: a thread line with
- * avatars on it, boxed comments with a tinted header and a notch, replies nested inside each box.
- * Mirrors the conversation on snack pages (.pr-* in src/styles/commits.css).
+ * The comments island (src/components/comments), drawn as GitHub draws a pull-request conversation, in
+ * Proof's colours. Boxes, headers, notch and avatars use the same measures as the snack pages' own timeline
+ * (.pr-* in commits.css), so on a snack the visitors' comments read as part of it.
  */
 @layer components {
+  /* ---------- Containers ---------- */
+
+  /* Posts: a timeline of its own, with the thread line behind the avatars. */
   .cx-timeline {
     --cx-line: color-mix(in oklch, var(--color-fg) 17%, var(--color-bg));
-    --cx-thread-x: 19px;
     position: relative;
     isolation: isolate;
     display: grid;
-    gap: 1.5rem;
-    margin-top: 1rem;
+    gap: 1.1rem;
+    margin-top: 1.1rem;
   }
   .cx-timeline::before {
     content: "";
     position: absolute;
     z-index: -1;
-    left: var(--cx-thread-x);
+    left: 15px;
     top: 1rem;
-    bottom: 1rem;
+    bottom: 3rem;
     width: 2px;
     background: var(--cx-line);
   }
+  /* Snacks: items inside the page's .pr-timeline, which already draws the line. */
+  .cx-thread {
+    display: grid;
+    gap: 1.1rem;
+  }
+  .cx-thread:empty {
+    display: none;
+  }
+  .cx-in-timeline .cx-thread,
+  .cx-in-timeline .cx-skeleton,
+  .cx-in-timeline .cx-status {
+    margin-bottom: 1.4rem;
+  }
+  .cx-composer-area {
+    margin-top: 1.5rem;
+  }
+  .cx-skeleton {
+    display: grid;
+    gap: 1.1rem;
+  }
 
-  /* ---------- Bar, status and account line ---------- */
   .cx-bar,
   .cx-status,
   .cx-account {
@@ -33,23 +54,16 @@
     font-size: 0.78rem;
   }
   .cx-bar {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
     padding-bottom: 0.6rem;
     border-bottom: 1px solid var(--color-border);
   }
-  .cx-bar a:hover,
-  .cx-more:hover,
+  .cx-account {
+    margin-top: -0.4rem;
+    text-align: right;
+  }
+  .cx-account a:hover,
   .cx-link:hover {
     color: var(--color-accent);
-  }
-  .cx-status {
-    margin-top: 1rem;
-  }
-  .cx-account {
-    margin-top: 0.75rem;
-    text-align: right;
   }
   .cx-link {
     text-decoration: underline;
@@ -57,22 +71,17 @@
     cursor: pointer;
   }
   .cx-empty {
-    margin-left: calc(40px + 0.9rem);
     color: var(--color-muted);
     font-size: 0.92rem;
   }
 
-  /* ---------- A conversation item: avatar + box ---------- */
+  /* ---------- A conversation item: avatar on the line, box beside it ---------- */
   .cx-item {
     display: grid;
-    grid-template-columns: 40px minmax(0, 1fr);
-    gap: 0.9rem;
-    align-items: start;
+    grid-template-columns: minmax(0, 1fr);
   }
   .cx-avatar {
-    border: 1px solid var(--color-border);
-    border-radius: 50%;
-    background: var(--color-bg);
+    display: none;
   }
   .cx-box {
     min-width: 0;
@@ -88,28 +97,18 @@
     font-size: 0.82rem;
     line-height: 1.4;
   }
-  .cx-head-notch {
+  .cx-head-box {
     position: relative;
-    padding: 0.55rem 1.1rem;
+    min-height: 2.45rem;
+    padding: 0.55rem 0.9rem;
     border-bottom: 1px solid var(--color-border);
     border-radius: 0.6rem 0.6rem 0 0;
     background: var(--color-surface);
   }
-  /* The speech-bubble notch pointing at the avatar. */
-  .cx-head-notch::before {
-    content: "";
-    position: absolute;
-    left: -6px;
-    top: 14px;
-    width: 10px;
-    height: 10px;
-    rotate: 45deg;
-    border: solid var(--color-border);
-    border-width: 0 0 1px 1px;
-    background: var(--color-surface);
-  }
   .cx-mini {
-    display: none;
+    width: 1.35rem;
+    height: 1.35rem;
+    flex: none;
     border-radius: 50%;
   }
   .cx-who {
@@ -134,8 +133,11 @@
     font-size: 0.7rem;
     white-space: nowrap;
   }
+  .cx-content {
+    padding: 0.75rem 0.95rem 0.8rem;
+  }
   .cx-note {
-    padding: 0.8rem 1.1rem;
+    padding: 0.75rem 0.95rem;
     color: var(--color-muted);
     font-size: 0.9rem;
     font-style: italic;
@@ -143,7 +145,6 @@
 
   /* ---------- GitHub's rendered Markdown ---------- */
   .cx-body {
-    padding: 0.8rem 1.1rem;
     font-size: 0.97rem;
     line-height: 1.65;
     overflow-wrap: anywhere;
@@ -156,6 +157,10 @@
   }
   .cx-body :where(p, ul, ol, blockquote, pre, table, details) {
     margin-block: 0.7em;
+  }
+  .cx-body :where(h1, h2, h3, h4) {
+    margin-block: 1em 0.5em;
+    font-weight: 700;
   }
   .cx-body :where(ul, ol) {
     padding-left: 1.4em;
@@ -207,8 +212,8 @@
   }
   .cx-body img.emoji {
     display: inline;
-    height: 1.2em;
     width: auto;
+    height: 1.2em;
     vertical-align: -0.2em;
   }
   .cx-body table {
@@ -225,31 +230,91 @@
   .cx-reactions {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: 0.4rem;
-    padding: 0 1.1rem 0.8rem;
+    margin-top: 0.75rem;
   }
-  .cx-reactions a {
+  .cx-reaction {
     display: inline-flex;
     align-items: center;
-    gap: 0.3rem;
-    padding: 0.1rem 0.55rem;
+    gap: 0.35rem;
+    height: 1.75rem;
+    padding: 0 0.6rem;
     border: 1px solid var(--color-border);
     border-radius: 999px;
+    background: var(--color-bg);
     color: var(--color-muted);
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
+    font-size: 0.85rem;
+    line-height: 1;
+    cursor: pointer;
+    transition:
+      background-color var(--duration-fast),
+      border-color var(--duration-fast);
   }
-  .cx-reactions a:hover {
+  .cx-reaction:hover:not(:disabled) {
+    border-color: var(--color-accent);
+    background: var(--color-accent-soft);
+  }
+  .cx-reaction[aria-pressed="true"] {
     border-color: var(--color-accent);
     background: var(--color-accent-soft);
     color: var(--color-accent);
+  }
+  .cx-reaction-count {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+  }
+  .cx-reaction:disabled {
+    cursor: progress;
+  }
+  .cx-picker {
+    position: relative;
+  }
+  .cx-picker-toggle {
+    display: grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    margin-block: -0.3rem;
+    border-radius: 50%;
+    color: var(--color-muted);
+    cursor: pointer;
+  }
+  .cx-picker-toggle:hover,
+  .cx-picker-toggle[aria-expanded="true"] {
+    background: var(--color-accent-soft);
+    color: var(--color-accent);
+  }
+  .cx-picker-menu {
+    position: absolute;
+    z-index: 10;
+    top: calc(100% + 0.4rem);
+    right: -0.4rem;
+    display: grid;
+    grid-template-columns: repeat(4, 2.25rem);
+    gap: 0.15rem;
+    padding: 0.35rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.6rem;
+    background: var(--color-bg);
+    box-shadow: 0 8px 24px color-mix(in oklch, var(--color-fg) 14%, transparent);
+  }
+  .cx-picker-menu button {
+    height: 2.25rem;
+    border-radius: 0.4rem;
+    font-size: 1.1rem;
+    cursor: pointer;
+  }
+  .cx-picker-menu button:hover,
+  .cx-picker-menu button:focus-visible {
+    background: var(--color-accent-soft);
   }
 
   /* ---------- Replies, inside the comment's box ---------- */
   .cx-replies {
     display: grid;
-    gap: 0.9rem;
-    padding: 0.9rem 1.1rem;
+    gap: 1rem;
+    padding: 0.9rem 0.95rem;
     border-top: 1px solid var(--color-border);
     border-radius: 0 0 0.6rem 0.6rem;
     background: color-mix(in oklch, var(--color-surface) 45%, var(--color-bg));
@@ -262,66 +327,149 @@
   .cx-reply-avatar {
     border-radius: 50%;
   }
-  .cx-reply .cx-body,
+  .cx-reply .cx-content,
   .cx-reply .cx-note {
-    padding: 0.25rem 0 0;
+    padding: 0.3rem 0 0;
   }
   .cx-reply .cx-reactions {
-    padding: 0.5rem 0 0;
+    margin-top: 0.5rem;
   }
-  .cx-reply-toggle {
-    justify-self: start;
+  .cx-reply-field {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: 100%;
+    min-height: 2.5rem;
+    padding: 0.4rem 0.6rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.45rem;
+    background: var(--color-bg);
     color: var(--color-muted);
-    font-size: 0.85rem;
+    font-size: 0.88rem;
+    text-align: left;
+    cursor: text;
+  }
+  a.cx-reply-field {
     cursor: pointer;
   }
-  .cx-reply-toggle:hover {
-    color: var(--color-accent);
+  .cx-reply-field:hover {
+    border-color: color-mix(in oklch, var(--color-accent) 50%, var(--color-border));
+  }
+  .cx-reply-editor {
+    border: 1px solid var(--color-border);
+    border-radius: 0.45rem;
+    background: var(--color-bg);
   }
   .cx-more {
-    color: var(--color-muted);
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
+    justify-self: start;
+    color: var(--color-accent);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
   }
-  .cx-more-thread {
-    margin-left: calc(40px + 0.9rem);
+  .cx-more:hover {
+    text-decoration: underline;
   }
 
-  /* ---------- Composer and sign-in ---------- */
-  .cx-composer textarea {
-    display: block;
-    width: 100%;
-    min-height: 6rem;
-    padding: 0.75rem 1.1rem;
+  /* "12 hidden items · Load more…", across the thread line like GitHub's. */
+  .cx-hidden-items {
+    display: grid;
+    place-items: center;
+    padding-block: 0.4rem;
+    background: repeating-linear-gradient(
+      -45deg,
+      transparent 0 6px,
+      color-mix(in oklch, var(--color-border) 45%, transparent) 6px 7px
+    );
+    border-block: 1px solid var(--color-border);
+  }
+  .cx-hidden-items button {
+    display: grid;
+    gap: 0.1rem;
+    padding: 0.5rem 1.2rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    background: var(--color-bg);
+    color: var(--color-muted);
+    font-size: 0.82rem;
+    cursor: pointer;
+  }
+  .cx-hidden-items strong {
+    color: var(--color-accent);
+  }
+  .cx-hidden-items button:hover strong {
+    text-decoration: underline;
+  }
+
+  /* ---------- Editor: Write / Preview tabs ---------- */
+  .cx-tabs {
+    display: flex;
+    gap: 0.25rem;
+    padding: 0.45rem 0.6rem 0;
     border-bottom: 1px solid var(--color-border);
     border-radius: 0.6rem 0.6rem 0 0;
-    background: transparent;
+    background: var(--color-surface);
+  }
+  .cx-reply-editor .cx-tabs {
+    border-radius: 0.45rem 0.45rem 0 0;
+  }
+  .cx-tabs button {
+    margin-bottom: -1px;
+    padding: 0.4rem 0.85rem;
+    border: 1px solid transparent;
+    border-radius: 0.4rem 0.4rem 0 0;
+    color: var(--color-muted);
+    font-size: 0.84rem;
+    cursor: pointer;
+  }
+  .cx-tabs button[aria-selected="true"] {
+    border-color: var(--color-border);
+    border-bottom-color: var(--color-bg);
+    background: var(--color-bg);
+    color: var(--color-fg);
+    font-weight: 600;
+  }
+  .cx-editor-field {
+    padding: 0.6rem 0.6rem 0;
+  }
+  .cx-editor textarea {
+    display: block;
+    width: 100%;
+    min-height: 7rem;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.45rem;
+    background: var(--color-bg);
     color: var(--color-fg);
     font: inherit;
     font-size: 0.95rem;
     line-height: 1.6;
     resize: vertical;
   }
-  .cx-composer textarea:focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: -2px;
+  .cx-reply-editor textarea {
+    min-height: 5rem;
   }
-  .cx-composer-reply .cx-box {
-    border-radius: 0.5rem;
+  .cx-editor textarea:focus-visible {
+    border-color: var(--color-accent);
+    outline: 2px solid color-mix(in oklch, var(--color-accent) 30%, transparent);
+    outline-offset: 0;
   }
-  .cx-composer-reply textarea {
-    min-height: 4.5rem;
-    border-radius: 0.5rem 0.5rem 0 0;
+  .cx-preview {
+    min-height: 7rem;
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid var(--color-border);
   }
-  .cx-composer-foot {
+  .cx-muted {
+    color: var(--color-muted);
+    font-size: 0.9rem;
+  }
+  .cx-editor-foot {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: flex-end;
     gap: 0.5rem;
-    padding: 0.5rem 0.6rem 0.5rem 1.1rem;
-    border-radius: 0 0 0.6rem 0.6rem;
-    background: var(--color-surface);
+    padding: 0.6rem;
   }
   .cx-hint {
     margin-right: auto;
@@ -335,32 +483,35 @@
     color: var(--color-drop);
     font-size: 0.85rem;
   }
+
+  /* ---------- Sign-in ---------- */
   .cx-signin {
     display: grid;
     justify-items: start;
     gap: 0.75rem;
-    margin-left: calc(40px + 0.9rem);
     padding: 1rem 1.1rem;
-    border: 1px dashed var(--color-border);
-    border-radius: 0.6rem;
     color: var(--color-muted);
     font-size: 0.92rem;
   }
-  .cx-signin-reply {
-    margin: 0;
-    padding: 0;
-    border: 0;
+  .cx-avatar-empty {
+    place-items: center;
+    color: var(--color-muted);
+  }
+  .cx-avatar-empty svg {
+    width: 22px;
+    height: 22px;
   }
 
+  /* ---------- Buttons ---------- */
   .cx-button {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    min-height: 2.25rem;
+    min-height: 2.1rem;
     padding: 0.3rem 0.9rem;
     border: 1px solid var(--color-border);
     border-radius: 0.45rem;
-    background: var(--color-bg);
+    background: var(--color-surface);
     color: var(--color-fg);
     font-size: 0.86rem;
     font-weight: 600;
@@ -370,8 +521,7 @@
       border-color var(--duration-fast);
   }
   .cx-button:hover {
-    border-color: var(--color-accent);
-    background: var(--color-accent-soft);
+    border-color: color-mix(in oklch, var(--color-fg) 25%, var(--color-border));
   }
   .cx-button-primary {
     border-color: var(--color-accent);
@@ -381,40 +531,99 @@
   .cx-button-primary:hover {
     background: color-mix(in oklch, var(--color-accent) 88%, var(--color-fg));
   }
-  .cx-button-quiet {
-    border-color: transparent;
-    background: transparent;
-  }
   .cx-button:disabled {
     opacity: 0.55;
     cursor: not-allowed;
   }
 
-  /* Phones: no avatar column; a small avatar sits in each header instead, as on snack pages. */
-  @media (max-width: 39.99rem) {
-    .cx-timeline {
-      --cx-thread-x: 15px;
+  /* ---------- Skeleton ---------- */
+  .cx-bone {
+    display: block;
+    height: 0.7rem;
+    border-radius: 999px;
+  }
+  .cx-skeleton .cx-body {
+    display: grid;
+    gap: 0.6rem;
+    padding: 1rem 0.95rem;
+  }
+  .cx-skeleton .cx-head-box .cx-bone {
+    margin-block: 0.3rem;
+  }
+  .cx-shimmer {
+    background:
+      linear-gradient(
+          90deg,
+          transparent 30%,
+          color-mix(in oklch, var(--color-bg) 70%, transparent) 50%,
+          transparent 70%
+        )
+        0 0 / 300% 100%,
+      color-mix(in oklch, var(--color-fg) 8%, var(--color-bg));
+    animation: cx-shimmer 1.4s linear infinite;
+  }
+  @keyframes cx-shimmer {
+    from {
+      background-position:
+        100% 0,
+        0 0;
+    }
+    to {
+      background-position:
+        0% 0,
+        0 0;
+    }
+  }
+
+  /* From 40rem: avatars move out onto the thread line, and the header grows a notch pointing at them. */
+  @media (min-width: 40rem) {
+    .cx-timeline::before {
+      left: 19px;
     }
     .cx-item {
-      grid-template-columns: minmax(0, 1fr);
+      grid-template-columns: 40px minmax(0, 1fr);
+      gap: 0.9rem;
+      align-items: start;
     }
-    .cx-avatar,
-    .cx-head-notch::before {
-      display: none;
+    .cx-avatar {
+      display: grid;
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--color-border);
+      border-radius: 50%;
+      background: var(--color-bg);
     }
     .cx-mini {
-      display: block;
+      display: none;
     }
-    .cx-head-notch,
-    .cx-body,
-    .cx-note,
+    .cx-head-box {
+      padding-inline: 1.25rem;
+    }
+    .cx-head-box::before {
+      content: "";
+      position: absolute;
+      left: -6px;
+      top: 14px;
+      width: 10px;
+      height: 10px;
+      rotate: 45deg;
+      border: solid var(--color-border);
+      border-width: 0 0 1px 1px;
+      background: var(--color-surface);
+    }
+    .cx-content,
+    .cx-note {
+      padding-inline: 1.25rem;
+    }
     .cx-replies {
-      padding-inline: 0.9rem;
+      padding-inline: 1.25rem;
+    }
+    .cx-hidden-items {
+      margin-left: calc(40px + 0.9rem);
     }
     .cx-empty,
-    .cx-signin,
     .cx-more-thread {
-      margin-left: 0;
+      margin-left: calc(40px + 0.9rem);
     }
   }
 }
