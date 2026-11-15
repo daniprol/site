@@ -1,3 +1,4 @@
+/** /rss.xml: the feed of posts (English originals). A .ts file in src/pages that exports GET builds a file, not a page. */
 import rss from "@astrojs/rss";
 import type { APIContext } from "astro";
 

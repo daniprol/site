@@ -1,4 +1,8 @@
 ---
+/**
+ * The "page not found" page, in English only. Cloudflare serves it for any unknown URL
+ * (not_found_handling in wrangler.jsonc), and GitHub Pages picks up 404.html on its own.
+ */
 import { DEFAULT_LOCALE, useTranslations, withBase } from "@/i18n";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 

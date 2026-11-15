@@ -1,4 +1,10 @@
 ---
+/**
+ * /projects: every project, in the order set by their `order` frontmatter.
+ *
+ * Like every page under [...locale], it is built once per language (/, /es/, /gl/): `getStaticPaths =
+ * localeParams` lists the three, and the page reads its language from Astro.props.locale.
+ */
 import PageHeader from "@/components/ui/PageHeader.astro";
 import ProjectList from "@/components/ui/ProjectList.astro";
 import { localeParams, useTranslations } from "@/i18n";

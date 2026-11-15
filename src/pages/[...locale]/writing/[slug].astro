@@ -1,10 +1,18 @@
 ---
+/**
+ * /writing/<slug>: one post, in every language. A language without a translation shows the English text
+ * with a notice (isFallback), and its canonical URL points at the English page.
+ */
 import { render } from "astro:content";
 
 import { LOCALES, DEFAULT_LOCALE, localePath, type Locale } from "@/i18n";
 import PostLayout from "@/layouts/PostLayout.astro";
-import { getPosts } from "@/lib/content";
+import { getPosts, type Post } from "@/lib/content";
 
+/**
+ * Lists every page this file builds: one per post and language. `params` fills the URL ([...locale] is
+ * undefined for English, so it has no prefix) and `props` becomes Astro.props below.
+ */
 export async function getStaticPaths() {
   const perLocale = await Promise.all(
     LOCALES.map(async (locale) =>
@@ -17,9 +25,13 @@ export async function getStaticPaths() {
   return perLocale.flat();
 }
 
-const { locale, post, slug, isFallback } = Astro.props as Awaited<
-  ReturnType<typeof getStaticPaths>
->[number]["props"] & { locale: Locale };
+interface Props {
+  locale: Locale;
+  post: Post;
+  slug: string;
+  isFallback: boolean;
+}
+const { locale, post, slug, isFallback } = Astro.props;
 const { Content } = await render(post);
 ---
 

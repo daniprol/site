@@ -64,6 +64,7 @@ const t = useTranslations(Astro.props.locale);
 </style>
 
 <script>
+  // Set up the button again after every client-side navigation, which replaces the header.
   const bind = () => {
     document.querySelectorAll<HTMLButtonElement>("[data-theme-toggle]").forEach((button) => {
       button.onclick = () => {

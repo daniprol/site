@@ -1,4 +1,8 @@
 ---
+/**
+ * The en / es / gl links in the header. Each points at the same page in that language; getRelativeLocaleUrl
+ * (from Astro's i18n support) adds the right prefix and base path.
+ */
 import { getRelativeLocaleUrl } from "astro:i18n";
 
 import { LOCALE_NAMES, LOCALES, stripLocale, useTranslations, type Locale } from "@/i18n";

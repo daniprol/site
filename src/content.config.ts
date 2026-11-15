@@ -1,3 +1,9 @@
+/**
+ * The content collections: which folders under src/content hold posts, snacks and projects, and the
+ * frontmatter each file must have. Astro checks every file against these schemas (written with zod) at
+ * build time, so a typo or a missing field fails the build with a clear message. The data is read through
+ * the helpers in src/lib/content.ts.
+ */
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
 import { defineCollection, reference } from "astro:content";

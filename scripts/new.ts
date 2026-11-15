@@ -3,6 +3,7 @@
  *   pnpm new post "How foliq works"
  *   pnpm new snack "Claude Haiku 5.5"
  *   pnpm new project "foliq"
+ * Run by Node directly (it understands TypeScript types); the date in the file name and frontmatter is today's.
  */
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";

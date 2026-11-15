@@ -1,10 +1,15 @@
 ---
+/**
+ * /projects/<slug>: one project's case study. Projects are written in English only, so every language
+ * shows the same text and points search engines at the English URL.
+ */
 import { render } from "astro:content";
 
 import { DEFAULT_LOCALE, LOCALES, localePath, type Locale } from "@/i18n";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { getProjects, type Project } from "@/lib/content";
 
+/** One page per project and language; see writing/[slug].astro for how getStaticPaths works. */
 export async function getStaticPaths() {
   const projects = await getProjects();
   return LOCALES.flatMap((locale) =>
@@ -15,7 +20,11 @@ export async function getStaticPaths() {
   );
 }
 
-const { locale, project } = Astro.props as { locale: Locale; project: Project };
+interface Props {
+  locale: Locale;
+  project: Project;
+}
+const { locale, project } = Astro.props;
 const { Content } = await render(project);
 const { title, summary, stack, repo, url, year } = project.data;
 ---
