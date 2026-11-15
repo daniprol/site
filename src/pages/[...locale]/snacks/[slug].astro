@@ -13,6 +13,7 @@ import StateIcon from "@/components/commits/StateIcon.astro";
 import StatePill from "@/components/commits/StatePill.astro";
 import ZoomImage from "@/components/commits/ZoomImage.astro";
 import Logo from "@/components/site/Logo.astro";
+import ShareButton from "@/components/site/ShareButton.astro";
 import DateTime from "@/components/ui/DateTime.astro";
 import { DEFAULT_LOCALE, LOCALES, localePath, useTranslations, type Locale } from "@/i18n";
 import BaseLayout from "@/layouts/BaseLayout.astro";
@@ -119,6 +120,9 @@ const listHref = localePath(locale, SECTION_PATH);
               <span class="pr-count">{pros.length + cons.length}</span>
             </a>
           )}
+          <span class="pr-share">
+            <ShareButton locale={locale} title={title} variant="snack" diffId={hasDiff ? "files" : undefined} />
+          </span>
         </nav>
       </header>
 

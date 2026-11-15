@@ -34,6 +34,7 @@ const { title } = commit.snack.data;
   data-seq={seq}
   style={`--i:${index}`}
 >
+  <span class="cm-pen" aria-hidden="true"></span>
   <span class="cm-graph" aria-hidden="true">
     <svg class="cm-branch" viewBox="0 0 40 72">
       {verdict === "keep" && (

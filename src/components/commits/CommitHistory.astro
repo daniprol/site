@@ -75,12 +75,12 @@ const first = items.at(-1);
     ))}
   </fieldset>
 
-  <span class="cm-tip" aria-hidden="true"></span>
   <p class="cm-head mt-3">
     <a class="cm-chip" href={localePath(locale, TOOLBOX_PATH)}>
       {BASE_BRANCH}
     </a>
     <span>HEAD</span>
+    <span class="cm-pen" aria-hidden="true"></span>
     <span class="cm-behind" hidden data-cm-behind>
       <span data-cm-behind-text></span>
       <button type="button" class="cm-pull" data-cm-pull title={t("commits.pull")}>
@@ -93,6 +93,7 @@ const first = items.at(-1);
       <h2 class="cm-month">
         <span class="eyebrow">{group.label}</span>
         <span class="font-mono text-xs font-normal text-muted">{group.rows.length}</span>
+        <span class="cm-pen" aria-hidden="true"></span>
       </h2>
       <ol>
         {group.rows.map(({ event, index, seq }) =>
@@ -107,6 +108,7 @@ const first = items.at(-1);
   ))}
   {first && (
     <p class="cm-root">
+      <span class="cm-pen" aria-hidden="true"></span>
       <span>git init</span>
       <span aria-hidden="true">·</span>
       <time datetime={isoDate(first.snack.data.date)}>{formatMonth(first.snack.data.date, locale)}</time>

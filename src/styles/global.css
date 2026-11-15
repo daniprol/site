@@ -7,6 +7,7 @@
 @import "./prose.css";
 @import "./dialog.css";
 @import "./commits.css";
+@import "./share.css";
 
 @plugin "@tailwindcss/typography";
 

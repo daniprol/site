@@ -59,6 +59,9 @@ state, so no JavaScript, no scroll-timeline support or reduced motion all show t
    - **"You are N commits behind."** The reader's browser remembers the newest row it has seen and
      marks what was added since, with their own ref on the trunk and a `git pull` to clear it.
      Nothing is sent anywhere. Preview it with `/snacks?behind=3`.
+   - **Share.** One "Share" button (`ShareButton.astro`) opens a panel with the link, Copy and the
+     networks as plain links. Posts show coloured icons; snacks use the layout of a clone panel, with
+     tabs for what gets copied. It is a `<details>`, so it opens without JavaScript.
    - **Toolbox** (`/toolbox`) lists what is merged today, by kind, then open and reverted.
    - **Compare** (`/snacks/compare?a=…&b=…`) puts two entries side by side as a split diff.
    - **Share images.** Every entry gets a 1200 × 630 card at `/snacks/og/<slug>.png`, built by

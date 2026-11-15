@@ -1,0 +1,104 @@
+---
+/**
+ * One quiet "Share" button that opens a small panel: the link with a Copy button, then the networks.
+ *   post   the networks as a row of coloured icons
+ *   snack  laid out like a repository's clone panel: tabs choose what is copied, networks as a list
+ * It is a <details>, so it opens without JavaScript. The script (src/scripts/share.ts) adds copying,
+ * the tabs, the phone's own share sheet, and closing on Esc or a click outside.
+ */
+import { useTranslations, type Locale } from "@/i18n";
+import { SHARE_TARGETS, shareHref } from "@/lib/share";
+
+interface Props {
+  locale: Locale;
+  /** What is being shared; also the text of the Markdown link. */
+  title: string;
+  variant?: "post" | "snack";
+  /** Snack only: the id of the pros-and-cons block, offered as a "diff only" link. */
+  diffId?: string | undefined;
+}
+const { locale, title, variant = "post", diffId } = Astro.props;
+const t = useTranslations(locale);
+// The script swaps this for the address the reader is really on (previews, other domains).
+const url = new URL(Astro.url.pathname, Astro.site).href;
+const isSnack = variant === "snack";
+---
+
+<details class="share" data-share data-variant={variant} data-title={title}>
+  <summary class="share-btn">
+    <svg class="share-i" viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M6.8 9.2a3 3 0 0 0 4.2 0l2.2-2.2a3 3 0 0 0-4.2-4.2l-.9.9M9.2 6.8a3 3 0 0 0-4.2 0L2.8 9a3 3 0 0 0 4.2 4.2l.9-.9"></path>
+    </svg>
+    {t("share.label")}
+    {isSnack && (
+      <svg class="share-i share-caret" viewBox="0 0 16 16" aria-hidden="true">
+        <path d="m4 6 4 4 4-4" />
+      </svg>
+    )}
+  </summary>
+  <div class="share-panel">
+    {isSnack && (
+      <>
+        <p class="share-head">{t("share.snack")}</p>
+        <div class="share-tabs" role="group" aria-label={t("share.format")} hidden data-share-tabs>
+          <button type="button" aria-pressed="true" data-share-format="link">
+            {t("share.link")}
+          </button>
+          <button type="button" aria-pressed="false" data-share-format="markdown">
+            Markdown
+          </button>
+          {diffId && (
+            <button type="button" aria-pressed="false" data-share-format="diff" data-hash={diffId}>
+              {t("share.diff")}
+            </button>
+          )}
+        </div>
+      </>
+    )}
+    <div class="share-field">
+      <input type="text" readonly value={url} aria-label={t("share.link")} data-share-url />
+      <button type="button" data-share-copy data-copied={t("share.copied")} hidden>
+        <svg class="share-i" viewBox="0 0 16 16" aria-hidden="true">
+          <rect x="5.5" y="5.5" width="8" height="8" rx="1.5" />
+          <path d="M10.5 5.5v-2a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2" />
+        </svg>
+        <span data-share-copy-text>{t("share.copy")}</span>
+      </button>
+    </div>
+    {isSnack && <p class="share-hint">{t("share.hint")}</p>}
+    <ul class="share-targets">
+      {SHARE_TARGETS.map((target) => (
+        <li>
+          <a
+            class="share-target"
+            href={shareHref(target.template, url, title)}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={`--brand:${target.color}`}
+            data-share-target={target.template}
+            data-key={target.key}
+            aria-label={isSnack ? undefined : t("share.on", { name: target.name })}
+            title={isSnack ? undefined : target.name}
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d={target.icon} />
+            </svg>
+            {isSnack && target.name}
+          </a>
+        </li>
+      ))}
+      <li hidden data-share-native>
+        <button type="button" class="share-target" aria-label={isSnack ? undefined : t("share.more")}>
+          <svg class="share-i" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M8 10V2m0 0L5 5m3-3 3 3M3 9v4h10V9" />
+          </svg>
+          {isSnack && t("share.more")}
+        </button>
+      </li>
+    </ul>
+  </div>
+</details>
+
+<script>
+  import "@/scripts/share";
+</script>

@@ -205,7 +205,7 @@
   .cm-head::after,
   .cm-month::after,
   .cm-root::after,
-  .cm-tip::after {
+  .cm-pen::after {
     content: "";
     position: absolute;
     left: calc(var(--cm-main-x) + 1px);
@@ -218,7 +218,7 @@
     background: var(--color-bg);
   }
   .cm-head::after,
-  .cm-tip::after {
+  .cm-pen::after {
     width: 12px;
     height: 12px;
     border-color: var(--color-fg);
@@ -229,27 +229,29 @@
     border-color: var(--color-muted);
     background: var(--color-muted);
   }
-  /* HEAD as a pen: it rides down the trunk while you scroll. Only shown where scroll can drive it. */
-  .cm-tip {
-    display: none;
-    position: sticky;
+  /*
+   * HEAD as a pen: every block of the history carries one, and it shows only while that block is
+   * being drawn, so a single dot seems to ride down the trunk. It runs on the same scroll timeline
+   * as the drawing itself, which keeps the two together whatever the browser's toolbars do.
+   */
+  .cm-pen {
+    /* As tall as the piece of trunk it draws, with the dot at its foot: sliding it down by its own
+       height moves the dot from the top of the block to the bottom, using only a transform. */
+    position: absolute;
     z-index: 2;
-    top: calc(100svh - var(--cm-tip));
-    height: 0;
-    /* Starts level with the HEAD label (half a row down) without taking up room. */
-    margin-block: 1.375rem -1.375rem;
+    inset: 0 auto 0 0;
+    width: var(--cm-rail);
+    opacity: 0;
     pointer-events: none;
   }
-  /* The history ends at the middle of its last row, so HEAD comes to rest on the first commit. */
-  .cm-history:not(.cm-excerpt) {
-    display: flow-root;
-    margin-bottom: 1.375rem;
+  .cm-pen::after {
+    top: 100%;
   }
-  .cm-root {
-    margin-bottom: -1.375rem;
+  .cm-head > .cm-pen {
+    top: 50%;
   }
-  .cm-tip::after {
-    top: 0;
+  .cm-root > .cm-pen {
+    bottom: 50%;
   }
   .cm-head,
   .cm-root {
@@ -480,21 +482,17 @@
     display: flex;
     align-items: center;
     gap: 0.6rem;
-    min-height: 2.5rem;
+    /* Sits on the line between two rows without taking room, so marking it never moves the list. */
+    z-index: 1;
+    height: 0;
     padding-left: var(--cm-rail);
     color: var(--color-muted);
     font-family: var(--font-mono);
     font-size: 0.72rem;
     view-transition-name: cm-you;
   }
-  .cm-you::before {
-    content: "";
-    position: absolute;
-    left: var(--cm-main-x);
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: var(--cm-line);
+  .cm-you > * {
+    background: var(--color-bg);
   }
   .cm-you > .cm-chip::before {
     content: "";
@@ -1017,8 +1015,9 @@
     border-bottom: 1px solid var(--color-border);
     font-size: 0.9rem;
   }
-  .pr-tabs a {
+  .pr-tabs > a {
     display: inline-flex;
+    white-space: nowrap;
     align-items: center;
     gap: 0.45em;
     min-height: 2.75rem;
@@ -1030,17 +1029,22 @@
       color var(--duration-fast),
       border-color var(--duration-fast);
   }
-  .pr-tabs a:first-child {
+  .pr-tabs > a:first-child {
     margin-left: -0.7rem;
   }
-  .pr-tabs a:hover {
+  .pr-tabs > a:hover {
     color: var(--color-fg);
     border-bottom-color: var(--color-border);
   }
-  .pr-tabs a[aria-current] {
+  .pr-tabs > a[aria-current] {
     border-bottom-color: var(--color-logo-dot);
     color: var(--color-fg);
     font-weight: 650;
+  }
+  .pr-share {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
   }
   .pr-count {
     padding: 0.05em 0.5em;
@@ -1577,11 +1581,26 @@
      * line, its commit lands a moment later, and the text takes its ink.
      */
     @supports (animation-timeline: view()) {
-      .cm-tip {
-        display: block;
-      }
-      .cm-history:has(.cm-tip) .cm-head::after {
+      .cm-history:not(.cm-excerpt) .cm-head::after {
         display: none;
+      }
+      .cm-history:not(.cm-excerpt) :is(.cm-head, .cm-month, .cm-row, .cm-root) {
+        view-timeline: --cm-block block;
+        view-timeline-inset: 0% var(--cm-tip);
+      }
+      /* No fill: outside its own block's range the pen falls back to hidden. */
+      .cm-pen {
+        /* Longhands on purpose: the CSS minifier folds a named timeline into the shorthand, which browsers reject. */
+        animation-name: cm-pen;
+        animation-timing-function: linear;
+        animation-timeline: --cm-block;
+        animation-range: entry 0% entry 100%;
+      }
+      .cm-head > .cm-pen {
+        animation-range: entry 50% entry 100%;
+      }
+      .cm-root > .cm-pen {
+        animation-range: entry 0% entry 50%;
       }
       .cm-graph,
       .cm-head::before,
@@ -1603,8 +1622,8 @@
         animation-range: entry 0% entry 320%;
       }
       .cm-link,
-      .cm-month > *,
-      .cm-root > * {
+      .cm-month > :not(.cm-pen),
+      .cm-root > :not(.cm-pen) {
         animation: cm-ink linear both;
         animation-timeline: view(block 0% var(--cm-tip));
         animation-range: entry 0% entry 72px;
@@ -1699,6 +1718,16 @@
     box-shadow:
       0 0 0 2.5px var(--color-bg),
       0 0 0 16px transparent;
+  }
+}
+@keyframes cm-pen {
+  from {
+    translate: 0 -100%;
+    opacity: 1;
+  }
+  to {
+    translate: 0 0;
+    opacity: 1;
   }
 }
 @keyframes cm-ink {
