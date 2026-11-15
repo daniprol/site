@@ -8,14 +8,17 @@
 import { fromBase64, fromUtf8, toBase64Url, utf8 } from "./encoding";
 import type { Env } from "./env";
 
+/** AES-GCM's standard nonce length. A fresh random one is stored in front of every sealed value. */
 const IV_BYTES = 12;
 
+/** What is encrypted inside a sealed cookie. */
 interface Sealed<T> {
   value: T;
   /** Expiry, in milliseconds since the epoch. */
   exp: number;
 }
 
+/** Imported keys, kept for the life of the Worker instance so each request does not import SESSION_KEY again. */
 const keys = new Map<string, Promise<CryptoKey>>();
 
 function sessionKey(env: Env): Promise<CryptoKey> {
@@ -63,10 +66,12 @@ export async function getSealedCookie<T>(request: Request, env: Env, name: strin
 /** A Set-Cookie header value that deletes the cookie. */
 export const clearCookie = (name: string) => serialize(name, "", 0);
 
+/** The Set-Cookie header value. HttpOnly keeps it away from page scripts; SameSite=Lax off cross-site POSTs. */
 function serialize(name: string, value: string, maxAgeSeconds: number): string {
   return `${name}=${value}; Max-Age=${maxAgeSeconds}; Path=/; HttpOnly; Secure; SameSite=Lax`;
 }
 
+/** The raw value of cookie `name` in the request's Cookie header, or null. */
 function readCookie(request: Request, name: string): string | null {
   for (const part of request.headers.get("Cookie")?.split(";") ?? []) {
     const [key, ...rest] = part.trim().split("=");

@@ -10,6 +10,8 @@ the page's path without base or locale (`writing/how-foliq-works`), the same map
 | ------------------------------ | ------------------------------------------------------------------------------- |
 | `GET /api/comments?term=…`     | The page's thread, read as the GitHub App and kept in the edge cache for 60 s   |
 | `POST /api/comments`           | Posts a comment or reply as the signed-in visitor, then drops the cached thread |
+| `POST /api/reactions`          | Adds or removes the visitor's reaction on a comment or reply                    |
+| `POST /api/markdown`           | Renders a draft comment as GitHub will, for the editor's Preview tab            |
 | `GET /api/session`             | Who is signed in, if anyone                                                     |
 | `GET /api/auth/login?return=…` | Starts GitHub sign-in                                                           |
 | `GET /api/auth/callback`       | Finishes sign-in (must be one of the app's callback URLs)                       |
@@ -19,6 +21,12 @@ The response shapes are in [`src/contract.ts`](src/contract.ts), which the comme
 
 ## How it fits together
 
+- **`index.ts`**: the entry point. The `routes` object maps each `/api/*` path and method to a handler in `routes/`, and
+  turns thrown errors into JSON `{ error }` responses.
+- **`routes/comments.ts`** and **`routes/auth.ts`**: one exported function per route. They validate the
+  request, then call the GitHub helpers in `github/`.
+- **`github/client.ts`** and **`github/discussions.ts`**: small REST and GraphQL clients, and the queries that
+  read, create and comment on discussions.
 - **`github/app.ts`**: signs a JWT with the app's private key and swaps it for an installation token, which it
   keeps in memory until five minutes before it expires. That token reads discussions and creates a page's
   discussion the first time someone comments there. It only creates discussions for pages that exist in `./dist`.
