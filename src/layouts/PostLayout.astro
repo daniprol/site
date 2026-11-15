@@ -1,4 +1,8 @@
 ---
+/**
+ * The layout of a post (writing/[slug].astro): date, reading time and share button, title, description and
+ * tags, the post itself, the ∎ that ends it, links to the rest of its series, and the comments.
+ */
 // KaTeX styles only load on pages that can contain math.
 import "katex/dist/katex.min.css";
 import CommentsSection from "@/components/site/CommentsSection.astro";
@@ -20,10 +24,11 @@ interface Props {
 const { locale, post, slug, isFallback, canonicalPath } = Astro.props;
 const t = useTranslations(locale);
 const { title, description, date, series, tags } = post.data;
-const parts = series ? await getSeries(series) : [];
-const index = parts.findIndex((p) => postSlug(p) === slug);
-const previous = index > 0 ? parts[index - 1] : undefined;
-const next = index >= 0 ? parts[index + 1] : undefined;
+// Posts of a multi-part series link to the previous and next part.
+const seriesParts = series ? await getSeries(series) : [];
+const index = seriesParts.findIndex((p) => postSlug(p) === slug);
+const previous = index > 0 ? seriesParts[index - 1] : undefined;
+const next = index >= 0 ? seriesParts[index + 1] : undefined;
 ---
 
 <BaseLayout locale={locale} title={title} description={description} canonicalPath={canonicalPath}>

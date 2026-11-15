@@ -1,3 +1,7 @@
+/**
+ * Astro's configuration: where the site is served from, languages, fonts, Markdown/MDX processing and
+ * integrations. Read by `astro dev` and `astro build`. https://docs.astro.build/en/reference/configuration-reference/
+ */
 import { unified } from "@astrojs/markdown-remark";
 import mdx from "@astrojs/mdx";
 import react from "@astrojs/react";
@@ -15,9 +19,11 @@ export default defineConfig({
   // SITE_BASE to the project path ("/site"). Internal links get the base through withBase/localePath in src/i18n.
   site: process.env.SITE_URL ?? "https://example.com", // TODO: replace with the real domain
   base: process.env.SITE_BASE ?? "/",
+  // Every page is rendered to an HTML file at build time; there is no server rendering.
   output: "static",
   trailingSlash: "ignore",
 
+  // Typed environment variables. Pages import them from "astro:env/server"; a wrong value fails the build.
   env: {
     schema: {
       // Comments need the Worker's /api/*, which only the Cloudflare deploy has. The GitHub Pages build sets
@@ -26,6 +32,7 @@ export default defineConfig({
     },
   },
 
+  // Languages. English has no URL prefix; the others live under /es/ and /gl/ (see src/i18n).
   i18n: {
     locales: [...LOCALES],
     defaultLocale: DEFAULT_LOCALE,
@@ -110,6 +117,7 @@ export default defineConfig({
       },
     }),
     mdx(),
+    // Lets .tsx components run as islands (client:visible / client:load); pages without one ship no React.
     react(),
     sitemap({
       i18n: { defaultLocale: DEFAULT_LOCALE, locales: { en: "en", es: "es", gl: "gl" } },

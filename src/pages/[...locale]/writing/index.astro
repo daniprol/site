@@ -1,4 +1,10 @@
 ---
+/**
+ * /writing: every post, grouped by year. Each language shows its translation where there is one.
+ *
+ * Like every page under [...locale], it is built once per language (/, /es/, /gl/): `getStaticPaths =
+ * localeParams` lists the three, and the page reads its language from Astro.props.locale.
+ */
 import PageHeader from "@/components/ui/PageHeader.astro";
 import PostList from "@/components/ui/PostList.astro";
 import { localeParams, useTranslations } from "@/i18n";

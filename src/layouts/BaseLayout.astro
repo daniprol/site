@@ -1,5 +1,14 @@
 ---
-/** The page shell every route uses: <head>, header, main, footer. */
+/**
+ * The page shell every route uses: <head> (SEO tags, fonts, theme), the header, the page's own content in
+ * <slot /> (whatever the page puts between <BaseLayout> and </BaseLayout>), the footer and the search dialog.
+ *
+ * <ClientRouter /> turns on Astro's client-side navigation: links fetch the next page and swap it in with a
+ * view transition instead of a full reload. Scripts therefore run once and must listen for Astro's
+ * navigation events (astro:page-load, astro:after-swap) to set up each new page.
+ *
+ * `data-pagefind-body` on <main> keeps the header, footer and dialogs out of the search index.
+ */
 import "@/styles/global.css";
 import { Font } from "astro:assets";
 import { ClientRouter } from "astro:transitions";

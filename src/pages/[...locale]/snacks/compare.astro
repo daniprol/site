@@ -1,5 +1,9 @@
 ---
-/** Two snacks side by side. The pair is in the URL: /snacks/compare?a=herdr&b=t3-code */
+/**
+ * /snacks/compare: two snacks side by side. The pair is in the URL: /snacks/compare?a=herdr&b=t3-code.
+ * The page is static, so it renders a default pair; the Compare island (client:load) reads the URL and
+ * lets the reader pick. Only entries with pros or cons can be compared.
+ */
 import Compare, { type CompareItem } from "@/components/commits/Compare";
 import PageHeader from "@/components/ui/PageHeader.astro";
 import { DEFAULT_LOCALE, localeParams, localePath, useTranslations } from "@/i18n";

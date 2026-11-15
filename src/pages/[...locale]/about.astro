@@ -1,4 +1,10 @@
 ---
+/**
+ * /about: a short definition-style intro, experience, education and contact, from src/site.config.ts.
+ *
+ * Like every page under [...locale], it is built once per language (/, /es/, /gl/): `getStaticPaths =
+ * localeParams` lists the three, and the page reads its language from Astro.props.locale.
+ */
 import Callout from "@/components/mdx/Callout.astro";
 import PageHeader from "@/components/ui/PageHeader.astro";
 import { localeParams, useTranslations } from "@/i18n";

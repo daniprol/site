@@ -1,8 +1,17 @@
+/**
+ * Languages and URLs. Import from "@/i18n" everywhere: it has the translator (useTranslations) and the
+ * helpers that build internal links with the right language prefix and base path (localePath, withBase).
+ *
+ * How the URLs work: English pages have no prefix (/writing), Spanish and Galician do (/es/writing). Every
+ * page lives once under src/pages/[...locale]/; the [...locale] part of the path is empty for English and
+ * "es" or "gl" otherwise, which is what localeParams returns for Astro's getStaticPaths.
+ */
 import { DEFAULT_LOCALE, LOCALES, type Locale } from "./config";
 import { ui, type UIKey } from "./ui";
 
 export { DEFAULT_LOCALE, LOCALES, LOCALE_NAMES, type Locale } from "./config";
 
+/** Whether a string is one of the site's languages. */
 export function isLocale(value: unknown): value is Locale {
   return typeof value === "string" && (LOCALES as readonly string[]).includes(value);
 }

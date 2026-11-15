@@ -1,4 +1,11 @@
 ---
+/**
+ * /snacks: the full history of snacks, drawn as a git log (title graph, activity grid, then the history).
+ * The script at the bottom adds the browser-side extras (see src/scripts/commits/setup.ts).
+ *
+ * Like every page under [...locale], it is built once per language (/, /es/, /gl/): `getStaticPaths =
+ * localeParams` lists the three, and the page reads its language from Astro.props.locale.
+ */
 import ActivityGrid from "@/components/commits/ActivityGrid.astro";
 import CommitHistory from "@/components/commits/CommitHistory.astro";
 import TitleGraph from "@/components/commits/TitleGraph.astro";
