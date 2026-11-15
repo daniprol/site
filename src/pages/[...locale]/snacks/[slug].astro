@@ -1,39 +1,48 @@
 ---
 /**
- * One entry, laid out like a pull request: a strip of the history on its side, title and state,
- * the review as the opening comment, pros and cons as a diff, and the verdict as the merge box.
- * Plain HTML first; the script at the bottom adds swipe, keys and the sliding strip.
+ * /snacks/<slug> (and /es/…, /gl/…): one entry, laid out like a pull request. From top to bottom: a strip
+ * of the history on its side (GraphStrip), title and state, the review as the opening comment
+ * (TimelineComment), pros and cons as a diff (DiffBlock), the first verdict and every later change as
+ * timeline events, visitors' comments, the verdict as the merge box (MergeBox), and links to the older and
+ * newer entries (EntryNav). The CSS for all of it is the .pr-* part of styles/commits.css.
+ *
+ * Plain HTML first; the script at the bottom adds swipe, keys, the picture viewer and the sliding strip.
  */
 import { render } from "astro:content";
 
 import DiffBlock from "@/components/commits/DiffBlock.astro";
+import EntryNav from "@/components/commits/EntryNav.astro";
 import GraphStrip from "@/components/commits/GraphStrip.astro";
 import Lightbox from "@/components/commits/Lightbox.astro";
-import StateIcon from "@/components/commits/StateIcon.astro";
+import MergeBox from "@/components/commits/MergeBox.astro";
 import StatePill from "@/components/commits/StatePill.astro";
+import TimelineComment from "@/components/commits/TimelineComment.astro";
+import TimelineEvent from "@/components/commits/TimelineEvent.astro";
 import ZoomImage from "@/components/commits/ZoomImage.astro";
 import CommentsSection from "@/components/site/CommentsSection.astro";
-import Logo from "@/components/site/Logo.astro";
 import ShareButton from "@/components/site/ShareButton.astro";
-import DateTime from "@/components/ui/DateTime.astro";
 import { DEFAULT_LOCALE, LOCALES, localePath, useTranslations, type Locale } from "@/i18n";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import {
   BASE_BRANCH,
   COMPARE_PATH,
   SECTION_PATH,
-  TOOLBOX_PATH,
   commitPath,
   fillHtml,
   getCommits,
   laterLabel,
-  readingSeconds,
   refHtml,
   type Commit,
 } from "@/lib/commits";
+import { readingSeconds } from "@/lib/content";
 import { formatDate, isoDate } from "@/lib/format";
 import { site } from "@/site.config";
 
+/**
+ * Astro builds one HTML file per entry and language. getStaticPaths lists them all at build time: `params`
+ * fills the [...locale] and [slug] parts of the URL (undefined locale = English, no prefix), and `props` is
+ * what the page below receives as Astro.props.
+ */
 export async function getStaticPaths() {
   const commits = await getCommits();
   return LOCALES.flatMap((locale) =>
@@ -58,7 +67,8 @@ const { title, take, kind, date, pros, cons, cover, gallery, url } = snack.data;
 const { Content } = await render(snack);
 
 const who = site.socials.github.split("/").at(-1) ?? site.shortName;
-const parts = {
+// Pieces of HTML the translated headlines are built from ("{who} merged 1 commit into {base} from {head}").
+const headlineParts = {
   who: `<b>${who}</b>`,
   base: refHtml(BASE_BRANCH),
   head: refHtml(branch),
@@ -109,7 +119,7 @@ const listHref = localePath(locale, SECTION_PATH);
         {take && <p class="pr-take">{take}</p>}
         <p class="pr-status">
           <StatePill verdict={verdict} locale={locale} variant="solid" />
-          <span set:html={fillHtml(t(`commits.headline.${verdict}`), parts)} />
+          <span set:html={fillHtml(t(`commits.headline.${verdict}`), headlineParts)} />
         </p>
         <nav class="pr-tabs" aria-label={title}>
           <a href="#conversation" aria-current="true">
@@ -128,122 +138,61 @@ const listHref = localePath(locale, SECTION_PATH);
       </header>
 
       <div class="pr-timeline">
-        <section id="conversation" class="pr-comment">
-          <span class="pr-avatar" aria-hidden="true">
-            <Logo markOnly />
-          </span>
-          <div class="pr-box">
-            <p class="pr-comment-head">
-              <span class="pr-mini" aria-hidden="true">
-                <Logo markOnly class="h-full w-full" />
-              </span>
-              <span class="who" set:html={fillHtml(t("commits.commented"), parts)} />
-              <span class="pr-label">{kind}</span>
-            </p>
-            <div class="pr-body">
-              {cover && (
-                <figure class="pr-cover">
-                  <ZoomImage src={cover.src} alt={cover.alt} caption={cover.caption} width={640} />
-                  {cover.caption && <figcaption>{cover.caption}</figcaption>}
-                </figure>
-              )}
-              <div class="prose-site prose" lang="en">
-                <Content />
-              </div>
-              {gallery.length > 0 && (
-                <ul class="pr-gallery" aria-label={t("commits.gallery")}>
-                  {gallery.map((picture) => (
-                    <li>
-                      <ZoomImage
-                        src={picture.src}
-                        alt={picture.alt}
-                        caption={picture.caption}
-                        width={220}
-                        aspect={4 / 3}
-                      />
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+        <TimelineComment id="conversation" headHtml={fillHtml(t("commits.commented"), headlineParts)} label={kind}>
+          {cover && (
+            <figure class="pr-cover">
+              <ZoomImage src={cover.src} alt={cover.alt} caption={cover.caption} width={640} />
+              {cover.caption && <figcaption>{cover.caption}</figcaption>}
+            </figure>
+          )}
+          <div class="prose-site prose" lang="en">
+            <Content />
           </div>
-        </section>
+          {gallery.length > 0 && (
+            <ul class="pr-gallery" aria-label={t("commits.gallery")}>
+              {gallery.map((picture) => (
+                <li>
+                  <ZoomImage src={picture.src} alt={picture.alt} caption={picture.caption} width={220} aspect={4 / 3} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </TimelineComment>
 
         {hasDiff && (
           <DiffBlock file={`${BASE_BRANCH}/${slug}.md`} hunk={title} pros={pros} cons={cons} locale={locale} />
         )}
 
-        <p class="pr-event" data-verdict={firstVerdict}>
-          <span class="pr-badge" aria-hidden="true">
-            <StateIcon verdict={firstVerdict} />
-          </span>
-          <span>
-            <Fragment set:html={fillHtml(t(`commits.event.${firstVerdict}`), parts)} />
-            <span aria-hidden="true"> · </span>
-            <DateTime date={date} locale={locale} format="short" />
-            <span aria-hidden="true"> · </span>
-            {t("commits.readTime", { n: readingSeconds(snack.body) })}
-          </span>
-        </p>
+        <TimelineEvent
+          verdict={firstVerdict}
+          sentenceHtml={fillHtml(t(`commits.event.${firstVerdict}`), headlineParts)}
+          date={date}
+          locale={locale}
+          extra={t("commits.readTime", { n: readingSeconds(snack.body) })}
+        />
 
+        {/* Each later change of verdict: a follow-up comment explaining why, then the event itself. */}
         {updates.map((update) => (
           <>
-            <section id={update.anchor} class="pr-comment pr-update">
-              <span class="pr-avatar" aria-hidden="true">
-                <Logo markOnly />
-              </span>
-              <div class="pr-box">
-                <p class="pr-comment-head">
-                  <span class="pr-mini" aria-hidden="true">
-                    <Logo markOnly class="h-full w-full" />
-                  </span>
-                  <span
-                    class="who"
-                    set:html={fillHtml(t("commits.followedUp"), { ...parts, when: laterLabel(update.days, t) })}
-                  />
-                </p>
-                <div class="pr-body">
-                  <p class="pr-note">{update.note}</p>
-                </div>
-              </div>
-            </section>
-            <p class="pr-event" data-verdict={update.verdict}>
-              <span class="pr-badge" aria-hidden="true">
-                <StateIcon verdict={update.verdict} />
-              </span>
-              <span>
-                <Fragment set:html={fillHtml(t(`commits.event.${update.verdict}`), parts)} />
-                <span aria-hidden="true"> · </span>
-                <DateTime date={update.date} locale={locale} format="short" />
-              </span>
-            </p>
+            <TimelineComment
+              id={update.anchor}
+              class="pr-update"
+              headHtml={fillHtml(t("commits.followedUp"), { ...headlineParts, when: laterLabel(update.days, t) })}
+            >
+              <p class="pr-note">{update.note}</p>
+            </TimelineComment>
+            <TimelineEvent
+              verdict={update.verdict}
+              sentenceHtml={fillHtml(t(`commits.event.${update.verdict}`), headlineParts)}
+              date={update.date}
+              locale={locale}
+            />
           </>
         ))}
 
         <CommentsSection locale={locale} layout="timeline" composerSlot="comments-composer" />
 
-        <aside class="pr-box pr-merge" aria-label={t(`commits.state.${verdict}`)}>
-          <span class="pr-merge-tile" aria-hidden="true">
-            <StateIcon verdict={verdict} />
-          </span>
-          <p>
-            <strong class="pr-merge-title block">{t(`commits.state.${verdict}`)}</strong>
-            <span class="pr-merge-text block">
-              {t(`commits.box.${verdict}`)}{" "}
-              {verdict === "keep" && (
-                <a class="cm-textlink" href={localePath(locale, TOOLBOX_PATH)}>
-                  {t("toolbox.link")}
-                </a>
-              )}
-            </span>
-          </p>
-          {url && host && (
-            <a class="pr-visit" href={url} rel="noopener">
-              {t("commits.visit", { host })}
-              <span aria-hidden="true">↗</span>
-            </a>
-          )}
-        </aside>
+        <MergeBox verdict={verdict} locale={locale} url={url} host={host} />
         {hasDiff && (
           <p class="pr-compare">
             <a class="cm-textlink" href={compareHref} data-astro-prefetch="false">
@@ -254,39 +203,12 @@ const listHref = localePath(locale, SECTION_PATH);
         <div id="comments-composer" />
       </div>
 
-      {(older || newer) && (
-        <nav class="pr-nav" aria-label={t("commits.title")}>
-          {older ? (
-            <a href={localePath(locale, commitPath(older.slug))} class="group" data-cm-nav="older">
-              <span class="dir">
-                <span aria-hidden="true">←</span> {t("commits.older")} · #{older.number}
-                <kbd class="kbd" aria-hidden="true">
-                  j
-                </kbd>
-              </span>
-              <span class="marker-hover mt-1 inline font-semibold">{older.snack.data.title}</span>
-            </a>
-          ) : (
-            <span class="hidden sm:block" />
-          )}
-          {newer && (
-            <a href={localePath(locale, commitPath(newer.slug))} class="group newer" data-cm-nav="newer">
-              <span class="dir">
-                <kbd class="kbd" aria-hidden="true">
-                  k
-                </kbd>
-                {t("commits.newer")} · #{newer.number} <span aria-hidden="true">→</span>
-              </span>
-              <span class="marker-hover mt-1 inline font-semibold">{newer.snack.data.title}</span>
-            </a>
-          )}
-        </nav>
-      )}
+      <EntryNav older={older} newer={newer} locale={locale} />
     </div>
   </article>
   <Lightbox locale={locale} />
 </BaseLayout>
 
 <script>
-  import "@/scripts/commit-entry";
+  import "@/scripts/commits/setup";
 </script>

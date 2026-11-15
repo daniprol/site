@@ -2,9 +2,11 @@
  * Two snacks side by side, as a split diff of what I liked (+) and what I did not (−).
  * The server renders a default pair, so the page reads fine without JavaScript; with it, the two
  * pickers work and the choice lives in the URL (?a=herdr&b=t3-code) so a comparison can be shared.
+ * Rendered by snacks/compare.astro with `client:load`, so React takes over as soon as the page loads.
  */
 import { useEffect, useState } from "react";
 
+/** One entry, prepared by the page at build time (titles and states already translated). */
 export interface CompareItem {
   slug: string;
   title: string;
@@ -35,6 +37,7 @@ interface Props {
   initialB: string;
 }
 
+/** The pros (added lines) or cons (removed lines) of one side, as a diff hunk. */
 function Lines({ texts, kind, label, none }: { texts: string[]; kind: "add" | "del"; label: string; none: string }) {
   return (
     <>
@@ -60,6 +63,7 @@ function Lines({ texts, kind, label, none }: { texts: string[]; kind: "add" | "d
   );
 }
 
+/** One entry's column. */
 function Side({ item, labels }: { item: CompareItem; labels: CompareLabels }) {
   return (
     <article className="pr-box cmp-side" data-verdict={item.verdict}>

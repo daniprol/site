@@ -1,0 +1,45 @@
+---
+/**
+ * The older / newer links at the bottom of an entry (snacks/[slug].astro). `data-cm-nav` is what the page
+ * scripts look for: the keys and swipes in src/scripts/commits follow these links.
+ */
+import { localePath, useTranslations, type Locale } from "@/i18n";
+import { commitPath, type Commit } from "@/lib/commits";
+
+interface Props {
+  older: Commit | undefined;
+  newer: Commit | undefined;
+  locale: Locale;
+}
+const { older, newer, locale } = Astro.props;
+const t = useTranslations(locale);
+---
+
+{(older || newer) && (
+  <nav class="pr-nav" aria-label={t("commits.title")}>
+    {older ? (
+      <a href={localePath(locale, commitPath(older.slug))} class="group" data-cm-nav="older">
+        <span class="dir">
+          <span aria-hidden="true">←</span> {t("commits.older")} · #{older.number}
+          <kbd class="kbd" aria-hidden="true">
+            j
+          </kbd>
+        </span>
+        <span class="marker-hover mt-1 inline font-semibold">{older.snack.data.title}</span>
+      </a>
+    ) : (
+      <span class="hidden sm:block" />
+    )}
+    {newer && (
+      <a href={localePath(locale, commitPath(newer.slug))} class="group newer" data-cm-nav="newer">
+        <span class="dir">
+          <kbd class="kbd" aria-hidden="true">
+            k
+          </kbd>
+          {t("commits.newer")} · #{newer.number} <span aria-hidden="true">→</span>
+        </span>
+        <span class="marker-hover mt-1 inline font-semibold">{newer.snack.data.title}</span>
+      </a>
+    )}
+  </nav>
+)}

@@ -1,10 +1,15 @@
 /**
- * The "Commits" view of the snacks collection: every snack is a commit to the `toolbox` branch.
- * keep = merged, maybe = still open on its branch, drop = reverted.
+ * The "commits" view of the snacks collection, used by every Snacks page at build time. A snack is a
+ * content file (src/content/snacks); a Commit is that snack plus everything the git-history look needs:
+ * a number, a short sha, a branch name, and the verdict today after any later updates.
+ *
+ * Verdicts map to git: keep = merged into the `toolbox` branch, maybe = still open on its branch,
+ * drop = reverted.
  */
 import { getSnacks, type Snack } from "./content";
 
 export type Verdict = Snack["data"]["verdict"];
+/** Every verdict, in the order the filters and counts show them. */
 export const VERDICTS = ["keep", "maybe", "drop"] as const satisfies readonly Verdict[];
 
 /**
@@ -23,6 +28,7 @@ export const TOOLBOX_PATH = "/toolbox";
 /** The branch every kept tool is merged into. */
 export const BASE_BRANCH = "toolbox";
 
+/** One snack, as a commit in the history. */
 export interface Commit {
   snack: Snack;
   /** URL slug: the file name without its date, "2026-10-28-ghostty" -> "ghostty". */
@@ -45,6 +51,7 @@ export interface Commit {
   decided: Date;
 }
 
+/** A later change of verdict on an entry (an `updates` item in its frontmatter), with derived fields. */
 export interface Update {
   date: Date;
   /** The verdict before this update. */
@@ -64,6 +71,9 @@ export interface HistoryEvent {
   update?: Update;
 }
 
+const MS_PER_DAY = 86_400_000;
+
+/** "2026-10-28-ghostty" -> "ghostty". */
 const slugOf = (id: string) => id.replace(/^\d{4}-\d{2}-\d{2}-/, "");
 
 /** FNV-1a, run twice with different seeds so there are seven nicely mixed hex digits to show. */
@@ -76,41 +86,54 @@ function shortSha(text: string): string {
   return (hash(2166136261) + hash(40503)).slice(3, 10);
 }
 
-/** All commits, newest first. */
-export async function getCommits(): Promise<Commit[]> {
-  const snacks = await getSnacks();
-  const commits = snacks.map((snack, index) => {
-    const slug = slugOf(snack.id);
-    const sorted = [...snack.data.updates].sort((a, b) => a.date.getTime() - b.date.getTime());
-    const updates = sorted.map((update, i): Update => {
-      if (update.date < snack.data.date) throw new Error(`${snack.id}: an update is dated before the entry itself.`);
-      return {
-        ...update,
-        from: sorted[i - 1]?.verdict ?? snack.data.verdict,
-        days: Math.round((update.date.getTime() - snack.data.date.getTime()) / 86_400_000),
-        anchor: `update-${i + 1}`,
-      };
-    });
-    const last = updates.at(-1);
+/** The snack's `updates`, oldest first, each with the verdict it replaced and its distance from the entry. */
+function toUpdates(snack: Snack): Update[] {
+  const sorted = [...snack.data.updates].sort((a, b) => a.date.getTime() - b.date.getTime());
+  return sorted.map((update, i): Update => {
+    if (update.date < snack.data.date) throw new Error(`${snack.id}: an update is dated before the entry itself.`);
     return {
-      verdict: last?.verdict ?? snack.data.verdict,
-      firstVerdict: snack.data.verdict,
-      updates,
-      decided: last?.date ?? snack.data.date,
-      snack,
-      slug,
-      number: snacks.length - index,
-      sha: shortSha(snack.id),
-      branch: `try/${slug}`,
-      host: snack.data.url ? new URL(snack.data.url).hostname.replace(/^www\./, "") : undefined,
+      ...update,
+      from: sorted[i - 1]?.verdict ?? snack.data.verdict,
+      days: Math.round((update.date.getTime() - snack.data.date.getTime()) / MS_PER_DAY),
+      anchor: `update-${i + 1}`,
     };
   });
+}
+
+/** One snack as a commit. `number` counts from 1 for the oldest entry. */
+function toCommit(snack: Snack, number: number): Commit {
+  const slug = slugOf(snack.id);
+  const updates = toUpdates(snack);
+  const last = updates.at(-1);
+  return {
+    verdict: last?.verdict ?? snack.data.verdict,
+    firstVerdict: snack.data.verdict,
+    updates,
+    decided: last?.date ?? snack.data.date,
+    snack,
+    slug,
+    number,
+    sha: shortSha(snack.id),
+    branch: `try/${slug}`,
+    host: snack.data.url ? new URL(snack.data.url).hostname.replace(/^www\./, "") : undefined,
+  };
+}
+
+/** Fails the build when two entries would share a URL, or one would take the compare page's. */
+function assertUniqueSlugs(commits: Commit[]): void {
   const seen = new Set<string>();
   for (const { slug, snack } of commits) {
     if (slug === "compare") throw new Error(`${snack.id}: "compare" is taken by the compare page. Rename the file.`);
     if (seen.has(slug)) throw new Error(`Two snacks share the URL ${SECTION_PATH}/${slug}. Rename ${snack.id}.`);
     seen.add(slug);
   }
+}
+
+/** All commits, newest first. Drafts are left out of production builds (see getSnacks). */
+export async function getCommits(): Promise<Commit[]> {
+  const snacks = await getSnacks();
+  const commits = snacks.map((snack, index) => toCommit(snack, snacks.length - index));
+  assertUniqueSlugs(commits);
   return commits;
 }
 
@@ -126,16 +149,11 @@ export function historyEvents(commits: Commit[]): HistoryEvent[] {
 /** Path of one entry, before the locale prefix: "/snacks/ghostty". */
 export const commitPath = (slug: string) => `${SECTION_PATH}/${slug}`;
 
+/** How many commits have each verdict today, for the filter. */
 export function countByVerdict(commits: Commit[]): Record<Verdict, number> {
   const counts: Record<Verdict, number> = { keep: 0, maybe: 0, drop: 0 };
   for (const { verdict } of commits) counts[verdict] += 1;
   return counts;
-}
-
-/** Rough reading time in seconds from the raw body, at 230 words per minute. */
-export function readingSeconds(body = ""): number {
-  const words = body.split(/\s+/).filter(Boolean).length;
-  return Math.max(10, Math.round((words / 230) * 6) * 10);
 }
 
 /**
@@ -146,6 +164,7 @@ export function fillHtml(template: string, parts: Record<string, string>): strin
   return template.replace(/\{(\w+)\}/g, (match, name: string) => parts[name] ?? match);
 }
 
+/** A branch or sha drawn as a git ref chip, for fillHtml. `text` must be a trusted build-time string. */
 export const refHtml = (text: string) => `<code class="ref">${text}</code>`;
 
 /** "16 days later", in the locale of `t`. */

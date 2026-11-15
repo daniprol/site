@@ -2,6 +2,8 @@
  * The share image of a snack (1200 × 630), drawn at build time: logo, title, one-liner, state, and
  * the entry's stretch of the history. satori turns the layout into SVG with the text as outlines,
  * so the build machine needs no fonts installed; sharp turns that into a PNG.
+ *
+ * Called by src/pages/snacks/og/[slug].png.ts, which Astro turns into one PNG file per entry.
  */
 import { readFile } from "node:fs/promises";
 import path from "node:path";
@@ -13,7 +15,8 @@ import logoSource from "@/components/site/Logo.astro?raw";
 
 import { BASE_BRANCH, type Commit, type Verdict } from "./commits";
 
-export const CARD = { width: 1200, height: 630 } as const;
+/** The size social networks expect for a large link preview. */
+const CARD = { width: 1200, height: 630 } as const;
 
 /** The light Proof palette as hex, because satori does not read oklch(). Keep close to tokens.css. */
 const INK = {
@@ -28,13 +31,19 @@ const INK = {
   maybe: "#96600f",
   drop: "#c23a35",
 } as const;
-const WHERE: Record<Verdict, (branch: string) => string> = {
+/** The line next to the state pill: which branch went where. */
+const BRANCH_LINE: Record<Verdict, (branch: string) => string> = {
   keep: (branch) => `${branch} into ${BASE_BRANCH}`,
   maybe: (branch) => branch,
   drop: (branch) => `${branch} out of ${BASE_BRANCH}`,
 };
-const STATE: Record<Verdict, string> = { keep: "Merged", maybe: "Open", drop: "Reverted" };
+/** The state pill's text. The card is always in English. */
+const STATE_LABEL: Record<Verdict, string> = { keep: "Merged", maybe: "Open", drop: "Reverted" };
 
+/*
+ * satori takes the same element tree React would build: { type, props: { style, children } }. `h` builds one
+ * with less noise; every box is a flex container, as satori requires for boxes with several children.
+ */
 type Child = Node | string | false | undefined;
 interface Node {
   type: string;
@@ -50,6 +59,7 @@ const h = (type: string, style: Record<string, string | number>, ...children: Ch
   type,
   props: { style: { display: "flex", ...style }, children },
 });
+/** An <img> showing an inline SVG, for the parts drawn by hand (logo, graph). */
 const svgImage = (svg: string, width: number, height: number): Node => ({
   type: "img",
   props: { src: `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`, width, height },
@@ -69,10 +79,13 @@ function logoSvg(): string {
 
 /** This entry and its neighbours on the trunk, oldest on the left. The entry itself is drawn larger. */
 function graphSvg(commits: Commit[], current: Commit): string {
+  /** Width given to each entry. */
   const SLOT = 150;
+  /** Height of the trunk line. */
   const Y = 104;
-  const at = commits.indexOf(current);
+  /** Neighbours shown on each side. */
   const reach = 3;
+  const at = commits.indexOf(current);
   const shown = commits.slice(Math.max(0, at - reach), at + reach + 1).reverse();
   const centre = shown.indexOf(current);
   const shift = CARD.width / 2 - (centre * SLOT + SLOT / 2);
@@ -102,35 +115,33 @@ function graphSvg(commits: Commit[], current: Commit): string {
   </svg>`;
 }
 
-let fonts: Promise<{ name: string; data: Buffer; weight: 400 | 500 | 700; style: "normal" }[]> | undefined;
+interface CardFont {
+  name: string;
+  data: Buffer;
+  weight: 400 | 500 | 700;
+  style: "normal";
+}
+
+/** The fonts, read once per build and shared by every card. satori needs .woff files, not .woff2. */
+let fonts: Promise<CardFont[]> | undefined;
 function loadFonts() {
-  const file = (family: string, weight: number) =>
-    readFile(
+  const font = async (name: string, family: string, weight: CardFont["weight"]): Promise<CardFont> => ({
+    name,
+    data: await readFile(
       path.join(process.cwd(), `node_modules/@fontsource/${family}/files/${family}-latin-${weight}-normal.woff`),
-    );
+    ),
+    weight,
+    style: "normal",
+  });
   fonts ??= Promise.all([
-    file("atkinson-hyperlegible-next", 400).then((data) => ({
-      name: "Sans",
-      data,
-      weight: 400 as const,
-      style: "normal" as const,
-    })),
-    file("atkinson-hyperlegible-next", 700).then((data) => ({
-      name: "Sans",
-      data,
-      weight: 700 as const,
-      style: "normal" as const,
-    })),
-    file("atkinson-hyperlegible-mono", 500).then((data) => ({
-      name: "Mono",
-      data,
-      weight: 500 as const,
-      style: "normal" as const,
-    })),
+    font("Sans", "atkinson-hyperlegible-next", 400),
+    font("Sans", "atkinson-hyperlegible-next", 700),
+    font("Mono", "atkinson-hyperlegible-mono", 500),
   ]);
   return fonts;
 }
 
+/** The PNG for one entry. `commits` is the whole history, newest first, for the graph along the bottom. */
 export async function shareCard(commits: Commit[], commit: Commit, sectionName: string): Promise<Buffer> {
   const { title, take } = commit.snack.data;
   const tone = INK[commit.verdict];
@@ -160,9 +171,9 @@ export async function shareCard(commits: Commit[], commit: Commit, sectionName: 
         h(
           "div",
           { ...mono, padding: "8px 22px", borderRadius: 999, background: tone, color: INK.bg, fontSize: 26 },
-          STATE[commit.verdict],
+          STATE_LABEL[commit.verdict],
         ),
-        h("div", mono, WHERE[commit.verdict](commit.branch)),
+        h("div", mono, BRANCH_LINE[commit.verdict](commit.branch)),
       ),
     ),
     svgImage(graphSvg(commits, commit), CARD.width, 130),

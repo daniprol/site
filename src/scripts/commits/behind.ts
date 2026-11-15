@@ -6,14 +6,20 @@
  * Rows are numbered from the oldest (data-seq). To see it without waiting for a new entry, open
  * the history with ?behind=3.
  */
-const SEEN = "snacks:seen"; // localStorage: { seq, at } of the newest row seen on the last visit
-const BASE = "snacks:base"; // sessionStorage: where the reader stood when this tab's session began
+import { reducedMotion } from "./dom";
 
+/** localStorage key: { seq, at } of the newest row seen on the last visit. */
+const SEEN_KEY = "snacks:seen";
+/** sessionStorage key: where the reader stood when this tab's session began. */
+const BASE_KEY = "snacks:base";
+
+/** A position in the history: the newest row seen (`seq`) and when (`at`, milliseconds since the epoch). */
 interface Seen {
   seq: number;
   at?: number;
 }
 
+/** Reads a stored position. Storage is passed as a function because merely touching it can throw. */
 function read(storage: () => Storage, key: string): Seen | undefined {
   try {
     const value: unknown = JSON.parse(storage().getItem(key) ?? "null");
@@ -32,6 +38,7 @@ function write(storage: () => Storage, key: string, value: Seen) {
   }
 }
 
+/** Removes every mark, back to the plain history. */
 function clear(history: HTMLElement) {
   history.querySelector("[data-cm-behind]")?.setAttribute("hidden", "");
   history.querySelector(".cm-you")?.remove();
@@ -39,6 +46,7 @@ function clear(history: HTMLElement) {
   for (const tag of history.querySelectorAll(".cm-new")) tag.remove();
 }
 
+/** Shows "N commits behind", tags the new rows, and puts the reader's own ref above the last row they saw. */
 function mark(history: HTMLElement, base: Seen, total: number) {
   const behind = total - base.seq;
   const badge = history.querySelector<HTMLElement>("[data-cm-behind]");
@@ -81,6 +89,7 @@ function mark(history: HTMLElement, base: Seen, total: number) {
   lastSeen.before(marker);
 }
 
+/** Runs on every page load; does nothing on pages without the history. */
 function init() {
   const history = document.querySelector<HTMLElement>("[data-cm-history]");
   if (!history) return;
@@ -92,22 +101,22 @@ function init() {
   if (preview > 0) {
     base = { seq: Math.max(1, total - preview) };
   } else {
-    base = read(() => sessionStorage, BASE);
+    base = read(() => sessionStorage, BASE_KEY);
     if (!base) {
       // First page of this session: stand where the last visit ended, or at HEAD on a first visit.
-      base = read(() => localStorage, SEEN) ?? { seq: total };
-      write(() => sessionStorage, BASE, base);
+      base = read(() => localStorage, SEEN_KEY) ?? { seq: total };
+      write(() => sessionStorage, BASE_KEY, base);
     }
-    write(() => localStorage, SEEN, { seq: total, at: Date.now() });
+    write(() => localStorage, SEEN_KEY, { seq: total, at: Date.now() });
   }
   mark(history, base, total);
 
   history.querySelector("[data-cm-pull]")?.addEventListener(
     "click",
     () => {
-      write(() => sessionStorage, BASE, { seq: total });
+      write(() => sessionStorage, BASE_KEY, { seq: total });
       const done = () => clear(history);
-      if (document.startViewTransition && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      if (document.startViewTransition && !reducedMotion.matches) {
         document.startViewTransition(done);
       } else {
         done();
@@ -117,4 +126,5 @@ function init() {
   );
 }
 
+// astro:page-load fires on the first load and after every client-side navigation.
 document.addEventListener("astro:page-load", init);

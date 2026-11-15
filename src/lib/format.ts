@@ -1,3 +1,4 @@
+/** Date formatting for every language of the site. Runs at build time. */
 import type { Locale } from "@/i18n";
 
 /** BCP 47 tags for dates and numbers in each language. */

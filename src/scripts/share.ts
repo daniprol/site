@@ -1,14 +1,19 @@
 /**
- * Behaviour for ShareButton.astro. Everything is delegated from the document, so it keeps working
- * across view-transition navigations without being set up again.
+ * Behaviour for ShareButton.astro: copying the link, the Link / Markdown / Diff tabs on snacks, the phone's
+ * own share sheet, and closing the panel on Esc or a click elsewhere. Everything is delegated from the
+ * document, so it keeps working across client-side navigations without being set up again.
  */
+import { shareHref } from "@/lib/share";
+
+/** The share widget (<details data-share>) that contains `target`, if any. */
 const widgetOf = (target: EventTarget | null) =>
   target instanceof Element ? target.closest<HTMLDetailsElement>("[data-share]") : null;
 
 /** The address the reader is on, without query or hash: right on previews and any domain. */
 const pageUrl = () => location.origin + location.pathname;
 
-function valueFor(widget: HTMLElement): string {
+/** What the Copy button copies: the link, a Markdown link, or the link to the diff, per the pressed tab. */
+function textToCopy(widget: HTMLElement): string {
   const pressed = widget.querySelector<HTMLElement>("[data-share-format][aria-pressed='true']");
   const url = pageUrl();
   switch (pressed?.dataset.shareFormat) {
@@ -26,17 +31,16 @@ function prepare(widget: HTMLDetailsElement) {
   const url = pageUrl();
   const title = widget.dataset.title ?? document.title;
   const field = widget.querySelector<HTMLInputElement>("[data-share-url]");
-  if (field) field.value = valueFor(widget);
+  if (field) field.value = textToCopy(widget);
   for (const link of widget.querySelectorAll<HTMLAnchorElement>("[data-share-target]")) {
-    link.href = (link.dataset.shareTarget ?? "")
-      .replace("{url}", encodeURIComponent(url))
-      .replace("{text}", encodeURIComponent(title));
+    link.href = shareHref(link.dataset.shareTarget ?? "", url, title);
   }
   widget.querySelector("[data-share-copy]")?.removeAttribute("hidden");
   widget.querySelector("[data-share-tabs]")?.removeAttribute("hidden");
   if (typeof navigator.share === "function") widget.querySelector("[data-share-native]")?.removeAttribute("hidden");
 }
 
+/** Closes every open share panel except `except`. */
 const closeAll = (except?: Element | null) => {
   for (const open of document.querySelectorAll<HTMLDetailsElement>("[data-share][open]")) {
     if (open !== except) open.open = false;
@@ -53,6 +57,10 @@ document.addEventListener(
   true,
 );
 
+/** How long the button says "Copied" before going back to "Copy". */
+const COPIED_LABEL_MS = 1600;
+
+/** Copies the field's text and briefly shows "Copied" on the button. */
 async function copy(widget: HTMLElement, button: HTMLElement) {
   const field = widget.querySelector<HTMLInputElement>("[data-share-url]");
   if (!field) return;
@@ -72,7 +80,7 @@ async function copy(widget: HTMLElement, button: HTMLElement) {
   setTimeout(() => {
     label.textContent = before;
     delete button.dataset.busy;
-  }, 1600);
+  }, COPIED_LABEL_MS);
 }
 
 document.addEventListener("click", (event) => {
@@ -89,7 +97,7 @@ document.addEventListener("click", (event) => {
       tab.setAttribute("aria-pressed", String(tab === format));
     }
     const field = widget.querySelector<HTMLInputElement>("[data-share-url]");
-    if (field) field.value = valueFor(widget);
+    if (field) field.value = textToCopy(widget);
     return;
   }
 

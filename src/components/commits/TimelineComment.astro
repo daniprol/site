@@ -1,0 +1,37 @@
+---
+/**
+ * A comment in an entry's pull-request timeline (snacks/[slug].astro): the logo as the author's avatar on
+ * the thread line, then a box with a header sentence and the body passed in the default slot. Used for the
+ * review itself and for each later follow-up.
+ */
+import Logo from "@/components/site/Logo.astro";
+
+interface Props {
+  id: string;
+  /** Extra class on the <section>, e.g. "pr-update" for a follow-up. */
+  class?: string;
+  /** The header sentence ("dani commented on 3 Nov"), as trusted build-time HTML from fillHtml. */
+  headHtml: string;
+  /** A small label at the end of the header, e.g. the tool's kind. */
+  label?: string;
+}
+const { id, class: className, headHtml, label } = Astro.props;
+---
+
+<section id={id} class:list={["pr-comment", className]}>
+  <span class="pr-avatar" aria-hidden="true">
+    <Logo markOnly />
+  </span>
+  <div class="pr-box">
+    <p class="pr-comment-head">
+      <span class="pr-mini" aria-hidden="true">
+        <Logo markOnly class="h-full w-full" />
+      </span>
+      <span class="who" set:html={headHtml} />
+      {label && <span class="pr-label">{label}</span>}
+    </p>
+    <div class="pr-body">
+      <slot />
+    </div>
+  </div>
+</section>
