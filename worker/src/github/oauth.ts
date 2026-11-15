@@ -7,8 +7,9 @@
  * (6 months). With it off, they never expire and come without one; both cases are handled.
  */
 import type { Env } from "../env";
-import { GitHubError, rest } from "./client";
+import { GITHUB_API, GitHubError, rest, USER_AGENT } from "./client";
 
+/** A visitor's GitHub tokens, as stored in the session cookie. */
 export interface UserTokens {
   accessToken: string;
   /** Milliseconds since the epoch, or null for a token that does not expire. */
@@ -17,6 +18,7 @@ export interface UserTokens {
   refreshTokenExpiresAt: number | null;
 }
 
+/** The bits of a visitor's GitHub profile the comments show. */
 export interface GitHubUser {
   login: string;
   avatarUrl: string;
@@ -33,14 +35,17 @@ export function authorizeUrl(env: Env, redirectUri: string, state: string): stri
   return url.href;
 }
 
+/** Swaps the one-time `code` GitHub sent back to the callback for the visitor's tokens. */
 export function exchangeCode(env: Env, code: string, redirectUri: string): Promise<UserTokens> {
   return requestTokens(env, { code, redirect_uri: redirectUri });
 }
 
+/** Trades a refresh token for a new access token (and a new refresh token). */
 export function refreshTokens(env: Env, refreshToken: string): Promise<UserTokens> {
   return requestTokens(env, { grant_type: "refresh_token", refresh_token: refreshToken });
 }
 
+/** The visitor the token belongs to. */
 export async function fetchUser(accessToken: string): Promise<GitHubUser> {
   const user = await rest<{ login: string; avatar_url: string }>(accessToken, "/user");
   return { login: user.login, avatarUrl: user.avatar_url };
@@ -55,6 +60,7 @@ interface TokenResponse {
   error_description?: string;
 }
 
+/** Calls GitHub's token endpoint, used both to finish sign-in and to refresh. */
 async function requestTokens(env: Env, params: Record<string, string>): Promise<UserTokens> {
   const response = await fetch("https://github.com/login/oauth/access_token", {
     method: "POST",
@@ -70,11 +76,27 @@ async function requestTokens(env: Env, params: Record<string, string>): Promise<
   if (!response.ok || !body.access_token) {
     throw new GitHubError(response.ok ? 401 : response.status, `GitHub token: ${body.error_description ?? body.error}`);
   }
-  const at = (seconds: number | undefined) => (seconds ? Date.now() + seconds * 1000 : null);
+  const expiryFromNow = (seconds: number | undefined) => (seconds ? Date.now() + seconds * 1000 : null);
   return {
     accessToken: body.access_token,
-    accessTokenExpiresAt: at(body.expires_in),
+    accessTokenExpiresAt: expiryFromNow(body.expires_in),
     refreshToken: body.refresh_token ?? null,
-    refreshTokenExpiresAt: at(body.refresh_token_expires_in),
+    refreshTokenExpiresAt: expiryFromNow(body.refresh_token_expires_in),
   };
+}
+
+/**
+ * Revokes a visitor's token at GitHub, so it stops working even if a copy of the cookie survives. This
+ * endpoint authenticates as the app itself (client ID and secret), not with a token.
+ */
+export async function revokeUserToken(env: Env, accessToken: string): Promise<void> {
+  await fetch(`${GITHUB_API}/applications/${env.GITHUB_APP_CLIENT_ID}/token`, {
+    method: "DELETE",
+    headers: {
+      Accept: "application/vnd.github+json",
+      Authorization: `Basic ${btoa(`${env.GITHUB_APP_CLIENT_ID}:${env.GITHUB_APP_CLIENT_SECRET}`)}`,
+      "User-Agent": USER_AGENT,
+    },
+    body: JSON.stringify({ access_token: accessToken }),
+  });
 }

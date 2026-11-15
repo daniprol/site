@@ -1,4 +1,4 @@
-/** Small helpers shared by the routes: JSON responses, typed errors and request checks. */
+/** Small helpers shared by the Worker's routes: JSON responses, typed errors and request checks. */
 
 /** An error with an HTTP status and a message that is safe to show to the visitor. */
 export class HttpError extends Error {
@@ -12,6 +12,7 @@ export class HttpError extends Error {
   }
 }
 
+/** A JSON response. Not cacheable by browsers unless `init` sets its own Cache-Control. */
 export function json(data: unknown, init: ResponseInit = {}): Response {
   const headers = new Headers(init.headers);
   headers.set("Content-Type", "application/json; charset=utf-8");
@@ -19,6 +20,7 @@ export function json(data: unknown, init: ResponseInit = {}): Response {
   return new Response(JSON.stringify(data), { ...init, headers });
 }
 
+/** A 302 redirect to `location`, never cached. */
 export function redirect(location: string, headers: HeadersInit = {}): Response {
   const response = new Response(null, { status: 302, headers });
   response.headers.set("Location", location);

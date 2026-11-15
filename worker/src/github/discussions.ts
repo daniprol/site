@@ -2,6 +2,10 @@
  * Comments as GitHub Discussions: one discussion per page, in one category, titled with the page's term.
  * Signed-out reads and creating discussions run as the app; signed-in reads, comments and reactions run as the
  * visitor, so GitHub records them as theirs and reports which reactions are theirs.
+ *
+ * All calls use GitHub's GraphQL API. The queries are plain strings; a `fragment` is a reusable list of
+ * fields that queries pull in with `...FragmentName`. The `*Node` interfaces below describe what GitHub
+ * returns, and the `to*` functions at the bottom turn that into the shapes in contract.ts.
  */
 import type { Comment, Reaction, ReactionContent, Reply, Thread } from "../contract";
 import { utf8 } from "../encoding";
@@ -11,6 +15,7 @@ import { graphql } from "./client";
 /** GitHub's cap per page of a connection. Threads longer than this link to GitHub for the rest. */
 const PAGE_SIZE = 100;
 
+/** The fields read for each reaction on a comment. */
 const REACTION_FIELDS = /* GraphQL */ `
   fragment ReactionFields on ReactionGroup {
     content
@@ -21,6 +26,7 @@ const REACTION_FIELDS = /* GraphQL */ `
   }
 `;
 
+/** The fields read for each comment or reply. */
 const COMMENT_FIELDS = /* GraphQL */ `
   fragment CommentFields on DiscussionComment {
     id
@@ -44,6 +50,7 @@ const COMMENT_FIELDS = /* GraphQL */ `
   ${REACTION_FIELDS}
 `;
 
+/** A comment or reply as GitHub returns it (see COMMENT_FIELDS). */
 interface CommentNode {
   id: string;
   url: string;
@@ -58,6 +65,7 @@ interface CommentNode {
   reactionGroups: ReactionGroup[];
 }
 
+/** One reaction and how many people gave it, as GitHub returns it. */
 interface ReactionGroup {
   content: ReactionContent;
   viewerHasReacted: boolean;
@@ -74,7 +82,8 @@ export interface DiscussionRef {
   number: number;
 }
 
-const repository = (env: Env) => {
+/** The `owner` and `name` variables most queries need, from GITHUB_REPOSITORY ("owner/name"). */
+const repositoryVariables = (env: Env) => {
   const [owner, name] = env.GITHUB_REPOSITORY.split("/");
   return { owner, name };
 };
@@ -87,7 +96,7 @@ export async function findDiscussion(env: Env, token: string, term: string): Pro
   let after: string | null = null;
   do {
     const data: DiscussionPage = await graphql<DiscussionPage>(token, LIST_DISCUSSIONS, {
-      ...repository(env),
+      ...repositoryVariables(env),
       categoryId: env.GITHUB_DISCUSSION_CATEGORY_ID,
       after,
     });
@@ -99,6 +108,7 @@ export async function findDiscussion(env: Env, token: string, term: string): Pro
   return null;
 }
 
+/** One page of the category's discussions, as LIST_DISCUSSIONS returns it. */
 interface DiscussionPage {
   repository: {
     discussions: {
@@ -130,7 +140,7 @@ const LIST_DISCUSSIONS = /* GraphQL */ `
 export async function readThread(env: Env, token: string, discussion: DiscussionRef): Promise<Thread> {
   const data = await graphql<{
     repository: { discussion: { url: string; comments: { totalCount: number; nodes: CommentWithReplies[] } } };
-  }>(token, READ_THREAD, { ...repository(env), number: discussion.number });
+  }>(token, READ_THREAD, { ...repositoryVariables(env), number: discussion.number });
   const { url, comments } = data.repository.discussion;
   return { url, commentCount: comments.totalCount, comments: comments.nodes.map(toComment) };
 }
@@ -163,8 +173,7 @@ const READ_THREAD = /* GraphQL */ `
  * the term's SHA-1 in a comment so giscus could find it again in strict mode.
  */
 export async function createDiscussion(env: Env, token: string, term: string, pageUrl: string): Promise<DiscussionRef> {
-  const hash = await crypto.subtle.digest("SHA-1", utf8(term));
-  const sha1 = [...new Uint8Array(hash)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+  const sha1 = await sha1Hex(term);
   const data = await graphql<{ createDiscussion: { discussion: DiscussionRef } }>(token, CREATE_DISCUSSION, {
     repositoryId: env.GITHUB_REPOSITORY_ID,
     categoryId: env.GITHUB_DISCUSSION_CATEGORY_ID,
@@ -218,6 +227,7 @@ export async function setReaction(
   content: ReactionContent,
   remove: boolean,
 ): Promise<Reaction[]> {
+  // GitHub has one mutation to add and another to remove; both answer with the same shape.
   const mutation = remove ? "removeReaction" : "addReaction";
   const data = await graphql<Record<string, { subject: { reactionGroups: ReactionGroup[] } }>>(
     userToken,
@@ -238,6 +248,13 @@ export async function setReaction(
   return toReactions(data[mutation]?.subject.reactionGroups ?? []);
 }
 
+/** The SHA-1 of `text` as 40 hex digits. */
+async function sha1Hex(text: string): Promise<string> {
+  const hash = await crypto.subtle.digest("SHA-1", utf8(text));
+  return [...new Uint8Array(hash)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+/** A GitHub comment node in the API's shape. Deleted comments keep their place but lose their text. */
 function toReply(node: CommentNode): Reply {
   return {
     id: node.id,
@@ -255,6 +272,7 @@ function toReply(node: CommentNode): Reply {
   };
 }
 
+/** Only the reactions someone actually gave; GitHub also lists the unused ones with a count of zero. */
 function toReactions(groups: ReactionGroup[]): Reaction[] {
   return groups
     .filter((group) => group.reactors.totalCount > 0)
@@ -265,6 +283,7 @@ function toReactions(groups: ReactionGroup[]): Reaction[] {
     }));
 }
 
+/** A top-level comment with its replies, in the API's shape. */
 function toComment(node: CommentWithReplies): Comment {
   return { ...toReply(node), replies: node.replies.nodes.map(toReply), replyCount: node.replies.totalCount };
 }
