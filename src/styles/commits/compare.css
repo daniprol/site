@@ -1,0 +1,129 @@
+/* /snacks/compare: two entries as a split diff (Compare.tsx). */
+@layer components {
+  /* ---------- Compare: two entries as a split diff ---------- */
+  .cmp-header > header {
+    margin-top: 0.75rem;
+  }
+  .cmp-bar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: end;
+    gap: 0.5rem;
+  }
+  .cmp-pick {
+    display: grid;
+    gap: 0.25rem;
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+  }
+  .cmp-pick select {
+    width: 100%;
+    min-height: 2.75rem;
+    padding-inline: 0.7rem 2rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    background: var(--color-surface)
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E")
+      no-repeat right 0.6rem center / 1rem;
+    color: var(--color-fg);
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    font-weight: 650;
+    text-overflow: ellipsis;
+    appearance: none;
+    cursor: pointer;
+  }
+  .cmp-pick select:disabled {
+    opacity: 1;
+    cursor: default;
+  }
+  .cmp-swap {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+    background: var(--color-bg);
+    color: var(--color-muted);
+    cursor: pointer;
+    transition:
+      color var(--duration-fast),
+      rotate var(--duration-base) var(--ease-out-soft);
+  }
+  .cmp-swap:hover {
+    color: var(--color-fg);
+  }
+  .cmp-swap:active {
+    rotate: 180deg;
+  }
+  .cmp-swap svg {
+    width: 1rem;
+    height: 1rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .cmp-grid {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 0.9rem;
+  }
+  @media (min-width: 40rem) {
+    .cmp-grid {
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+    }
+  }
+  .cmp-side {
+    overflow: hidden;
+  }
+  .cmp-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: baseline;
+    gap: 0.2rem 0.6rem;
+    padding: 0.8rem 0.9rem 0.85rem;
+  }
+  .cmp-title {
+    font-size: 1.08rem;
+    font-weight: 700;
+    letter-spacing: -0.012em;
+  }
+  .cmp-take {
+    grid-column: 1 / -1;
+    color: var(--color-muted);
+    font-size: 0.93rem;
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
+  .cmp-hunk {
+    padding: 0.3rem 0.9rem;
+    border-block: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+  }
+  .cmp .pr-lines {
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+  .cmp-none {
+    padding: 0.5rem 0.9rem;
+    color: var(--color-muted);
+    font-size: 0.86rem;
+  }
+  .cmp-foot {
+    padding: 0.7rem 0.9rem;
+    border-top: 1px solid var(--color-border);
+    font-size: 0.86rem;
+  }
+  .cmp-same {
+    margin-top: 1.5rem;
+    color: var(--color-muted);
+  }
+}

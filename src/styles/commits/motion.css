@@ -1,0 +1,313 @@
+/*
+ * Motion for every Snacks view: the history drawn as you scroll, the entry and strip animations, the
+ * keyframes they use, and the view transitions between pages. Everything starts from the finished state,
+ * so without JavaScript or with reduced motion the pages show the still version (see DESIGN.md, Motion).
+ */
+@layer components {
+  /* ---------- Motion ---------- */
+  @media (prefers-reduced-motion: no-preference) {
+    /*
+     * The history is drawn as you scroll. A line across the screen, --cm-tip above the bottom edge,
+     * is where HEAD is writing: each piece of trunk and each branch is unveiled as it crosses that
+     * line, its commit lands a moment later, and the text takes its ink.
+     */
+    @supports (animation-timeline: view()) {
+      .cm-history:not(.cm-excerpt) .cm-head::after {
+        display: none;
+      }
+      .cm-history:not(.cm-excerpt) :is(.cm-head, .cm-month, .cm-row, .cm-root) {
+        view-timeline: --cm-block block;
+        view-timeline-inset: 0% var(--cm-tip);
+      }
+      /* No fill: outside its own block's range the pen falls back to hidden. */
+      .cm-pen {
+        /* Longhands on purpose: the CSS minifier folds a named timeline into the shorthand, which browsers reject. */
+        animation-name: cm-pen;
+        animation-timing-function: linear;
+        animation-timeline: --cm-block;
+        animation-range: entry 0% entry 100%;
+      }
+      .cm-head > .cm-pen {
+        animation-range: entry 50% entry 100%;
+      }
+      .cm-root > .cm-pen {
+        animation-range: entry 0% entry 50%;
+      }
+      .cm-graph,
+      .cm-head::before,
+      .cm-month::before,
+      .cm-root::before {
+        animation: cm-unveil linear both;
+        animation-timeline: view(block 0% var(--cm-tip));
+        animation-range: entry 0% entry 100%;
+      }
+      .cm-month::after,
+      .cm-root::after {
+        animation: cm-land linear both;
+        animation-timeline: view(block 0% var(--cm-tip));
+        animation-range: entry 55% entry 110%;
+      }
+      .cm-row .cm-dot {
+        animation: cm-land linear both;
+        animation-timeline: view(block 0% var(--cm-tip));
+        animation-range: entry 0% entry 320%;
+      }
+      .cm-link,
+      .cm-month > :not(.cm-pen),
+      .cm-root > :not(.cm-pen) {
+        animation: cm-ink linear both;
+        animation-timeline: view(block 0% var(--cm-tip));
+        animation-range: entry 0% entry 72px;
+      }
+    }
+    /* Without scroll-driven animation, the same drawing plays once on arrival. */
+    @supports not (animation-timeline: view()) {
+      .cm-graph {
+        animation: cm-unveil 520ms var(--ease-out-soft) backwards;
+        animation-delay: calc(min(var(--i), 8) * 70ms + 80ms);
+      }
+      .cm-row .cm-dot {
+        animation: cm-land var(--duration-spring) linear backwards;
+        animation-delay: calc(min(var(--i), 8) * 70ms + 260ms);
+      }
+    }
+
+    /* The title graph draws itself once, left to right. */
+    .cm-titlegraph::before {
+      animation: cm-grow-x 900ms var(--ease-out-soft) backwards;
+    }
+    .cm-titlegraph g {
+      animation: cm-fade 320ms ease-out backwards;
+      animation-delay: calc(var(--i) * 45ms + 160ms);
+    }
+    .cm-titlegraph .head {
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: cm-pop var(--duration-spring) var(--ease-spring) 820ms backwards;
+    }
+
+    .cm-lightbox[open] figure {
+      animation: cm-fade 200ms ease-out;
+    }
+    .cm-lightbox[open]::backdrop {
+      animation: cm-fade 200ms ease-out;
+    }
+    .cm-row.is-target .cm-dot {
+      animation: cm-ping 700ms var(--ease-out-soft);
+    }
+
+    /* Entry page: the state lands once, after the page has arrived. */
+    .cm-pill[data-variant="solid"] {
+      animation: cm-pop var(--duration-spring) var(--ease-spring) 260ms backwards;
+    }
+    /* Opening an entry: the strip grows outwards from the commit that just flew up into it. */
+    html:not([data-cm-dir="older"], [data-cm-dir="newer"]) .cm-strip {
+      animation: cm-strip-open 700ms var(--ease-out-soft) 120ms backwards;
+    }
+    /* The verdict box settles in as it scrolls into view, where the browser can link motion to scroll. */
+    @supports (animation-timeline: view()) {
+      .pr-merge {
+        animation: cm-settle linear both;
+        animation-timeline: view();
+        animation-range: entry 0% entry 90%;
+      }
+      .pr-merge-tile {
+        animation: cm-tile linear both;
+        animation-timeline: view();
+        animation-range: entry 20% cover 28%;
+      }
+    }
+  }
+}
+
+@keyframes cm-unveil {
+  from {
+    clip-path: inset(0 -12px 100% -12px);
+  }
+  to {
+    clip-path: inset(0 -12px 0 -12px);
+  }
+}
+@keyframes cm-land {
+  from {
+    scale: 0;
+  }
+  35% {
+    scale: 0;
+  }
+  75% {
+    scale: 1.3;
+  }
+}
+@keyframes cm-ping {
+  from {
+    box-shadow:
+      0 0 0 2.5px var(--color-bg),
+      0 0 0 3px var(--cm-tone);
+  }
+  to {
+    box-shadow:
+      0 0 0 2.5px var(--color-bg),
+      0 0 0 16px transparent;
+  }
+}
+@keyframes cm-pen {
+  from {
+    translate: 0 -100%;
+    opacity: 1;
+  }
+  to {
+    translate: 0 0;
+    opacity: 1;
+  }
+}
+@keyframes cm-ink {
+  from {
+    opacity: 0.36;
+  }
+}
+@keyframes cm-grow-x {
+  from {
+    scale: 0 1;
+  }
+}
+@keyframes cm-trunk {
+  from {
+    stroke-dashoffset: var(--len);
+  }
+}
+@keyframes cm-strip-open {
+  from {
+    clip-path: inset(0 50% 0 50%);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+@keyframes cm-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes cm-pop {
+  from {
+    scale: 0;
+    opacity: 0;
+  }
+}
+@keyframes cm-settle {
+  from {
+    opacity: 0.35;
+    translate: 0 14px;
+  }
+}
+@keyframes cm-tile {
+  from {
+    scale: 0.6;
+    rotate: -12deg;
+  }
+}
+
+/*
+ * View transitions. The page script puts the direction of travel on <html data-cm-dir>.
+ *   open / close    list <-> entry: the commit's dot and title fly between the row and the page
+ *   older / newer   entry <-> entry: the page slides sideways and the strip glides with it
+ */
+::view-transition-new(cm-panel) {
+  animation: cm-panel-in 460ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+::view-transition-old(cm-panel) {
+  animation: cm-panel-out 200ms ease-in both;
+}
+::view-transition-old(cm-strip) {
+  animation: cm-fade-out 160ms ease-in both;
+}
+/* Between entries the dot and title belong to the sliding page and strip, so they stop flying. */
+html:is([data-cm-dir="older"], [data-cm-dir="newer"]) [data-cm-vt] {
+  view-transition-name: none !important;
+}
+/* The strip is live, not a snapshot: the script slides the real thing. */
+html:is([data-cm-dir="older"], [data-cm-dir="newer"])::view-transition-old(cm-strip) {
+  display: none;
+}
+html:is([data-cm-dir="older"], [data-cm-dir="newer"])::view-transition-new(cm-strip) {
+  animation: none;
+}
+/* The page's box does not travel; the old and new pictures do. */
+html:is([data-cm-dir="older"], [data-cm-dir="newer"])::view-transition-group(cm-panel) {
+  animation: none;
+}
+html[data-cm-dir="older"]::view-transition-old(cm-panel) {
+  animation: cm-slide-out-right 200ms ease-in both;
+}
+html[data-cm-dir="older"]::view-transition-new(cm-panel) {
+  animation: cm-slide-in-left 460ms cubic-bezier(0.22, 1, 0.36, 1) 70ms both;
+}
+html[data-cm-dir="newer"]::view-transition-old(cm-panel) {
+  animation: cm-slide-out-left 200ms ease-in both;
+}
+html[data-cm-dir="newer"]::view-transition-new(cm-panel) {
+  animation: cm-slide-in-right 460ms cubic-bezier(0.22, 1, 0.36, 1) 70ms both;
+}
+/* A picture grows from its thumbnail into the viewer and back. */
+::view-transition-group(cm-zoom) {
+  animation-duration: 380ms;
+}
+::view-transition-old(cm-zoom),
+::view-transition-new(cm-zoom) {
+  height: 100%;
+  object-fit: cover;
+}
+/* The flying dot and title keep their shape instead of cross-fading two sizes. */
+::view-transition-group(*) {
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes cm-panel-in {
+  from {
+    opacity: 0;
+    translate: 0 28px;
+  }
+}
+@keyframes cm-panel-out {
+  to {
+    opacity: 0;
+    translate: 0 28px;
+  }
+}
+@keyframes cm-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+/* --cm-drag is where a swipe left the page, so it carries on from under the finger. */
+@keyframes cm-slide-out-right {
+  from {
+    translate: var(--cm-drag, 0px) 0;
+  }
+  to {
+    opacity: 0;
+    translate: calc(var(--cm-drag, 0px) + 64px) 0;
+  }
+}
+@keyframes cm-slide-out-left {
+  from {
+    translate: var(--cm-drag, 0px) 0;
+  }
+  to {
+    opacity: 0;
+    translate: calc(var(--cm-drag, 0px) - 64px) 0;
+  }
+}
+@keyframes cm-slide-in-left {
+  from {
+    opacity: 0;
+    translate: -64px 0;
+  }
+}
+@keyframes cm-slide-in-right {
+  from {
+    opacity: 0;
+    translate: 64px 0;
+  }
+}

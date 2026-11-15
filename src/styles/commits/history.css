@@ -1,0 +1,418 @@
+/* The history on /snacks and its excerpt on the home page (CommitHistory, CommitList, CommitRow, FollowUpRow): the filter, the trunk, the rows and their branch graphs, and the "N commits behind" marks. */
+@layer components {
+  /* ---------- History ---------- */
+  .cm-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.15rem 0.25rem;
+    margin-inline: -0.5rem;
+  }
+  .cm-filter label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4em;
+    min-height: 2.75rem;
+    padding-inline: 0.5rem;
+    border-radius: 0.4rem;
+    color: var(--color-muted);
+    font-size: 0.86rem;
+    cursor: pointer;
+    transition: color var(--duration-fast);
+  }
+  .cm-filter label:hover {
+    color: var(--color-fg);
+  }
+  .cm-filter label:has(:checked) {
+    color: var(--color-fg);
+    font-weight: 650;
+  }
+  .cm-filter label:has(:focus-visible) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: -2px;
+  }
+  .cm-filter .cm-icon {
+    color: var(--cm-tone);
+  }
+  .cm-filter .n {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--color-muted);
+  }
+  /* The filter needs no JavaScript: the checked radio hides the other rows and any month left empty. */
+  .cm-history:has(input[value="keep"]:checked) .cm-row:not([data-verdict="keep"]),
+  .cm-history:has(input[value="maybe"]:checked) .cm-row:not([data-verdict="maybe"]),
+  .cm-history:has(input[value="drop"]:checked) .cm-row:not([data-verdict="drop"]),
+  .cm-history:has(input[value="keep"]:checked) .cm-group:not(:has(.cm-row[data-verdict="keep"])),
+  .cm-history:has(input[value="maybe"]:checked) .cm-group:not(:has(.cm-row[data-verdict="maybe"])),
+  .cm-history:has(input[value="drop"]:checked) .cm-group:not(:has(.cm-row[data-verdict="drop"])) {
+    display: none;
+  }
+
+  /* The trunk: one line down the left edge, drawn piece by piece by each block. */
+  .cm-head,
+  .cm-month,
+  .cm-row,
+  .cm-root {
+    position: relative;
+    padding-left: var(--cm-rail);
+  }
+  .cm-head::before,
+  .cm-month::before,
+  .cm-graph::before,
+  .cm-root::before {
+    content: "";
+    position: absolute;
+    left: var(--cm-main-x);
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--cm-line);
+  }
+  .cm-head::before {
+    top: 50%;
+  }
+  .cm-root::before {
+    bottom: 50%;
+  }
+  /* Rings on the trunk: HEAD at the top, a tick per month, the first commit at the bottom. */
+  .cm-head::after,
+  .cm-month::after,
+  .cm-root::after,
+  .cm-pen::after {
+    content: "";
+    position: absolute;
+    left: calc(var(--cm-main-x) + 1px);
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    translate: -50% -50%;
+    border: 2px solid var(--cm-line);
+    border-radius: 50%;
+    background: var(--color-bg);
+  }
+  .cm-head::after,
+  .cm-pen::after {
+    width: 12px;
+    height: 12px;
+    border-color: var(--color-fg);
+    background: var(--color-logo-dot);
+    box-shadow: 0 0 0 3px var(--color-bg);
+  }
+  .cm-root::after {
+    border-color: var(--color-muted);
+    background: var(--color-muted);
+  }
+  /*
+   * HEAD as a pen: every block of the history carries one, and it shows only while that block is
+   * being drawn, so a single dot seems to ride down the trunk. It runs on the same scroll timeline
+   * as the drawing itself, which keeps the two together whatever the browser's toolbars do.
+   */
+  .cm-pen {
+    /* As tall as the piece of trunk it draws, with the dot at its foot: sliding it down by its own
+       height moves the dot from the top of the block to the bottom, using only a transform. */
+    position: absolute;
+    z-index: 2;
+    inset: 0 auto 0 0;
+    width: var(--cm-rail);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .cm-pen::after {
+    top: 100%;
+  }
+  .cm-head > .cm-pen {
+    top: 50%;
+  }
+  .cm-root > .cm-pen {
+    bottom: 50%;
+  }
+  .cm-head,
+  .cm-root {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 2.75rem;
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    color: var(--color-muted);
+  }
+  .cm-chip {
+    padding: 0.12em 0.5em;
+    border: 1px solid var(--color-border);
+    border-radius: 0.35rem;
+    background: var(--color-surface);
+    color: var(--color-fg);
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    font-weight: 500;
+  }
+  .cm-month {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-block: 1.1rem 0.2rem;
+  }
+  .cm-month::after {
+    top: calc(50% + 0.45rem);
+  }
+
+  /*
+   * A row's graph, time running upwards. The branch leaves the trunk at the bottom, carries the
+   * commit (the dot, level with the title), and for merged and reverted entries lands back on the
+   * trunk above it.
+   */
+  .cm-row {
+    min-height: 104px;
+  }
+  .cm-graph {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: var(--cm-rail);
+    pointer-events: none;
+  }
+  .cm-branch,
+  .cm-slot svg,
+  .cm-cap svg,
+  .cm-titlegraph svg {
+    fill: none;
+    stroke: var(--cm-tone);
+    stroke-width: 2;
+    stroke-linecap: round;
+  }
+  .cm-branch {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 40px;
+    height: 104px;
+    overflow: visible;
+  }
+  :is(.cm-branch, .cm-slot, .cm-titlegraph) .ring {
+    fill: var(--color-bg);
+  }
+  .cm-dot {
+    position: absolute;
+    left: 27px;
+    top: 40px;
+    width: 13px;
+    height: 13px;
+    margin: -6.5px 0 0 -6.5px;
+    border-radius: 50%;
+    background: var(--cm-tone);
+    box-shadow: 0 0 0 2.5px var(--color-bg);
+    transition: scale var(--duration-base) var(--ease-spring);
+  }
+  :is(.cm-graph, .cm-slot)[data-verdict="maybe"] .cm-dot {
+    border: 2px solid var(--cm-tone);
+    background: var(--color-bg);
+  }
+  /* On the home page the history is an excerpt, so the trunk fades out instead of ending. */
+  .cm-excerpt .cm-row:last-child .cm-graph::before {
+    background: linear-gradient(var(--cm-line) 40%, transparent);
+  }
+  .cm-link {
+    display: block;
+    margin-right: -0.75rem;
+    padding: 1.7rem 0.75rem 0.7rem 0.5rem;
+    border-radius: 0.5rem;
+    transition: background-color var(--duration-fast);
+  }
+  .cm-link:hover,
+  .cm-link:focus-visible,
+  .cm-row.is-linked .cm-link {
+    background: var(--color-surface);
+  }
+  /* Picked from the activity grid: the row is brought to the middle and marked with the highlighter. */
+  .cm-row {
+    scroll-margin-block: 30vh;
+  }
+  .cm-row:is(:target, .is-target) .cm-link {
+    background: var(--color-surface);
+    box-shadow: inset 0 0 0 1px var(--color-border);
+  }
+  .cm-row:is(:target, .is-target, .is-linked) .marker-hover {
+    background-size: 100% 0.55em;
+  }
+  .cm-row:is(:target, .is-target, .is-linked) .cm-dot {
+    scale: 1.25;
+  }
+  .cm-row:has(.cm-link:hover) .cm-dot,
+  .cm-row:has(.cm-link:focus-visible) .cm-dot,
+  a.cm-slot:hover .cm-dot {
+    scale: 1.25;
+  }
+  .cm-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+  .cm-title {
+    font-size: 1.08rem;
+    font-weight: 700;
+    line-height: 1.45;
+    letter-spacing: -0.012em;
+  }
+  .cm-take {
+    display: block;
+    margin-top: 0.1rem;
+    color: var(--color-muted);
+    font-size: 0.98rem;
+    line-height: 1.5;
+    text-wrap: pretty;
+  }
+  .cm-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 0.55em;
+    margin-top: 0.4rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    color: var(--color-muted);
+  }
+  .cm-meta > * {
+    white-space: nowrap;
+  }
+  .cm-meta > :not(:last-child)::after {
+    content: "·";
+    margin-left: 0.55em;
+  }
+  .cm-sha {
+    color: var(--color-accent);
+  }
+
+  /* A later change of verdict: a shorter row with its own piece of graph. */
+  .cm-branch .later {
+    stroke-dasharray: 1 5;
+  }
+  .cm-follow {
+    min-height: 72px;
+  }
+  .cm-follow .cm-branch {
+    height: 72px;
+  }
+  .cm-follow .cm-link {
+    padding-block: 0.95rem 0.6rem;
+  }
+  .cm-follow .cm-title {
+    font-size: 0.95rem;
+    font-weight: 650;
+  }
+  .cm-follow .cm-take {
+    font-size: 0.92rem;
+  }
+  .cm-change {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 0.45em;
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+  }
+  .cm-was {
+    text-decoration: line-through;
+  }
+
+  /* What is new since the reader's last visit. Added by the script, so absent without it. */
+  .cm-behind {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-left: auto;
+    color: var(--color-fg);
+  }
+  .cm-behind[hidden] {
+    display: none;
+  }
+  .cm-pull {
+    min-height: 2rem;
+    padding-inline: 0.65em;
+    border: 1px solid var(--color-border);
+    border-radius: 0.35rem;
+    background: var(--color-surface);
+    color: var(--color-fg);
+    font: inherit;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color var(--duration-fast);
+  }
+  .cm-pull:hover {
+    border-color: var(--color-fg);
+  }
+  .cm-new {
+    padding-inline: 0.4em;
+    border-radius: 0.2rem;
+    background: var(--color-mark);
+    color: var(--color-fg);
+  }
+  .cm-meta > .cm-new::after {
+    content: none;
+  }
+  .cm-you {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    /* Sits on the line between two rows without taking room, so marking it never moves the list. */
+    z-index: 1;
+    height: 0;
+    padding-left: var(--cm-rail);
+    color: var(--color-muted);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    view-transition-name: cm-you;
+  }
+  .cm-you > * {
+    background: var(--color-bg);
+  }
+  .cm-you > .cm-chip::before {
+    content: "";
+    position: absolute;
+    left: calc(var(--cm-main-x) + 1px);
+    top: 50%;
+    width: calc(var(--cm-rail) - var(--cm-main-x) - 1px);
+    border-top: 2px dotted var(--color-muted);
+  }
+  .cm-you::after {
+    content: "";
+    position: absolute;
+    left: calc(var(--cm-main-x) + 1px);
+    top: 50%;
+    width: 10px;
+    height: 10px;
+    translate: -50% -50%;
+    border: 2px solid var(--color-muted);
+    border-radius: 50%;
+    background: var(--color-bg);
+  }
+  .cm-you > :last-child:not(.cm-chip) {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .cm-you > :last-child:not(.cm-chip)::after {
+    content: "";
+    flex: 1;
+    border-top: 1px dashed var(--color-border);
+  }
+  a.cm-chip {
+    transition: border-color var(--duration-fast);
+  }
+  a.cm-chip:hover {
+    border-color: var(--color-fg);
+  }
+  .cm-textlink {
+    color: var(--color-fg);
+    text-decoration: underline;
+    text-decoration-color: var(--color-accent);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 0.2em;
+  }
+  .cm-textlink:hover {
+    text-decoration-thickness: 2.5px;
+  }
+}

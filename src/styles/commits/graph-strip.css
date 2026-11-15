@@ -1,0 +1,80 @@
+/* The history on its side at the top of an entry (GraphStrip.astro). */
+@layer components {
+  /* ---------- The history on its side, at the top of an entry ---------- */
+  .cm-strip {
+    --slot: 160px;
+    margin-top: 0.25rem;
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+    view-transition-name: cm-strip;
+  }
+  .cm-strip-track {
+    display: flex;
+    width: max-content;
+    /* Percentages here are of the strip's width, so this centres the current slot. */
+    margin-left: calc(50% - var(--before));
+    transition: translate 520ms var(--ease-out-soft);
+    will-change: translate;
+  }
+  .cm-slot,
+  .cm-cap {
+    position: relative;
+    display: block;
+    width: var(--slot);
+    padding-bottom: 0.35rem;
+  }
+  .cm-cap {
+    width: 72px;
+  }
+  .cm-slot svg,
+  .cm-cap svg {
+    display: block;
+    width: 100%;
+    height: 60px;
+    overflow: visible;
+  }
+  .cm-slot .cm-dot {
+    left: 80px;
+    top: 16px;
+  }
+  .cm-slot-label {
+    display: block;
+    padding-inline: 0.5rem;
+    overflow: hidden;
+    color: var(--color-muted);
+    font-size: 0.8rem;
+    line-height: 1.5;
+    text-align: center;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .cm-cap .cm-slot-label,
+  .cm-slot-label .num {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+  }
+  .cm-cap .cm-slot-label {
+    padding-inline: 0;
+  }
+  .cm-cap:first-child .cm-slot-label {
+    text-align: right;
+    translate: 14px 0;
+  }
+  .cm-cap:last-child .cm-slot-label {
+    text-align: left;
+    translate: 8px 0;
+  }
+  .cm-slot[aria-current] .cm-slot-label {
+    color: var(--color-fg);
+    font-weight: 700;
+  }
+  /* Neighbours stay quiet until you reach for them. */
+  a.cm-slot {
+    opacity: 0.55;
+    transition: opacity var(--duration-base);
+  }
+  a.cm-slot:hover,
+  a.cm-slot:focus-visible {
+    opacity: 1;
+  }
+}

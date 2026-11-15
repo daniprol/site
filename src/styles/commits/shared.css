@@ -1,0 +1,21 @@
+/* Shared by every Snacks view: the line colour and rail sizes, and the colour of each state. */
+@layer components {
+  .cm-history,
+  .cm-titlegraph,
+  .pr {
+    --cm-line: color-mix(in oklch, var(--color-fg) 17%, var(--color-bg));
+    --cm-main-x: 10px;
+    --cm-rail: 40px;
+    /* How far above the bottom of the screen the drawing HEAD rides while you scroll. */
+    --cm-tip: 26svh;
+  }
+  [data-verdict="keep"] {
+    --cm-tone: var(--color-keep);
+  }
+  [data-verdict="maybe"] {
+    --cm-tone: var(--color-maybe);
+  }
+  [data-verdict="drop"] {
+    --cm-tone: var(--color-drop);
+  }
+}
