@@ -1,6 +1,7 @@
 import type { Locale } from "@/i18n";
 
-const LOCALE_TAGS: Record<Locale, string> = { en: "en-GB", es: "es-ES", gl: "gl-ES" };
+/** BCP 47 tags for dates and numbers in each language. */
+export const LOCALE_TAGS: Record<Locale, string> = { en: "en-GB", es: "es-ES", gl: "gl-ES" };
 
 /** "20 Oct 2026" */
 export function formatDate(date: Date, locale: Locale, style: "long" | "short" = "long"): string {

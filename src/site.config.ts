@@ -19,18 +19,6 @@ export const site = {
   ],
 } as const;
 
-/**
- * Comments on posts and snacks, stored in the GitHub Discussions of this repo through giscus (https://giscus.app).
- * IDs come from the configurator at https://giscus.app.
- * While either ID is empty, no comments section is rendered.
- */
-export const giscus: { repo: string; repoId: string; category: string; categoryId: string } = {
-  repo: "daniprol/site",
-  repoId: "R_kgDOVgooTA",
-  category: "Announcements", // Announcements-type: only Dani and giscus can start threads.
-  categoryId: "DIC_kwDOVgooTM4DLJ9x",
-};
-
 /** Shown on the About page. TODO: confirm schools and dates. */
 export const experience = [
   {

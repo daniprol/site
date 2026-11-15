@@ -1,13 +1,17 @@
 ---
 /**
- * Comments through giscus: each page gets a thread in the GitHub Discussions of the repo in site.config.ts.
- * The thread is keyed on the path without base or locale ("writing/<slug>"), so every language shares one.
- * Embedded with the official <giscus-widget> web component, which turns attribute changes into postMessage
- * updates; the widget wears the Proof theme from public/giscus/ and follows the site's theme toggle.
- * Renders nothing until giscus.repoId and giscus.categoryId are filled in.
+ * The comments section under posts and snacks. The conversation itself is the React island in
+ * src/components/comments, which loads it from the site's Worker (/api/*) once it scrolls into view.
+ *
+ * Each page's thread is keyed on its path without base or locale ("writing/<slug>"), so every language
+ * shares one. Builds without the Worker (GitHub Pages) set COMMENTS=false and get no section at all.
  */
-import { stripLocale, useTranslations, withBase, type Locale } from "@/i18n";
-import { giscus } from "@/site.config";
+import { COMMENTS } from "astro:env/server";
+
+import CommentsIsland from "@/components/comments/Comments";
+import { LABEL_KEYS, type Labels } from "@/components/comments/labels";
+import { stripLocale, useTranslations, type Locale } from "@/i18n";
+import { LOCALE_TAGS } from "@/lib/format";
 
 interface Props {
   locale: Locale;
@@ -15,88 +19,18 @@ interface Props {
 
 const { locale } = Astro.props;
 const t = useTranslations(locale);
-const enabled = Boolean(giscus.repoId && giscus.categoryId);
 const term = stripLocale(Astro.url.pathname).replace(/^\/+|\/+$/g, "") || "index";
-// giscus has no Galician interface; Spanish is the closest it ships.
-const lang = locale === "gl" ? "es" : locale;
+// Placeholders such as {n} stay in; the island fills them.
+const labels = Object.fromEntries(LABEL_KEYS.map((key) => [key, t(`comments.${key}`)])) as Labels;
 ---
 
-{enabled && (
-  <section class="mt-16 sm:mt-20" aria-labelledby="comments-title" data-pagefind-ignore>
+{COMMENTS && (
+  <section id="comments" class="mt-16 scroll-mt-6 sm:mt-20" aria-labelledby="comments-title" data-pagefind-ignore>
     <h2 id="comments-title" class="text-[1.05rem] font-bold tracking-tight">
       {t("comments.title")}
     </h2>
-    <div
-      class="comments mt-4 min-h-40"
-      data-giscus
-      data-repo={giscus.repo}
-      data-repo-id={giscus.repoId}
-      data-category={giscus.category}
-      data-category-id={giscus.categoryId}
-      data-term={term}
-      data-lang={lang}
-      data-themes={withBase("/giscus/")}
-    />
+    <div class="mt-4 min-h-40">
+      <CommentsIsland client:visible term={term} localeTag={LOCALE_TAGS[locale]} labels={labels} />
+    </div>
   </section>
 )}
-
-<style>
-  /*
-   * The iframe follows the page's colour scheme (html[data-theme]) instead of the OS, matching the
-   * color-scheme the Proof theme declares inside it, so the frame stays transparent over the page.
-   */
-  .comments :global(giscus-widget),
-  .comments :global(giscus-widget::part(iframe)) {
-    color-scheme: inherit;
-  }
-</style>
-
-<script>
-  const currentTheme = () => (document.documentElement.dataset.theme === "dark" ? "dark" : "light");
-
-  /**
-   * giscus fetches a custom theme from inside its iframe, so it needs an absolute https URL; the base path
-   * comes from the page. Plain-http origins (local dev) fall back to giscus's built-in themes.
-   */
-  const themeFor = (host: HTMLElement) =>
-    window.location.protocol === "https:"
-      ? new URL(`${host.dataset.themes ?? "/giscus/"}proof-${currentTheme()}.css`, window.location.origin).href
-      : currentTheme();
-
-  const mount = async () => {
-    const host = document.querySelector<HTMLElement>("[data-giscus]");
-    if (!host || host.querySelector("giscus-widget")) return;
-    // Only pages that show comments download the widget.
-    await import("giscus");
-    const { repo = "", repoId = "", category = "", categoryId = "", term = "", lang = "en" } = host.dataset;
-    const widget = document.createElement("giscus-widget");
-    const attributes: Record<string, string> = {
-      id: "comments",
-      repo,
-      repoid: repoId,
-      category,
-      categoryid: categoryId,
-      mapping: "specific",
-      term,
-      strict: "1",
-      reactionsenabled: "1",
-      emitmetadata: "0",
-      inputposition: "top",
-      theme: themeFor(host),
-      lang,
-      loading: "lazy",
-    };
-    for (const [name, value] of Object.entries(attributes)) widget.setAttribute(name, value);
-    host.replaceChildren(widget);
-  };
-
-  // Follow the toggle without touching it: watch data-theme on <html> and pass the new theme on.
-  // The widget sends it to its iframe with postMessage, or on load if the lazy iframe is not there yet.
-  new MutationObserver(() => {
-    const host = document.querySelector<HTMLElement>("[data-giscus]");
-    host?.querySelector("giscus-widget")?.setAttribute("theme", themeFor(host));
-  }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
-
-  // Runs on the first load and after every view transition.
-  document.addEventListener("astro:page-load", () => void mount());
-</script>

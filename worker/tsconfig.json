@@ -1,0 +1,11 @@
+// The comments Worker runs on Cloudflare, not in the browser: its own types, no DOM.
+{
+  "extends": "astro/tsconfigs/strict",
+  "include": ["src/**/*"],
+  "compilerOptions": {
+    "lib": ["es2024"],
+    "types": ["@cloudflare/workers-types"],
+    "noEmit": true,
+    "noUncheckedIndexedAccess": true
+  }
+}

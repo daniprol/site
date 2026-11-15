@@ -1,0 +1,220 @@
+/**
+ * Comments as GitHub Discussions: one discussion per page, in one category, titled with the page's term.
+ * Reading and creating discussions runs as the app; adding a comment runs as the signed-in visitor.
+ */
+import type { Comment, ReactionContent, Reply, Thread } from "../contract";
+import { utf8 } from "../encoding";
+import type { Env } from "../env";
+import { graphql } from "./client";
+
+/** GitHub's cap per page of a connection. Threads longer than this link to GitHub for the rest. */
+const PAGE_SIZE = 100;
+
+const COMMENT_FIELDS = /* GraphQL */ `
+  fragment CommentFields on DiscussionComment {
+    id
+    url
+    bodyHTML
+    createdAt
+    lastEditedAt
+    deletedAt
+    isMinimized
+    minimizedReason
+    authorAssociation
+    author {
+      login
+      avatarUrl
+      url
+    }
+    reactionGroups {
+      content
+      reactors {
+        totalCount
+      }
+    }
+  }
+`;
+
+interface CommentNode {
+  id: string;
+  url: string;
+  bodyHTML: string;
+  createdAt: string;
+  lastEditedAt: string | null;
+  deletedAt: string | null;
+  isMinimized: boolean;
+  minimizedReason: string | null;
+  authorAssociation: string;
+  author: { login: string; avatarUrl: string; url: string } | null;
+  reactionGroups: { content: ReactionContent; reactors: { totalCount: number } }[];
+}
+
+interface CommentWithReplies extends CommentNode {
+  replies: { totalCount: number; nodes: CommentNode[] };
+}
+
+/** The node ID and number of a discussion, enough to read it or comment on it. */
+export interface DiscussionRef {
+  id: string;
+  number: number;
+}
+
+const repository = (env: Env) => {
+  const [owner, name] = env.GITHUB_REPOSITORY.split("/");
+  return { owner, name };
+};
+
+/**
+ * Finds the page's discussion by exact title. Lists the category instead of using search, which matches
+ * loosely and lags behind new discussions by up to a minute. If two discussions share a title, the oldest wins.
+ */
+export async function findDiscussion(env: Env, token: string, term: string): Promise<DiscussionRef | null> {
+  let after: string | null = null;
+  do {
+    const data: DiscussionPage = await graphql<DiscussionPage>(token, LIST_DISCUSSIONS, {
+      ...repository(env),
+      categoryId: env.GITHUB_DISCUSSION_CATEGORY_ID,
+      after,
+    });
+    const { nodes, pageInfo } = data.repository.discussions;
+    const match = nodes.find((discussion) => discussion.title === term);
+    if (match) return { id: match.id, number: match.number };
+    after = pageInfo.hasNextPage ? pageInfo.endCursor : null;
+  } while (after);
+  return null;
+}
+
+interface DiscussionPage {
+  repository: {
+    discussions: {
+      pageInfo: { hasNextPage: boolean; endCursor: string | null };
+      nodes: { id: string; number: number; title: string }[];
+    };
+  };
+}
+
+const LIST_DISCUSSIONS = /* GraphQL */ `
+  query ($owner: String!, $name: String!, $categoryId: ID!, $after: String) {
+    repository(owner: $owner, name: $name) {
+      discussions(categoryId: $categoryId, first: ${PAGE_SIZE}, after: $after, orderBy: { field: CREATED_AT, direction: ASC }) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        nodes {
+          id
+          number
+          title
+        }
+      }
+    }
+  }
+`;
+
+/** The page's comments with their replies, oldest first. */
+export async function readThread(env: Env, token: string, discussion: DiscussionRef): Promise<Thread> {
+  const data = await graphql<{
+    repository: { discussion: { url: string; comments: { totalCount: number; nodes: CommentWithReplies[] } } };
+  }>(token, READ_THREAD, { ...repository(env), number: discussion.number });
+  const { url, comments } = data.repository.discussion;
+  return { url, commentCount: comments.totalCount, comments: comments.nodes.map(toComment) };
+}
+
+const READ_THREAD = /* GraphQL */ `
+  ${COMMENT_FIELDS}
+  query ($owner: String!, $name: String!, $number: Int!) {
+    repository(owner: $owner, name: $name) {
+      discussion(number: $number) {
+        url
+        comments(first: ${PAGE_SIZE}) {
+          totalCount
+          nodes {
+            ...CommentFields
+            replies(first: ${PAGE_SIZE}) {
+              totalCount
+              nodes {
+                ...CommentFields
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+/**
+ * Starts the page's discussion, in the same shape giscus uses: the term as title, a link to the page, and
+ * the term's SHA-1 in a comment so giscus could find it again in strict mode.
+ */
+export async function createDiscussion(env: Env, token: string, term: string, pageUrl: string): Promise<DiscussionRef> {
+  const hash = await crypto.subtle.digest("SHA-1", utf8(term));
+  const sha1 = [...new Uint8Array(hash)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+  const data = await graphql<{ createDiscussion: { discussion: DiscussionRef } }>(token, CREATE_DISCUSSION, {
+    repositoryId: env.GITHUB_REPOSITORY_ID,
+    categoryId: env.GITHUB_DISCUSSION_CATEGORY_ID,
+    title: term,
+    body: `# ${term}\n\nComments on ${pageUrl}\n\n<!-- sha1: ${sha1} -->`,
+  });
+  return data.createDiscussion.discussion;
+}
+
+const CREATE_DISCUSSION = /* GraphQL */ `
+  mutation ($repositoryId: ID!, $categoryId: ID!, $title: String!, $body: String!) {
+    createDiscussion(input: { repositoryId: $repositoryId, categoryId: $categoryId, title: $title, body: $body }) {
+      discussion {
+        id
+        number
+      }
+    }
+  }
+`;
+
+/** Posts a comment, or a reply when `replyTo` is set. Run with the visitor's token, so it is theirs. */
+export async function addComment(
+  userToken: string,
+  discussion: DiscussionRef,
+  body: string,
+  replyTo?: string,
+): Promise<Comment> {
+  const data = await graphql<{ addDiscussionComment: { comment: CommentNode } }>(userToken, ADD_COMMENT, {
+    discussionId: discussion.id,
+    body,
+    replyToId: replyTo ?? null,
+  });
+  return toComment({ ...data.addDiscussionComment.comment, replies: { totalCount: 0, nodes: [] } });
+}
+
+const ADD_COMMENT = /* GraphQL */ `
+  ${COMMENT_FIELDS}
+  mutation ($discussionId: ID!, $body: String!, $replyToId: ID) {
+    addDiscussionComment(input: { discussionId: $discussionId, body: $body, replyToId: $replyToId }) {
+      comment {
+        ...CommentFields
+      }
+    }
+  }
+`;
+
+function toReply(node: CommentNode): Reply {
+  return {
+    id: node.id,
+    url: node.url,
+    author: node.author,
+    byOwner: node.authorAssociation === "OWNER",
+    bodyHTML: node.deletedAt ? "" : node.bodyHTML,
+    createdAt: node.createdAt,
+    edited: node.lastEditedAt !== null,
+    deleted: node.deletedAt !== null,
+    minimized: node.isMinimized
+      ? { reason: (node.minimizedReason ?? "hidden").toLowerCase().replace(/_/g, "-") }
+      : null,
+    reactions: node.reactionGroups
+      .filter((group) => group.reactors.totalCount > 0)
+      .map((group) => ({ content: group.content, count: group.reactors.totalCount })),
+  };
+}
+
+function toComment(node: CommentWithReplies): Comment {
+  return { ...toReply(node), replies: node.replies.nodes.map(toReply), replyCount: node.replies.totalCount };
+}
