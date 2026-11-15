@@ -7,45 +7,23 @@ import { useEffect, useRef, useState } from "react";
 
 import { signInUrl, type Reaction, type ReactionContent } from "./api";
 import { useComments } from "./context";
+import { hasReacted, REACTION_EMOJI, REACTION_ORDER } from "./reactions";
 
-export const REACTION_EMOJI: Record<ReactionContent, string> = {
-  THUMBS_UP: "👍",
-  THUMBS_DOWN: "👎",
-  LAUGH: "😄",
-  HOORAY: "🎉",
-  CONFUSED: "😕",
-  HEART: "❤️",
-  ROCKET: "🚀",
-  EYES: "👀",
-};
-
-const CONTENTS = Object.keys(REACTION_EMOJI) as ReactionContent[];
-
-/** Adds or takes back the visitor's reaction; signed-out visitors are sent to sign in first. */
+/**
+ * Adds or takes back the visitor's reaction. The counts change at once (see `react` in Comments.tsx);
+ * signed-out visitors are sent to sign in first.
+ */
 function useReactionToggle(subjectId: string, reactions: Reaction[]) {
   const { viewer, react } = useComments();
-  const [pending, setPending] = useState(false);
-
-  const toggle = async (content: ReactionContent) => {
-    if (!viewer) {
-      window.location.href = signInUrl();
-      return;
-    }
-    const mine = reactions.some((reaction) => reaction.content === content && reaction.viewerHasReacted);
-    setPending(true);
-    try {
-      await react(subjectId, content, mine);
-    } finally {
-      setPending(false);
-    }
+  return (content: ReactionContent) => {
+    if (viewer) react(subjectId, content, hasReacted(reactions, content));
+    else window.location.href = signInUrl();
   };
-
-  return { pending, toggle: (content: ReactionContent) => void toggle(content) };
 }
 
 /** The pills under a comment, one per reaction in use. Nothing when there are none. */
 export function ReactionPills({ subjectId, reactions }: { subjectId: string; reactions: Reaction[] }) {
-  const { pending, toggle } = useReactionToggle(subjectId, reactions);
+  const toggle = useReactionToggle(subjectId, reactions);
   if (reactions.length === 0) return null;
 
   return (
@@ -56,7 +34,6 @@ export function ReactionPills({ subjectId, reactions }: { subjectId: string; rea
           type="button"
           className="cx-reaction"
           aria-pressed={viewerHasReacted}
-          disabled={pending}
           onClick={() => toggle(content)}
         >
           <span>{REACTION_EMOJI[content]}</span>
@@ -70,19 +47,11 @@ export function ReactionPills({ subjectId, reactions }: { subjectId: string; rea
 /** The smiley in a comment's header, which opens the eight reactions GitHub offers. */
 export function ReactionPicker({ subjectId, reactions }: { subjectId: string; reactions: Reaction[] }) {
   const { labels } = useComments();
-  const { pending, toggle } = useReactionToggle(subjectId, reactions);
-  return <PickerMenu label={labels.addReaction} disabled={pending} onPick={toggle} />;
+  const toggle = useReactionToggle(subjectId, reactions);
+  return <PickerMenu label={labels.addReaction} onPick={toggle} />;
 }
 
-function PickerMenu({
-  label,
-  disabled,
-  onPick,
-}: {
-  label: string;
-  disabled: boolean;
-  onPick: (content: ReactionContent) => void;
-}) {
+function PickerMenu({ label, onPick }: { label: string; onPick: (content: ReactionContent) => void }) {
   const [open, setOpen] = useState(false);
   const root = useRef<HTMLDivElement>(null);
 
@@ -111,14 +80,13 @@ function PickerMenu({
         aria-label={label}
         aria-expanded={open}
         title={label}
-        disabled={disabled}
         onClick={() => setOpen(!open)}
       >
         <SmileyIcon />
       </button>
       {open && (
         <div className="cx-picker-menu" role="menu" aria-label={label}>
-          {CONTENTS.map((content) => (
+          {REACTION_ORDER.map((content) => (
             <button
               key={content}
               type="button"

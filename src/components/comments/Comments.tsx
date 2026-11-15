@@ -8,7 +8,7 @@
  * - "timeline" (snacks): items that slot into the page's PR timeline; the comment box is rendered into the
  *   element with id `composerSlot`, under the merge box, where GitHub puts it.
  */
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import {
@@ -28,6 +28,7 @@ import { CommentCard } from "./CommentCard";
 import { Composer } from "./Composer";
 import { CommentsContext, type CommentsContextValue } from "./context";
 import { fill, type Labels } from "./labels";
+import { applyReaction } from "./reactions";
 import { Skeleton } from "./Skeleton";
 
 interface Props {
@@ -97,12 +98,37 @@ export default function Comments({ term, localeTag, labels, layout, composerSlot
     [asViewer, term, update],
   );
 
+  /** A short message at the bottom of the screen, e.g. when a reaction could not be saved. */
+  const [notice, setNotice] = useState<string | null>(null);
+  useEffect(() => {
+    if (!notice) return;
+    const timer = setTimeout(() => setNotice(null), 5000);
+    return () => clearTimeout(timer);
+  }, [notice]);
+
+  /**
+   * Reactions are optimistic: the counts change at once, then GitHub's answer replaces them, or the change is
+   * rolled back if GitHub refuses. Requests for one comment run one after another, so quick clicks cannot
+   * overtake each other, and only the last one's answer is applied.
+   */
+  const reactionQueues = useRef(new Map<string, Promise<void>>());
   const react = useCallback(
-    async (subjectId: string, content: ReactionContent, remove: boolean) => {
-      const reactions = await asViewer(() => postReaction({ term, subjectId, content, remove }));
-      update((thread) => withReactions(thread, subjectId, reactions));
+    (subjectId: string, content: ReactionContent, remove: boolean) => {
+      update((thread) => mapReactions(thread, subjectId, (reactions) => applyReaction(reactions, content, remove)));
+
+      const queues = reactionQueues.current;
+      const request: Promise<void> = (queues.get(subjectId) ?? Promise.resolve()).then(async () => {
+        try {
+          const reactions = await asViewer(() => postReaction({ term, subjectId, content, remove }));
+          if (queues.get(subjectId) === request) update((thread) => mapReactions(thread, subjectId, () => reactions));
+        } catch {
+          update((thread) => mapReactions(thread, subjectId, (current) => applyReaction(current, content, !remove)));
+          setNotice(labels.reactionFailed);
+        }
+      });
+      queues.set(subjectId, request);
     },
-    [asViewer, term, update],
+    [asViewer, labels.reactionFailed, term, update],
   );
 
   const context = useMemo<CommentsContextValue>(
@@ -180,6 +206,10 @@ export default function Comments({ term, localeTag, labels, layout, composerSlot
         {standalone && footer}
       </div>
 
+      <p className="cx-notice" role="status" hidden={!notice}>
+        {notice}
+      </p>
+
       {slot && createPortal(<div className="cx-thread cx-composer-area">{footer}</div>, slot)}
     </CommentsContext>
   );
@@ -212,10 +242,10 @@ function withComment(thread: Thread, comment: Comment, replyTo?: string): Thread
   };
 }
 
-/** The thread with new reaction counts on one comment or reply. */
-function withReactions(thread: Thread, subjectId: string, reactions: Reaction[]): Thread {
+/** The thread with one comment's or reply's reactions changed by `change`. */
+function mapReactions(thread: Thread, subjectId: string, change: (reactions: Reaction[]) => Reaction[]): Thread {
   const apply = <T extends { id: string; reactions: Reaction[] }>(item: T): T =>
-    item.id === subjectId ? { ...item, reactions } : item;
+    item.id === subjectId ? { ...item, reactions: change(item.reactions) } : item;
   return {
     ...thread,
     comments: thread.comments.map((comment) => ({ ...apply(comment), replies: comment.replies.map(apply) })),
